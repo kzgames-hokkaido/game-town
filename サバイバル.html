@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>サバイバル</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:"BIZ UDPGothic","Yu Gothic UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;user-select:none}
+#c{display:block;width:100vw;height:100vh}
+#hud{position:fixed;inset:0;pointer-events:none;display:none}
+#timer{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:34px;font-weight:700;text-shadow:0 2px 6px #000;letter-spacing:2px;white-space:nowrap}
+#obj{position:absolute;top:58px;left:50%;transform:translateX(-50%);font-size:17px;font-weight:700;color:#ffe9a8;text-shadow:0 2px 6px #000;white-space:nowrap}
+#alive{position:absolute;top:16px;right:18px;font-size:22px;font-weight:700;text-shadow:0 2px 6px #000;text-align:right}
+#mmwrap{position:absolute;top:12px;left:12px}
+#mm{display:block;border-radius:8px;border:2px solid rgba(255,255,255,.25)}
+#floor{position:absolute;top:6px;right:10px;font-size:24px;font-weight:800;text-shadow:0 1px 4px #000}
+#place{margin-top:6px;display:none;text-align:center;font-size:17px;font-weight:800;background:#1f3b63;border:2px solid #e8eef6;border-radius:6px;padding:3px 0;text-shadow:none}
+#stam{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);width:240px;height:12px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden}
+#stamfill{height:100%;width:100%;background:#7fd6ff}
+#cross{position:absolute;top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,255,255,.7)}
+#acount{position:absolute;top:86px;left:50%;transform:translateX(-50%);font-size:26px;font-weight:800;color:#ffb347;text-shadow:0 0 8px #000;white-space:nowrap}
+#warn{position:absolute;top:max(22%,124px);left:50%;transform:translateX(-50%);font-size:30px;font-weight:800;color:#ff5a4a;text-shadow:0 0 10px #000;opacity:0;transition:opacity .2s;white-space:nowrap}
+#msg{position:absolute;top:36%;left:50%;transform:translateX(-50%);font-size:40px;font-weight:800;text-shadow:0 2px 10px #000;opacity:0;transition:opacity .4s;white-space:nowrap}
+#feed{position:absolute;right:18px;top:84px;text-align:right;font-size:18px}
+#feed div{background:rgba(0,0,0,.5);padding:4px 10px;border-radius:6px;margin-bottom:6px;transition:opacity 1s}
+#prompt{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);font-size:20px;font-weight:700;background:rgba(0,0,0,.55);padding:6px 16px;border-radius:10px;display:none;white-space:nowrap}
+#inv{position:absolute;bottom:44px;left:18px;font-size:17px;font-weight:700;color:#ffe9a8;background:rgba(0,0,0,.5);padding:6px 12px;border-radius:10px;display:none;white-space:nowrap}
+#locker{position:fixed;inset:0;pointer-events:none;display:none;
+  background:linear-gradient(to bottom,#050506 0 28%,transparent 28% 66%,#050506 66%),
+             linear-gradient(to right,#050506 0 8%,transparent 8% 92%,#050506 92%),
+             repeating-linear-gradient(to bottom,rgba(5,5,6,.96) 0 14px,rgba(5,5,6,.12) 14px 30px)}
+#vign{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
+#red{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(160,0,0,.15) 30%,rgba(110,0,0,.9) 100%);opacity:0}
+.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,6,12,.6);z-index:10;padding:16px}
+.screen.on{display:flex}
+.panel{max-width:660px;width:100%;background:rgba(18,20,30,.93);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.6);max-height:100%;overflow:auto}
+h1{margin:0 0 10px;font-size:34px;letter-spacing:2px;line-height:1.2}
+h1 small{display:block;font-size:14px;color:#f3a37b;letter-spacing:4px;margin-bottom:6px}
+h2{margin:0 0 10px;font-size:32px}
+p{line-height:1.7;margin:8px 0;color:#dfe3ee}
+ul{margin:6px 0 12px;padding-left:1.3em;line-height:1.8;color:#dfe3ee}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0}
+.row .lab{width:120px;color:#aab;font-size:15px}
+.opt{pointer-events:auto;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;padding:8px 14px;border-radius:999px;font-size:15px;cursor:pointer;font-family:inherit}
+.opt.sel{background:#f3a37b;border-color:#f3a37b;color:#1a1010;font-weight:700}
+.big{pointer-events:auto;display:block;width:100%;margin-top:16px;padding:14px;border:none;border-radius:12px;background:linear-gradient(180deg,#ff7a55,#d9432b);color:#fff;font-size:22px;font-weight:800;letter-spacing:4px;cursor:pointer;font-family:inherit}
+.sub{pointer-events:auto;display:block;width:100%;margin-top:10px;padding:10px;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:transparent;color:#fff;font-size:16px;cursor:pointer;font-family:inherit}
+.keys{font-size:14px;color:#aab;line-height:1.8}
+kbd{display:inline-block;border:1px solid #667;border-bottom-width:2px;border-radius:4px;padding:0 6px;font-size:12px;color:#fff;background:#2a2d3a;margin:0 1px}
+#err{position:fixed;left:0;right:0;bottom:0;padding:12px;background:#a02020;color:#fff;text-align:center;display:none;z-index:20}
+a.sub{text-align:center;text-decoration:none}
+#ghostTint{position:fixed;inset:0;pointer-events:none;display:none;background:radial-gradient(ellipse at center,rgba(170,200,255,.06) 40%,rgba(120,150,230,.45) 100%)}
+#aimWarn{position:fixed;inset:0;pointer-events:none;display:none;box-shadow:inset 0 0 120px rgba(255,0,0,.55)}
+#timer.hurry{color:#7dff9a}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vign"></div>
+<div id="red"></div>
+<div id="aimWarn"></div>
+<div id="ghostTint"></div>
+<canvas id="bloodScreen" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:0"></canvas>
+<div id="hud">
+  <div id="timer">まもなく開始</div>
+  <div id="obj"></div>
+  <div id="alive"></div>
+  <div id="feed"></div>
+  <div id="warn"></div>
+  <div id="msg"></div>
+  <div id="cross"></div>
+  <div id="prompt"></div>
+</div>
+
+<div class="screen on" id="title"><div class="panel">
+  <h1><small>サバイバル</small>サバイバル</h1>
+  <p>夕方6時。高層ビルが立ちならぶ<b>大都会</b>で、<b>97人</b>が<b>鬼</b>から逃げる。</p>
+  <ul>
+    <li>全員、最初は街のまん中の交差点に<b>集まっている</b>。<b>4分間</b>逃げきればクリア</li>
+    <li>しばらくすると<b>飛行船</b>が飛んできて、みんなが集まっていた場所に<b>鬼が降りてくる</b></li>
+    <li>鬼はときどき飛行船に乗って、<b>ビルの屋上</b>に降り、上からスナイパーライフルでねらってくる</li>
+    <li>鬼は<b>1人</b>。<b>スナイパーライフル</b>（遠くから。赤いレーザーでねらう）と<b>マシンガン</b>（近くで連射）を持っている。<b>1発でも当たると死亡</b></li>
+    <li>ビル・マンション・団地・アパート・一軒家には<b>入れる</b>。階段で上の階（8階まで）にも行ける。でも鬼も中まで入ってくる</li>
+    <li>止まっている車は動かない（かくれるのに使える）。かべや床は弾を通さない</li>
+    <li>走っても<b>つかれない</b>。やられたら、幽霊モードで最後まで観戦できる（<kbd>Q</kbd> でやめる）</li>
+  </ul>
+  <div class="row"><span class="lab">こわい表現</span>
+    <button class="opt sel" data-gore="1">あり（ひかえめ）</button>
+    <button class="opt" data-gore="2">ちょいグロ</button>
+    <button class="opt" data-gore="0">なし</button>
+  </div>
+  <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：移動　マウス：見回す（動かないときはドラッグ）　<kbd>シフト</kbd>：走る　<kbd>エスケープ</kbd>／<kbd>P</kbd>：一時停止</div>
+  <button class="big" id="startBtn">スタート</button>
+  <a class="sub" href="街.html">街へもどる</a>
+</div></div>
+
+<div class="screen" id="pause"><div class="panel">
+  <h2>一時停止</h2>
+  <p>画面をクリックすると再開します。</p>
+  <button class="big" id="resumeBtn">再開する</button>
+  <button class="sub" id="toTitle1">タイトルへもどる</button>
+</div></div>
+
+<div class="screen" id="result"><div class="panel">
+  <h2 id="resTitle">クリア！</h2>
+  <div id="resText"></div>
+  <button class="big" id="retryBtn">もう一回</button>
+  <button class="sub" id="toTitle2">タイトルへもどる</button>
+</div></div>
+
+<div id="err">ゲームの部品を読みこめませんでした。インターネットにつないでから、もう一度ひらいてください。</div>
+<script>setTimeout(function(){if(!window.__ready)document.getElementById('err').style.display='block';},8000);</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const $ = id => document.getElementById(id);
+const NAMES = ['ゆうと','はると','そうた','みなと','あおい','ひなた','りこ','さくら','ゆい','こうき','れん','めい',
+  'たくみ','かいと','いつき','ことね','ひまり','そら','ゆうま','あかり','しょう','なぎさ','けんた','まお'];
+const MORE = ['だいち','りく','はな','ゆな','こはる','あさひ','いぶき','つむぎ','ほのか','りょう','みお'];
+const EXTRA = ['かずき','ゆうき','しおり','まこと','あやか','りん','たいが','ななみ','こうた','みさき','しゅん','えみ','だいき','まゆ','ひろと',
+  'かなで','りょうま','ちひろ','そうま','あいり','はやと','ゆめ','けい','のぞみ','たける','さや','じゅん','みく','ともや','あすか',
+  'ひろき','まなみ','こうへい','あみ','しんじ','ゆか','たつや','えりか','けんじ','みゆ','だいすけ','ちなつ','ゆうた','さき','かける','ももか','りゅうせい','ひより','こうすけ','あんな',
+  'しょうた','ゆりな','たかし','かのん','てつや','ゆずき','まさと','りな','ひかる','すず','けいた'];
+const R = (a, b) => a + (b - a) * Math.random();
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const pick = a => a[(Math.random() * a.length) | 0];
+const settings = { gore: 1 };
+const TOTAL = 97, COUNTDOWN = 3, GAME_T = 240, ONI_DELAY = 12, VIS = 85;
+const SHIP_IN = 7, ROPE_T = 3.5; // 飛行船が真上に着くまで (秒)・ロープで降りる時間 (秒)。降りきったら鬼が動き出す
+let ONI = { speed: 6.4, range: 120, aim: .85, cd: 1.0, hit: .9, hitRun: .65 };
+let SURV_T = 25; // このゲームで最後に生き残る人数 (毎回21〜28人のどれか)
+// 鬼の調子: 予定よりやられた人が少ないと速く正確に撃ち、多すぎると手かげんする (1 = ふつう)
+function paceK(){
+  const tt = elapsed - COUNTDOWN, dead = people.filter(p => !p.alive).length;
+  const want = (TOTAL - SURV_T) * clamp((tt - ONI_DELAY) / (GAME_T - ONI_DELAY - 50), 0, 1); // 終わりの50秒前に予定の人数までへらす (そこから先は、もう予定より減らない)
+  return clamp(1 + (want - dead) / 4, .35, 4.5);
+} // 鬼の強さ (走る速さ・スナイパーのとどく距離・ねらう時間・次に撃つまで・当たる確率)
+const NB = 6, BLK = 40, ST = 14, P = BLK + ST, C = NB * P / 2, FH = 3.6;
+let player = null;
+
+// ===================== 描画の準備 =====================
+const canvas = $('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xd89a6a);
+scene.fog = new THREE.Fog(0xc08a6a, 90, 520);   /* 大都会: 遠くの高層ビルまで見える */
+const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 1100);
+camera.rotation.order = 'YXZ'; scene.add(camera);
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+const std = p => new THREE.MeshStandardMaterial(p);
+function mk(w, h){ const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d')]; }
+function tx(c, rep = true){
+  const t = new THREE.CanvasTexture(c);
+  if (rep) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  return t;
+}
+function speck(g, w, h, n, cols, s0, s1, al){
+  for (let i = 0; i < n; i++){ g.globalAlpha = al * Math.random(); g.fillStyle = cols[(Math.random()*cols.length)|0];
+    const s = s0 + Math.random()*(s1-s0); g.fillRect(Math.random()*w, Math.random()*h, s, s); }
+  g.globalAlpha = 1;
+}
+function blotch(g, w, h, n, col, r0, r1, al){
+  for (let i = 0; i < n; i++){ g.globalAlpha = al; g.fillStyle = col; g.beginPath();
+    g.arc(Math.random()*w, Math.random()*h, r0 + Math.random()*(r1-r0), 0, Math.PI*2); g.fill(); }
+  g.globalAlpha = 1;
+}
+const BLOOD_TEX = (() => { const [c, g] = mk(256, 256);
+  for (let i = 0; i < 46; i++){ const a = Math.random() * Math.PI * 2, r = Math.pow(Math.random(), 1.4) * 78, x = 128 + Math.cos(a) * r, y = 128 + Math.sin(a) * r * .85, rr = 14 + Math.random() * 34 * (1 - r / 100);
+    g.fillStyle = `rgb(${70 + Math.random() * 25 | 0},${2 + Math.random() * 4 | 0},${4 + Math.random() * 4 | 0})`; g.beginPath(); g.arc(x, y, Math.max(4, rr), 0, 7); g.fill(); }
+  return tx(c, false); })();
+scene.add(new THREE.HemisphereLight(0xffe0c8, 0x504840, 1.0)); scene.add(new THREE.AmbientLight(0xfff0e0, .55)); /* 建物の中も見えるように */
+const sun = new THREE.DirectionalLight(0xffb070, 1.3); sun.position.set(-120, 90, 60); scene.add(sun);
+
+// ===================== 街 =====================
+const walls = [], surfaces = [{ x0: -600, x1: 600, z0: -600, z1: 600, h0: 0, h1: 0, ground: true }];
+const geos = {}; // 材質ごとにまとめて1つの形にする (速く描くため)
+const addBox = (key, x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); (geos[key] ??= []).push(g); };
+/* 窓の絵を、実際の大きさでくり返して貼る (たて=1階分・よこ=3m) */
+function worldUV(g, su, sv){ const p = g.attributes.position, nm = g.attributes.normal, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++){ const nx = Math.abs(nm.getX(i)), nz = Math.abs(nm.getZ(i)), x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (nx > .5) uv.setXY(i, z / su, y / sv); else if (nz > .5) uv.setXY(i, x / su, y / sv); else uv.setXY(i, x / su, z / su); }
+  return g; }
+const wall = (key, x0, y0, z0, x1, y1, z1) => { walls.push({ x0, x1, z0, z1, y0, y1 }); if (key) addBox(key, x0, y0, z0, x1, y1, z1); };
+const BUILD = [], NODES = [];
+const addNode = (x, y, z, b = -1) => { NODES.push({ x, y, z, nb: [], b }); return NODES.length - 1; };
+const linkN = (a, b, cost) => { const A = NODES[a], B = NODES[b], d = cost ?? Math.hypot(A.x - B.x, (A.y - B.y) * 2, A.z - B.z); A.nb.push([b, d]); B.nb.push([a, d]); };
+const lines = []; for (let i = 0; i <= NB; i++) lines.push(-C + i * P); // 通りのまん中
+// ---- 通りの道しるべ (交差点と、そのあいだ)
+const SN = new Map(), sk = (a, b) => a + ':' + b; // 交差点・まんなかの点
+{ const pts = []; for (let i = 0; i < lines.length; i++){ pts.push(lines[i]); if (i < lines.length - 1) pts.push(lines[i] + P / 2); }
+  for (const x of pts) for (const z of pts){ const onX = lines.includes(x), onZ = lines.includes(z); if (!onX && !onZ) continue; SN.set(sk(x, z), addNode(x, 0, z)); }
+  for (const [k, i] of SN){ const [x, z] = k.split(':').map(Number); for (const [dx, dz] of [[P / 2, 0], [0, P / 2]]){ const j = SN.get(sk(x + dx, z + dz)); if (j !== undefined && (dx ? lines.includes(z) : lines.includes(x))) linkN(i, j); } } }
+const streetNear = (x, z, along) => { // 通り (x=一定 または z=一定) の上で、いちばん近い2点
+  const out = []; for (const [k, i] of SN){ const [a, b] = k.split(':').map(Number); if (along === 'x' ? Math.abs(a - x) < .1 : Math.abs(b - z) < .1) out.push(i); }
+  out.sort((p, q) => Math.hypot(NODES[p].x - x, NODES[p].z - z) - Math.hypot(NODES[q].x - x, NODES[q].z - z)); return out.slice(0, 2); };
+// ---- 建物 (大都会): オフィスビル・マンション・団地・アパート・一軒家。入口のドア・各階の床・かべぞいの坂の階段・家具
+const INSIDE_MAX = 8;   /* 中に入れるのは8階まで (それより上は、外から見えるだけ) */
+const STYLE_KEYS = { office: ['off0', 'off1', 'off2'], mansion: ['man0', 'man1', 'man2'], danchi: ['dan0'], apart: ['apt0', 'apt1'], house: ['house0', 'house1', 'house2'], konbini: ['kon0'], super: ['sup0'], izakaya: ['izk0', 'izk1'], hotel: ['hot0', 'hot1'], mall: ['mal0'] };
+const HOTEL_NAMES = ['ホテル星空', 'グランドホテル朝日', 'ホテル月見台'];
+const IZK_NAMES = ['居酒屋', 'やきとり', 'スナック', 'おでん', '立ち飲み', 'ラーメン', '焼肉', 'すし', '串かつ', 'もつ焼き', 'バー', '餃子'];
+const SIGN_NAMES = ['山田商事', '日の出銀行', 'みらい保険', '青空不動産', 'さくら電機', '大空建設', 'あおば証券', '東西物産', 'ひかり通信', '北斗ホールディングス'];
+const SHOP_NAMES = ['ラーメン', 'カラオケ', '本屋', '歯医者', 'カフェ', '英会話', 'ゲームセンター', '焼肉', 'コンビニ', '居酒屋', '塾', '薬局'];
+const SIGNS = [];   /* 看板 (あとで光る文字の板にする) */
+/* 家具 (かべぞいに置く。当たり判定あり) */
+const FURN = {
+  office: [['desk', 1.4, .7, .75], ['desk', 1.4, .7, .75], ['shelf', 1.0, .42, 1.9], ['copier', .8, .6, 1.1], ['plant', .5, .5, 1.2], ['desk', 1.4, .7, .75], ['locker', .9, .5, 1.8]],
+  shop: [['goods', 1.6, .55, 1.6], ['cooler', 1.4, .7, 1.9], ['goods', 1.6, .55, 1.6], ['goods', 1.2, .55, 1.6], ['cooler', 1.4, .7, 1.9]],
+  bar: [['barCounter', 2.4, .6, 1.05], ['shelf', .9, .4, 1.8], ['table', 1.0, .8, .72], ['goods', 1.0, .4, 1.6]],
+  home: [['bed', 2.0, 1.0, .5], ['sofa', 1.9, .8, .45], ['tv', 1.4, .45, .5], ['shelf', .9, .4, 1.8], ['fridge', .7, .7, 1.8], ['kitchen', 2.0, .65, .9], ['table', 1.2, .8, .72], ['wardrobe', 1.2, .6, 1.9]] };
+function furniture(type, wx0, wz0, wx1, wz1, y, inward){ /* (wx0..wx1, wz0..wz1) が床の上の置き場所。inward: 部屋の内がわの向き (TVの画面などの向き) */
+  const h = { goods: 1.6, cooler: 1.9, counter: 1.0, barCounter: 1.05, desk: .75, shelf: 1.9, copier: 1.1, plant: 1.2, locker: 1.8, bed: .5, sofa: .45, tv: .5, fridge: 1.8, kitchen: .9, table: .72, wardrobe: 1.9 }[type];
+  const mat = { goods: 'wood', cooler: 'white', counter: 'white', barCounter: 'wood', desk: 'wood2', shelf: 'wood', copier: 'metal', plant: 'pot', locker: 'metal', bed: 'bedding', sofa: 'fabric', tv: 'wood', fridge: 'white', kitchen: 'white', table: 'wood2', wardrobe: 'wood' }[type];
+  wall(mat, wx0, y, wz0, wx1, y + h, wz1);
+  const cx = (wx0 + wx1) / 2, cz = (wz0 + wz1) / 2;
+  if (type === 'sofa'){ /* せもたれ (かべがわ) */ const t = .2; if (inward[0]) addBox('fabric', inward[0] > 0 ? wx0 : wx1 - t, y, wz0, inward[0] > 0 ? wx0 + t : wx1, y + .85, wz1); else addBox('fabric', wx0, y, inward[1] > 0 ? wz0 : wz1 - t, wx1, y + .85, inward[1] > 0 ? wz0 + t : wz1); }
+  if (type === 'tv'){ const w = Math.max(wx1 - wx0, wz1 - wz0) * .8; if (inward[0]) addBox('dark', cx - .04, y + .5, cz - w / 2, cx + .04, y + 1.2, cz + w / 2); else addBox('dark', cx - w / 2, y + .5, cz - .04, cx + w / 2, y + 1.2, cz + .04); }
+  if (type === 'bed') addBox('white', wx0 + .05, y + .5, wz0 + .05, wx1 - .05, y + .62, wz1 - .05);
+  if (type === 'plant'){ const g = new THREE.SphereGeometry(.4, 8, 6); g.translate(cx, y + 1.4, cz); (geos.leaf ??= []).push(g); }
+  if (type === 'desk'){ /* いす */ const ox = inward[0] * .65, oz = inward[1] * .65; addBox('dark', cx + ox - .22, y, cz + oz - .22, cx + ox + .22, y + .45, cz + oz + .22); addBox('dark', cx + ox - .22 + (inward[0] > 0 ? .36 : 0) * Math.abs(inward[0]), y + .45, cz + oz - .22 + (inward[1] > 0 ? .36 : 0) * Math.abs(inward[1]), cx + ox + .22 - (inward[0] < 0 ? .36 : 0) * Math.abs(inward[0]), y + .95, cz + oz + .22 - (inward[1] < 0 ? .36 : 0) * Math.abs(inward[1])); addBox('dark', cx - .25, y + .75, cz - .2, cx + .25, y + 1.05, cz + .2); }
+  /* 商品のならんだ棚・飲み物の冷蔵ケース・レジ・カウンターといす */
+  const face = (key, f0, f1, depth) => { const [ix, iz] = inward; if (ix) addBox(key, ix > 0 ? wx1 - depth : wx0 - .01, y + f0, wz0 + .05, ix > 0 ? wx1 + .01 : wx0 + depth, y + f1, wz1 - .05); else addBox(key, wx0 + .05, y + f0, iz > 0 ? wz1 - depth : wz0 - .01, wx1 - .05, y + f1, iz > 0 ? wz1 + .01 : wz0 + depth); };
+  if (type === 'goods') for (const [k2, f0] of [['goodsA', .25], ['goodsB', .7], ['goodsC', 1.15]]) face(k2, f0, f0 + .32, .12);
+  if (type === 'cooler') face('coolGlass', .2, 1.75, .04);
+  if (type === 'counter') addBox('dark', cx - .2, y + 1.0, cz - .2, cx + .2, y + 1.3, cz + .2);
+  if (type === 'barCounter') for (let s = -1; s <= 1; s++){ const ox = inward[0] * .55, oz = inward[1] * .55, al = inward[0] ? [0, s * .7] : [s * .7, 0]; addBox('dark', cx + ox + al[0] - .17, y, cz + oz + al[1] - .17, cx + ox + al[0] + .17, y + .7, cz + oz + al[1] + .17); }
+  if (type === 'kitchen') addBox('metal', wx0 + .1, y + .9, wz0 + .1, wx1 - .1, y + .93, wz1 - .1);
+}
+
+/* ---- ショッピングモールの中: まん中は吹きぬけ、そのまわりが通路、外がわに専門店が1階12店ずつ。エスカレーターで上の階へ */
+const MALL_SHOPS = [
+  ['やさい・くだもの', 'おにく・おさかな', 'パン屋', 'おかし', 'おそうざい', '飲み物', 'お米・調味料', '冷凍食品', '花屋', 'お弁当', 'たまご・牛乳', 'お茶'],
+  ['紳士服', '婦人服', '子ども服', 'くつ', 'かばん', 'ぼうし', 'スポーツ用品', 'めがね', 'パジャマ', 'Tシャツ', 'くつした', 'コート'],
+  ['ラーメン', 'ハンバーガー', 'うどん', 'カレー', 'たこ焼き', 'クレープ', 'すし', 'アイス', 'ピザ', 'オムライス', 'からあげ', 'ドーナツ'],
+  ['本屋', 'おもちゃ', 'ゲームセンター', '映画館', '文房具', '電気屋', '100円ショップ', 'ペットショップ', 'CD・DVD', 'ゲームソフト', 'プラモデル', 'カード屋'] ];
+function mallInside(b, bi, cx, cz, hw, door, doorIn){
+  const L = hw - .2, Fr = 12.5, A = 6, R2 = 9.8, EH = 3.6, BANDS = [[7.2, 8.6], [-8.6, -7.2]], NF = b.floors;
+  const P = x => cx + x, Q = z => cz + z;
+  const box = (fn, key, x0, y0, z0, x1, y1, z1) => fn(key, P(Math.min(x0, x1)), y0, Q(Math.min(z0, z1)), P(Math.max(x0, x1)), y1, Q(Math.max(z0, z1)));
+  const node = (x, y, z) => { const i = addNode(P(x), y, Q(z), bi); b.nodes.push(i); return i; };
+  /* 店の向き: u = 通路にそって, n = まん中からの遠さ (前=12.5, 奥=L) */
+  const AX = { S: [[1, 0], [0, -1]], N: [[1, 0], [0, 1]], W: [[0, 1], [-1, 0]], E: [[0, 1], [1, 0]] };
+  const at = (sd, u, n) => { const [ua, na] = AX[sd]; return [u * ua[0] + n * na[0], u * ua[1] + n * na[1]]; };
+  const rectUN = (sd, u0, u1, n0, n1) => { const [ax, az] = at(sd, u0, n0), [bx, bz] = at(sd, u1, n1); return [P(Math.min(ax, bx)), Q(Math.min(az, bz)), P(Math.max(ax, bx)), Q(Math.max(az, bz))]; };
+  const dirUN = (sd, du, dn) => { const [ua, na] = AX[sd]; return [du * ua[0] + dn * na[0], du * ua[1] + dn * na[1]]; };
+  const fr = (sd, type, u0, u1, n0, n1, y, du, dn) => { const [a, c, e, f] = rectUN(sd, u0, u1, n0, n1); furniture(type, a, c, e, f, y, dirUN(sd, du, dn)); };
+  const bx = (sd, key, u0, u1, n0, n1, y0, y1, solid) => { const [a, c, e, f] = rectUN(sd, u0, u1, n0, n1); (solid ? wall : addBox)(key, a, y0, c, e, y1, f); };
+  const CL = ['cl0', 'cl1', 'cl2', 'cl3', 'cl4', 'cl5'];
+  /* 服のラック: 棒にいろんな色の服がずらっとかかっている (u0..u1 に、n のまわり) */
+  const rack = (sd, u0, u1, n, y, seed) => { bx(sd, 'metal', u0, u1, n - .25, n + .25, y, y + .05, true); for (const uu of [u0 + .05, u1 - .1]) bx(sd, 'metal', uu, uu + .05, n - .03, n + .03, y, y + 1.6); bx(sd, 'metal', u0, u1, n - .02, n + .02, y + 1.55, y + 1.6);
+    let j = seed; for (let uu = u0 + .15; uu < u1 - .2; uu += .16) bx(sd, CL[j++ % 6], uu, uu + .1, n - .24, n + .24, y + .7 + (j % 3) * .08, y + 1.55, true); };
+  const gondola = (sd, u0, u1, n0, n1, y, keys) => { bx(sd, 'white', u0, u1, n0, n1, y, y + 1.5, true); keys.forEach((k2, q) => bx(sd, k2, u0 - .02, u1 + .02, n0 - .02, n1 + .02, y + .25 + q * .42, y + .55 + q * .42)); };
+  const sub = (rs, h) => { const out = []; for (const r of rs){ if (h.x0 >= r.x1 || h.x1 <= r.x0 || h.z0 >= r.z1 || h.z1 <= r.z0){ out.push(r); continue; }
+      if (h.z0 > r.z0) out.push({ x0: r.x0, x1: r.x1, z0: r.z0, z1: h.z0 }); if (h.z1 < r.z1) out.push({ x0: r.x0, x1: r.x1, z0: h.z1, z1: r.z1 });
+      const z0 = Math.max(r.z0, h.z0), z1 = Math.min(r.z1, h.z1); if (h.x0 > r.x0) out.push({ x0: r.x0, x1: h.x0, z0, z1 }); if (h.x1 < r.x1) out.push({ x0: h.x1, x1: r.x1, z0, z1 }); } return out; };
+  const rail = (y, x0, z0, x1, z1) => { box(wall, 'mallGlass', x0, y, z0, x1, y + 1.05, z1); box(addBox, 'metal', x0 - .02, y + 1.05, z0 - .02, x1 + .02, y + 1.12, z1 + .02); };
+  /* 4すみは店のない柱の部屋 (入れない) と、店と店のしきりかべ (上までずっと) */
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(wall, 'mallWall', sx * Fr, 0, sz * Fr, sx * L, NF * FH, sz * L);
+  for (const sd of ['S', 'N', 'W', 'E']) for (const u of [-Fr / 3, Fr / 3]) bx(sd, 'mallWall', u - .08, u + .08, Fr, L, 0, NF * FH, true);
+  const W3 = 2 * Fr / 3;
+  for (let k = 0; k < NF; k++){
+    const y = k * FH, ring = [];
+    /* 床 (2階から上は、吹きぬけと下からのエスカレーターの穴をあける) */
+    if (k > 0){ let rs = [{ x0: -L, x1: L, z0: -L, z1: L }]; rs = sub(rs, { x0: -A, x1: A, z0: -A, z1: A }); const bd = BANDS[(k - 1) % 2]; rs = sub(rs, { x0: -EH - .3, x1: EH + .3, z0: bd[0], z1: bd[1] });
+      for (const r of rs){ surfaces.push({ x0: P(r.x0), x1: P(r.x1), z0: Q(r.z0), z1: Q(r.z1), h0: y, h1: y }); wall('slab', P(r.x0), y - .25, Q(r.z0), P(r.x1), y, Q(r.z1)); }
+      /* 吹きぬけのまわりのガラスのさく */ rail(y, -A, -A - .1, A, -A); rail(y, -A, A, A, A + .1); rail(y, -A - .1, -A, -A, A); rail(y, A, -A, A + .1, A);
+      /* エスカレーターの穴のさく (のぼってきた先は、あいている) */ const dirB = (k - 1) % 2 ? -1 : 1; rail(y, -EH - .3, bd[0] - .1, EH + .3, bd[0]); rail(y, -EH - .3, bd[1], EH + .3, bd[1] + .1); const xe = -dirB * (EH + .3); rail(y, Math.min(xe, xe - dirB * .1), bd[0], Math.max(xe, xe - dirB * .1), bd[1]); }
+    else { /* 1階の吹きぬけ: ワゴンの売り場と、植木 */ for (const [wx, wz] of [[-3.6, -3.4], [3.6, -3.4], [-3.6, 3.2], [3.6, 3.2]]){ box(wall, 'white', wx - .8, 0, wz - .5, wx + .8, .85, wz + .5); for (let q = 0; q < 5; q++) box(addBox, CL[(q + k) % 6], wx - .75 + q * .3, .85, wz - .45, wx - .5 + q * .3, 1.0 + (q % 2) * .1, wz + .45); }
+      for (const [px, pz] of [[-5.4, -5.4], [5.4, -5.4], [-5.4, 5.4], [5.4, 5.4]]){ box(wall, 'pot', px - .35, 0, pz - .35, px + .35, .6, pz + .35); const g = new THREE.SphereGeometry(.65, 8, 6); g.translate(P(px), 1.3, Q(pz)); (geos.leaf ??= []).push(g); } }
+    /* 通路の点 (吹きぬけをぐるっと) */
+    for (const [x, z] of [[-R2, -R2], [0, -R2], [R2, -R2], [R2, 0], [R2, R2], [0, R2], [-R2, R2], [-R2, 0]]) ring.push(node(x, y, z));
+    for (let q = 0; q < 8; q++) linkN(ring[q], ring[(q + 1) % 8]);
+    if (k === 0){ const c0 = node(0, 0, 0); linkN(c0, ring[3]); linkN(c0, ring[7]); linkN(c0, ring[1]); }
+    /* 東と西の通路のワゴン (どの階にも) */ for (const sx of [-1, 1]) for (const sz of [-1, 1]){ const wx = sx * 7.6, wz = sz * 3; box(wall, 'white', wx - .45, y, wz - .8, wx + .45, y + .85, wz + .8); for (let q = 0; q < 5; q++) box(addBox, CL[(q + k + sx + 2) % 6], wx - .4, y + .85, wz - .75 + q * .3, wx + .4, y + 1.0 + (q % 2) * .1, wz - .5 + q * .3); }
+    /* エスカレーター (この階から上の階へ) */
+    if (k < NF - 1){ const bd = BANDS[k % 2], dir = k % 2 ? -1 : 1, mid = (bd[0] + bd[1]) / 2, lo = -dir * EH, hi = dir * EH, sg = mid > 0 ? 1 : -1;
+      surfaces.push({ x0: P(-EH), x1: P(EH), z0: Q(bd[0]), z1: Q(bd[1]), h0: y, h1: y + FH, axis: 'x', p0: P(lo), p1: P(hi) });
+      const len = Math.hypot(2 * EH, FH), ang = Math.atan2(FH, 2 * EH) * dir;
+      const g = new THREE.BoxGeometry(len, .2, bd[1] - bd[0]); g.rotateZ(ang); g.translate(P(0), y + FH / 2 - .1, Q(mid)); (geos.esc ??= []).push(g);
+      for (const zz of [bd[0] + .04, bd[1] - .04]){ const s2 = new THREE.BoxGeometry(len, .9, .06); s2.rotateZ(ang); s2.translate(P(0), y + FH / 2 + .38, Q(zz)); (geos.mallGlass ??= []).push(s2);
+        const h2 = new THREE.BoxGeometry(len + .3, .09, .12); h2.rotateZ(ang); h2.translate(P(0), y + FH / 2 + .86, Q(zz)); (geos.escRail ??= []).push(h2); }
+      for (let q = 0; q < 2 * EH; q += .4){ const sx2 = lo + dir * q; box(addBox, 'escStep', sx2 - .02, y + q / (2 * EH) * FH, bd[0] + .1, sx2 + .02, y + q / (2 * EH) * FH + .02, bd[1] - .1); }
+      const bot = node(-dir * (EH + 1), y, mid), botOn = node(-dir * (EH - .4), y, mid), top = node(dir * (EH + 1), y + FH, mid);
+      linkN(bot, botOn); linkN(botOn, top, 2 * EH * 1.3); linkN(bot, ring[sg > 0 ? (dir > 0 ? 6 : 4) : (dir > 0 ? 0 : 2)]); b._escTop = b._escTop || []; b._escTop[k + 1] = { top, corner: sg > 0 ? (dir > 0 ? 4 : 6) : (dir > 0 ? 2 : 0) }; }
+    if (k > 0 && b._escTop[k]) linkN(b._escTop[k].top, ring[b._escTop[k].corner]);
+    /* 専門店 */
+    let j = 0;
+    for (const sd of ['S', 'N', 'W', 'E']) for (let i = 0; i < 3; i++, j++){
+      const a0 = -Fr + i * W3 + .1, a1 = a0 + W3 - .2, um = (a0 + a1) / 2, name = MALL_SHOPS[k % 4][j], entrance = k === 0 && sd === door && i === 1;
+      bx(sd, 'mallWall', -Fr, Fr, Fr - .1, Fr + .1, y + 2.5, y + FH - .25);   /* 店の入口の上のかべ */
+      const nodeUN = (u, n) => { const [x, z] = at(sd, u, n); return node(x, y, z); }, fn = nodeUN(um, Fr + 1), ri = { S: [0, 1, 2], N: [6, 5, 4], W: [0, 7, 6], E: [2, 3, 4] }[sd][i]; linkN(fn, ring[ri]);
+      const sgPos = at(sd, um, Fr); SIGNS.push({ text: entrance ? 'みらいモール 入口' : name, x: P(sgPos[0]), y: y + 2.78, z: Q(sgPos[1]), door: { S: 'N', N: 'S', W: 'E', E: 'W' }[sd], hw: 0, hd: 0, w: 3.6, h: .5, bg: entrance ? '#1e3a6a' : ['#fff6e8', '#f8eef4', '#fff0dc', '#eef4ff'][k % 4], fg: entrance ? '#ffffff' : ['#2a7a3a', '#a02a6a', '#c0501a', '#2a4aa0'][k % 4] });
+      if (entrance){ linkN(fn, doorIn); fr(sd, 'counter', a0 + .3, a0 + 2.1, Fr + 2.4, Fr + 3.0, y, 1, 0); continue; }
+      const kind = k % 4, inner = nodeUN(um, kind === 2 ? L - 2.2 : L - 1.15); linkN(fn, inner);
+      const back = (types, d) => { let a = a0 + .2, q = j; while (true){ const ty = types[q++ % types.length], w = ty === 'cooler' ? 1.4 : 1.2; if (a + w > a1 - .2) break; fr(sd, ty, a, a + w, L - d, L, y, 0, -1); a += w + .08; } };
+      const sides = (types, d) => { for (const [s0, s1, du] of [[a0, a0 + d, 1], [a1 - d, a1, -1]]){ let n = Fr + 2.1, q = j; while (true){ const ty = types[q++ % types.length], w = 1.2; if (n + w > L - .75) break; fr(sd, ty, s0, s1, n, n + w, y, du, 0); n += w + .08; } } };
+      if (kind === 0){ /* 食品: 冷蔵ケースと棚がびっしり。まん中に両面の棚2列。レジ */
+        back(['cooler', 'goods'], .7); sides(['goods'], .55);
+        for (const s of [-1, 1]) gondola(sd, um + s * 2 - .45, um + s * 2 + .45, Fr + 2.1, L - 1.6, y, ['goodsA', 'goodsB', 'goodsC']);
+        fr(sd, 'counter', a0 + .7, a0 + 2.1, Fr + .9, Fr + 1.5, y, 0, -1); }
+      else if (kind === 1){ /* 服: ハンガーラックがずらり。かべには、たたんだ服の棚。前にマネキン */
+        back(['goods'], .55);
+        for (const s of [-1, 1]) for (let n = Fr + 2.1; n < L - 1.4; n += 1.3) rack(sd, um + s * 2.4 - .9, um + s * 2.4 + .9, n, y, j + Math.round(n));
+        for (const s of [-1, 1]){ const [mx, mz] = at(sd, um + s * 3.2, Fr + .7); wall('cl' + ((j + s + 6) % 6), P(mx) - .25, y, Q(mz) - .25, P(mx) + .25, y + 1.35, Q(mz) + .25); const g = new THREE.SphereGeometry(.17, 8, 6); g.translate(P(mx), y + 1.55, Q(mz)); (geos.mannequin ??= []).push(g); } }
+      else if (kind === 2){ /* フードコート: 奥に調理場とカウンター、手前はテーブルといす */
+        let a = a0 + .2; while (a + 2 <= a1 - .2){ fr(sd, 'kitchen', a, a + 2, L - .65, L, y, 0, -1); a += 2.05; }
+        bx(sd, 'white', a0 + .3, a1 - .3, L - 1.55, L - 1.05, y, y + 1.0, true); bx(sd, 'wood', a0 + .3, a1 - .3, L - 1.6, L - 1.0, y + 1.0, y + 1.06); /* メニューの板と、カウンターの上の料理 */ for (let q = 0; q < 4; q++) bx(sd, CL[(j + q) % 6], a0 + .5 + q * (a1 - a0 - 1) / 4, a0 + .5 + (q + 1) * (a1 - a0 - 1) / 4 - .1, L - .08, L - .04, y + 1.75, y + 2.35); for (let u = a0 + .6; u < a1 - .6; u += .7){ bx(sd, 'white', u, u + .34, L - 1.45, L - 1.15, y + 1.06, y + 1.1); bx(sd, CL[(j + Math.round(u * 3)) % 6 + (u < 0 ? 0 : 0)] || 'cl4', u + .07, u + .27, L - 1.4, L - 1.2, y + 1.1, y + 1.2); }
+        for (const s of [-1, 1]) for (const n of [Fr + 2.4, Fr + 4.2]){ fr(sd, 'table', um + s * 2.2 - .5, um + s * 2.2 + .5, n - .45, n + .45, y, 0, 1); for (const [du, dn] of [[-.85, 0], [.85, 0]]) bx(sd, 'dark', um + s * 2.2 + du - .2, um + s * 2.2 + du + .2, n + dn - .2, n + dn + .2, y, y + .45, true); } }
+      else { /* 4階: 本屋・おもちゃ・ゲームセンター・映画館など */
+        if (name === '映画館'){ bx(sd, 'screenW', a0 + .5, a1 - .5, L - .15, L - .05, y + .6, y + 2.9); for (let n = Fr + 2.2; n < L - 1.6; n += 1.0) for (const [u0, u1] of [[a0 + .3, um - .7], [um + .7, a1 - .3]]){ bx(sd, 'seat', u0, u1, n - .25, n + .25, y, y + .45, true); bx(sd, 'seat', u0, u1, n + .15, n + .3, y + .45, y + 1.0); } }
+        else if (name === 'ゲームセンター'){ for (const s of [-1, 1]) for (let n = Fr + 2.2; n < L - 1.4; n += 1.0){ bx(sd, 'dark', um + s * 2.2 - .45, um + s * 2.2 + .45, n - .4, n + .4, y, y + 1.7, true); bx(sd, 'screenG', um + s * 2.2 - .36, um + s * 2.2 + .36, n - .42, n + .42, y + 1.0, y + 1.5); } back(['goods'], .55); }
+        else if (name === '電気屋'){ back(['tv', 'shelf'], .5); sides(['tv'], .5); for (const s of [-1, 1]) gondola(sd, um + s * 2 - .45, um + s * 2 + .45, Fr + 2.1, L - 1.6, y, ['dark', 'metal', 'dark']); }
+        else { back(['shelf', 'goods'], .5); sides(['goods'], .55); for (const s of [-1, 1]) gondola(sd, um + s * 2 - .45, um + s * 2 + .45, Fr + 2.1, L - 1.6, y, [CL[(j + 1) % 6], CL[(j + 3) % 6], CL[(j + 5) % 6]]); } }
+    }
+  }
+  b.hideNodes = b.nodes.filter(i => NODES[i].y > 0);
+}
+function building(cx, cz, hw, hd, floors, door, style){ // door: 'W','E','N','S'
+  const kind = style === 'house' ? 'house' : 'bld';
+  const T = .3, H = floors * FH, inside = Math.min(floors, INSIDE_MAX), b = { cx, cz, hw, hd, floors, door, kind, style, inside, nodes: [] }, bi = BUILD.length; BUILD.push(b);
+  const ks = STYLE_KEYS[style], key = ks[bi % ks.length];
+  const x0 = cx - hw, x1 = cx + hw, z0 = cz - hd, z1 = cz + hd, DW = 1.3, DH = 2.6;
+  // かべ (ドアのところはあける)
+  const side = (s, a0, a1, fixed, isX) => { if (s === door){ const m = isX ? cz : cx; if (isX){ wall(key, fixed - T / 2, 0, a0, fixed + T / 2, H, m - DW); wall(key, fixed - T / 2, 0, m + DW, fixed + T / 2, H, a1); wall(key, fixed - T / 2, DH, m - DW, fixed + T / 2, H, m + DW); } else { wall(key, a0, 0, fixed - T / 2, m - DW, H, fixed + T / 2); wall(key, m + DW, 0, fixed - T / 2, a1, H, fixed + T / 2); wall(key, m - DW, DH, fixed - T / 2, m + DW, H, fixed + T / 2); } } else { if (isX) wall(key, fixed - T / 2, 0, a0, fixed + T / 2, H, a1); else wall(key, a0, 0, fixed - T / 2, a1, H, fixed + T / 2); } };
+  side('W', z0, z1, x0, true); side('E', z0, z1, x1, true); side('S', x0, x1, z0, false); side('N', x0, x1, z1, false);
+  // ドアのわく (入口がわかるように)
+  { const dk = 'doorFrame'; if (door === 'W' || door === 'E'){ const fx = door === 'W' ? x0 - .2 : x1 + .2; addBox(dk, fx - .06, 0, cz - DW - .12, fx + .06, DH + .12, cz - DW); addBox(dk, fx - .06, 0, cz + DW, fx + .06, DH + .12, cz + DW + .12); addBox(dk, fx - .06, DH, cz - DW, fx + .06, DH + .12, cz + DW); }
+    else { const fz = door === 'S' ? z0 - .2 : z1 + .2; addBox(dk, cx - DW - .12, 0, fz - .06, cx - DW, DH + .12, fz + .06); addBox(dk, cx + DW, 0, fz - .06, cx + DW + .12, DH + .12, fz + .06); addBox(dk, cx - DW, DH, fz - .06, cx + DW, DH + .12, fz + .06); } }
+  // 屋根
+  wall('roof', x0 - .2, H, z0 - .2, x1 + .2, H + .3, z1 + .2); if (kind !== 'house') surfaces.push({ x0: x0 - .2, x1: x1 + .2, z0: z0 - .2, z1: z1 + .2, h0: H + .3, h1: H + .3 }); b.roofY = H + .3;
+  if (kind === 'house'){ const g = new THREE.ConeGeometry(Math.hypot(hw, hd) * 1.05, 2.4, 4); g.rotateY(Math.PI / 4); g.scale(hw / Math.max(hw, hd), 1, hd / Math.max(hw, hd)); g.translate(cx, H + 1.5, cz); (geos.rooftop ??= []).push(g); }
+  else { /* 屋上のふち */ for (const [a0, a1, c0, c1] of [[x0 - .2, x1 + .2, z0 - .2, z0 + .05], [x0 - .2, x1 + .2, z1 - .05, z1 + .2], [x0 - .2, x0 + .05, z0 - .2, z1 + .2], [x1 - .05, x1 + .2, z0 - .2, z1 + .2]]) addBox('roof', a0, H + .3, c0, a1, H + .9, c1); }
+  for (let k2 = inside + 1; k2 < floors; k2++) addBox('slab', x0 + T / 2, k2 * FH - .25, z0 + T / 2, x1 - T / 2, k2 * FH, z1 - T / 2);
+  if (floors > inside) wall('slab', x0 + T / 2, inside * FH - .25, z0 + T / 2, x1 - T / 2, inside * FH, z1 - T / 2); /* 8階より上には上がれない (天井) */
+  // 階段の坂は、ドアの反対がわのかべぞい (はば1.6m・長さ7.2m)。階ごとに向きを変える
+  const back = { W: 'E', E: 'W', N: 'S', S: 'N' }[door], RW = 1.6, alongX = back === 'N' || back === 'S';
+  const bw = alongX ? (back === 'N' ? z1 - T / 2 - RW : z0 + T / 2) : (back === 'E' ? x1 - T / 2 - RW : x0 + T / 2); // 坂の帯のはじ
+  const span0 = alongX ? x0 + 1 : z0 + 1, span1 = alongX ? x1 - 1 : z1 - 1; // 坂を置ける長さ
+  const RL = Math.min(7.2, span1 - span0 - .4);
+  const doorIn = addNode(door === 'W' ? x0 + 1.2 : door === 'E' ? x1 - 1.2 : cx, 0, door === 'S' ? z0 + 1.2 : door === 'N' ? z1 - 1.2 : cz, bi);
+  const doorOut = addNode(door === 'W' ? x0 - 1.6 : door === 'E' ? x1 + 1.6 : cx, 0, door === 'S' ? z0 - 1.6 : door === 'N' ? z1 + 1.6 : cz, bi); linkN(doorIn, doorOut); b.doorOut = doorOut;
+  const sx = door === 'W' ? lines.reduce((p, q) => Math.abs(q - x0) < Math.abs(p - x0) ? q : p) : door === 'E' ? lines.reduce((p, q) => Math.abs(q - x1) < Math.abs(p - x1) ? q : p) : null;
+  const sz = door === 'S' ? lines.reduce((p, q) => Math.abs(q - z0) < Math.abs(p - z0) ? q : p) : door === 'N' ? lines.reduce((p, q) => Math.abs(q - z1) < Math.abs(p - z1) ? q : p) : null;
+  const curb = sx !== null ? addNode(sx + (door === 'W' ? ST / 2 - 1 : -ST / 2 + 1), 0, cz) : addNode(cx, 0, sz + (door === 'S' ? ST / 2 - 1 : -ST / 2 + 1));
+  linkN(doorOut, curb); for (const i of (sx !== null ? streetNear(sx, cz, 'x') : streetNear(cx, sz, 'z'))) linkN(curb, i);
+  // 家具を置く: 坂の帯ではない2つのかべ (横のかべ) と、上の階ではドアがわのかべ
+  const shop = style === 'konbini' || style === 'super', list = style === 'office' ? FURN.office : shop || style === 'mall' ? FURN.shop : style === 'izakaya' ? FURN.bar : FURN.home;
+  /* ドアがわから見た向き: u = ドアのかべにそって, v = ドアから奥へ */
+  const Wh = door === 'S' || door === 'N' ? hw : hd, Dp = door === 'S' || door === 'N' ? 2 * hd : 2 * hw;
+  const toW = (u, v) => door === 'S' ? [cx + u, z0 + v] : door === 'N' ? [cx + u, z1 - v] : door === 'W' ? [x0 + v, cz + u] : [x1 - v, cz + u];
+  const rectW = (u0, u1, v0, v1) => { const [ax, az] = toW(u0, v0), [bx, bz] = toW(u1, v1); return [Math.min(ax, bx), Math.min(az, bz), Math.max(ax, bx), Math.max(az, bz)]; };
+  const furnish = (k, y) => {
+    const runs = []; const ins = T / 2 + .05;
+    if (alongX){ const za = back === 'N' ? z0 + ins + .9 : bw + RW + .8, zb = back === 'N' ? bw - .8 : z1 - ins - .9;
+      runs.push({ wall: 'W', a: za, b: zb }, { wall: 'E', a: za, b: zb }); if (k > 0) runs.push({ wall: back === 'N' ? 'S' : 'N', a: x0 + ins + 1.6, b: x1 - ins - 1.6 }); }
+    else { const xa = back === 'E' ? x0 + ins + .9 : bw + RW + .8, xb = back === 'E' ? bw - .8 : x1 - ins - .9;
+      runs.push({ wall: 'S', a: xa, b: xb }, { wall: 'N', a: xa, b: xb }); if (k > 0) runs.push({ wall: back === 'E' ? 'W' : 'E', a: z0 + ins + 1.6, b: z1 - ins - 1.6 }); }
+    if (k === 0 && shop){ /* 横のかべは奥まで、奥のかべもぜんぶ棚 */ runs.length = 0;
+      if (alongX){ const za = back === 'N' ? z0 + ins + .9 : z0 + ins + .5, zb = back === 'N' ? z1 - ins - .5 : z1 - ins - .9; runs.push({ wall: 'W', a: za, b: zb }, { wall: 'E', a: za, b: zb }, { wall: back, a: x0 + ins + .7, b: x1 - ins - .7 }); }
+      else { const xa = back === 'E' ? x0 + ins + .9 : x0 + ins + .5, xb = back === 'E' ? x1 - ins - .5 : x1 - ins - .9; runs.push({ wall: 'S', a: xa, b: xb }, { wall: 'N', a: xa, b: xb }, { wall: back, a: z0 + ins + .7, b: z1 - ins - .7 }); }
+      for (let v = 2.45; v + .45 <= Dp - 2.0; v += 2.1){ const [a0, b0, a1, b1] = rectW(-(Wh - 2.5), Wh - 2.5, v - .45, v + .45); wall('white', a0, y, b0, a1, y + 1.5, b1); for (const [kk, f0] of [['goodsA', .25], ['goodsB', .7], ['goodsC', 1.15]]) addBox(kk, a0 - .02, y + f0, b0 - .02, a1 + .02, y + f0 + .32, b1 + .02); }
+      const dz = .9; if (alongX){ const wn = back === 'N' ? 'S' : 'N'; runs.push({ wall: wn, a: x0 + ins + dz, b: cx - 2, first: ['counter', 1.6, .6] }, { wall: wn, a: cx + 2, b: x1 - ins - dz }); } else { const wn = back === 'E' ? 'W' : 'E'; runs.push({ wall: wn, a: z0 + ins + dz, b: cz - 2, first: ['counter', 1.6, .6] }, { wall: wn, a: cz + 2, b: z1 - ins - dz }); } }
+    let n = (bi * 7 + k * 3) % list.length;
+    for (const r of runs){ let a = r.a + .2, first = r.first;
+      while (true){ const [type, w, d] = first || list[n++ % list.length]; first = null; if (a + w > r.b - .2) break;
+        if (r.wall === 'W') furniture(type, x0 + ins, a, x0 + ins + d, a + w, y, [1, 0]);
+        else if (r.wall === 'E') furniture(type, x1 - ins - d, a, x1 - ins, a + w, y, [-1, 0]);
+        else if (r.wall === 'S') furniture(type, a, z0 + ins, a + w, z0 + ins + d, y, [0, 1]);
+        else furniture(type, a, z1 - ins - d, a + w, z1 - ins, y, [0, -1]);
+        a += w + .35 + ((bi + k + n) % 3) * .3; } }
+  };
+  // 各階
+  if (style === 'mall') mallInside(b, bi, cx, cz, hw, door, doorIn); else {
+  let prevTop = null;
+  for (let k = 0; k < inside; k++){
+    const y = k * FH, fl = [];
+    const ramp = k < inside - 1 ? (() => { const dir = k % 2 ? -1 : 1, a = dir > 0 ? span0 : span1 - RL, aEnd = a + RL; return { a, aEnd, dir }; })() : null;
+    if (k > 0){ const hole = prevTop;
+      if (alongX){ const zA = Math.min(bw, bw + RW), zB = Math.max(bw, bw + RW), hx0 = hole.a - .3, hx1 = hole.aEnd + .3;
+        for (const r of [{ x0: x0 + T / 2, x1: x1 - T / 2, z0: back === 'N' ? z0 + T / 2 : zB, z1: back === 'N' ? zA : z1 - T / 2 }, { x0: x0 + T / 2, x1: hx0, z0: zA, z1: zB }, { x0: hx1, x1: x1 - T / 2, z0: zA, z1: zB }]) if (r.x1 > r.x0 + .1 && r.z1 > r.z0 + .1){ surfaces.push({ ...r, h0: y, h1: y }); wall('slab', r.x0, y - .25, r.z0, r.x1, y, r.z1); } }
+      else { const xA = Math.min(bw, bw + RW), xB = Math.max(bw, bw + RW), hz0 = hole.a - .3, hz1 = hole.aEnd + .3;
+        for (const r of [{ z0: z0 + T / 2, z1: z1 - T / 2, x0: back === 'E' ? x0 + T / 2 : xB, x1: back === 'E' ? xA : x1 - T / 2 }, { z0: z0 + T / 2, z1: hz0, x0: xA, x1: xB }, { z0: hz1, z1: z1 - T / 2, x0: xA, x1: xB }]) if (r.x1 > r.x0 + .1 && r.z1 > r.z0 + .1){ surfaces.push({ ...r, h0: y, h1: y }); wall('slab', r.x0, y - .25, r.z0, r.x1, y, r.z1); } } }
+    const inset = 1.4, fx0 = x0 + inset, fx1 = x1 - inset, fz0 = z0 + inset, fz1 = z1 - inset;
+    const shopFloor = k === 0 && shop;
+    const pts = shopFloor ? [[fx0, fz0], [fx1, fz0], [fx1, fz1], [fx0, fz1]] : [[fx0, fz0], [fx1, fz0], [fx0, fz1], [fx1, fz1], [cx, cz]].filter(([x, z]) => alongX ? (back === 'N' ? z < bw - .8 : z > bw + RW + .8) : (back === 'E' ? x < bw - .8 : x > bw + RW + .8));
+    for (const [x, z] of pts) fl.push(addNode(x, y, z, bi));
+    if (shopFloor){ for (let a = 0; a < 4; a++) linkN(fl[a], fl[(a + 1) % 4]); const nd = fl.map(i => [i, Math.hypot(NODES[i].x - NODES[doorIn].x, NODES[i].z - NODES[doorIn].z)]).sort((p, q) => p[1] - q[1]); linkN(doorIn, nd[0][0]); linkN(doorIn, nd[1][0]); fl.push(doorIn); }
+    else { if (k === 0) fl.push(doorIn);
+    for (let a = 0; a < fl.length; a++) for (let c = a + 1; c < fl.length; c++) linkN(fl[a], fl[c]); }
+    if (prevTop) linkN(prevTop.topNode, fl[0]), fl.forEach(i => i !== fl[0] && linkN(prevTop.topNode, i));
+    if (ramp){ const { a, aEnd, dir } = ramp, lo = dir > 0 ? a : aEnd, hi = dir > 0 ? aEnd : a;
+      const s = alongX ? { x0: a, x1: aEnd, z0: Math.min(bw, bw + RW), z1: Math.max(bw, bw + RW), h0: y, h1: y + FH, axis: 'x', p0: lo, p1: hi } : { z0: a, z1: aEnd, x0: Math.min(bw, bw + RW), x1: Math.max(bw, bw + RW), h0: y, h1: y + FH, axis: 'z', p0: lo, p1: hi };
+      surfaces.push(s);
+      const len = Math.hypot(RL, FH), g = new THREE.BoxGeometry(alongX ? len : RW, .2, alongX ? RW : len); if (alongX) g.rotateZ(Math.atan2(FH, RL) * (dir > 0 ? 1 : -1)); else g.rotateX(-Math.atan2(FH, RL) * (dir > 0 ? 1 : -1)); g.translate(alongX ? (a + aEnd) / 2 : (s.x0 + s.x1) / 2, y + FH / 2 - .1, alongX ? (s.z0 + s.z1) / 2 : (a + aEnd) / 2); (geos.ramp ??= []).push(g);
+      const mid = alongX ? (s.z0 + s.z1) / 2 : (s.x0 + s.x1) / 2, inward = alongX ? (back === 'N' ? -1.2 : 1.2) : (back === 'E' ? -1.2 : 1.2);
+      const bot = alongX ? addNode(lo - dir * .6, y, mid + inward, bi) : addNode(mid + inward, y, lo - dir * .6, bi);
+      const top = alongX ? addNode(hi + dir * .8, y + FH, mid, bi) : addNode(mid, y + FH, hi + dir * .8, bi);
+      const botOn = alongX ? addNode(lo + dir * .4, y, mid, bi) : addNode(mid, y, lo + dir * .4, bi);
+      fl.forEach(i => linkN(i, bot)); linkN(bot, botOn); linkN(botOn, top, RL * 1.3);
+      prevTop = { a, aEnd, topNode: top }; }
+    b.nodes.push(...fl);
+    furnish(k, y);
+  }
+  b.hideNodes = b.nodes.filter(i => NODES[i].y > 0); }
+  // 外のかざり
+  const facade = (sideName, fn) => fn(sideName);
+  if (style === 'mansion' || style === 'danchi'){ /* ベランダ (ドアの反対がわ。2階から上) */
+    for (let k = 1; k < floors; k++){ const y = k * FH;
+      if (alongX){ const zo = back === 'N' ? z1 : z0, s = back === 'N' ? 1 : -1; addBox('balc', x0 + .2, y - .15, Math.min(zo, zo + s * 1.2), x1 - .2, y, Math.max(zo, zo + s * 1.2)); addBox('rail', x0 + .2, y, Math.min(zo + s * 1.1, zo + s * 1.2), x1 - .2, y + 1.05, Math.max(zo + s * 1.1, zo + s * 1.2)); for (let x = x0 + 3.2; x < x1 - 1; x += 3.4) addBox('balc', x - .05, y, Math.min(zo, zo + s * 1.2), x + .05, y + 2.2, Math.max(zo, zo + s * 1.2)); }
+      else { const xo = back === 'E' ? x1 : x0, s = back === 'E' ? 1 : -1; addBox('balc', Math.min(xo, xo + s * 1.2), y - .15, z0 + .2, Math.max(xo, xo + s * 1.2), y, z1 - .2); addBox('rail', Math.min(xo + s * 1.1, xo + s * 1.2), y, z0 + .2, Math.max(xo + s * 1.1, xo + s * 1.2), y + 1.05, z1 - .2); for (let z = z0 + 3.2; z < z1 - 1; z += 3.4) addBox('balc', Math.min(xo, xo + s * 1.2), y, z - .05, Math.max(xo, xo + s * 1.2), y + 2.2, z + .05); } } }
+  if (style === 'apart' && floors >= 2){ /* 外廊下 (ドアがわの2階) と外階段 */
+    for (let k = 1; k < floors; k++){ const y = k * FH;
+      if (door === 'S' || door === 'N'){ const zo = door === 'S' ? z0 : z1, s = door === 'S' ? -1 : 1; addBox('balc', x0, y - .15, Math.min(zo, zo + s * 1.3), x1, y, Math.max(zo, zo + s * 1.3)); addBox('rail', x0, y, Math.min(zo + s * 1.2, zo + s * 1.3), x1, y + 1.05, Math.max(zo + s * 1.2, zo + s * 1.3)); }
+      else { const xo = door === 'W' ? x0 : x1, s = door === 'W' ? -1 : 1; addBox('balc', Math.min(xo, xo + s * 1.3), y - .15, z0, Math.max(xo, xo + s * 1.3), y, z1); addBox('rail', Math.min(xo + s * 1.2, xo + s * 1.3), y, z0, Math.max(xo + s * 1.2, xo + s * 1.3), y + 1.05, z1); } }
+    { const len = Math.hypot(4, FH), g = new THREE.BoxGeometry(1, .2, len); g.rotateX(-Math.atan2(FH, 4)); const sxp = door === 'W' || door === 'E' ? (door === 'W' ? x0 - .7 : x1 + .7) : x1 + .7, szp = door === 'S' || door === 'N' ? (door === 'S' ? z0 - 2.2 : z1 + 2.2) : z1 - 2.2; g.translate(sxp, FH / 2, szp); (geos.balc ??= []).push(g); } }
+  const dPos = () => door === 'W' ? [x0, cz, -1, 0] : door === 'E' ? [x1, cz, 1, 0] : door === 'S' ? [cx, z0, 0, -1] : [cx, z1, 0, 1];
+  if (style === 'konbini') SIGNS.push({ text: 'コンビニ　24時間', x: cx, y: 3.05, z: cz, door, hw, hd, w: 5.6, h: .8, bg: '#178a48', fg: '#ffffff' });
+  if (style === 'super'){ SIGNS.push({ text: 'スーパーマーケット', x: cx, y: H + 1.2, z: cz, door, hw, hd, w: 11, h: 1.8, bg: '#c0392b', fg: '#fff6d0' });
+    const [px, pz, sx2, sz2] = dPos(); for (let i = 0; i < 4; i++){ const ox = sz2 ? 2.4 + i * .55 : sx2 * 1.4, oz = sx2 ? 2.4 + i * .55 : sz2 * 1.4; addBox('metal', px + ox - .25, .3, pz + oz - .4, px + ox + .25, .95, pz + oz + .4); } }   /* 入口のカート */
+  if (style === 'izakaya'){ const [px, pz, sx2, sz2] = dPos(); const off = .35;
+    for (const s of [-1, 1]){ const lx2 = px + sx2 * off + (sz2 ? s * 1.75 : 0), lz2 = pz + sz2 * off + (sx2 ? s * 1.75 : 0); const g = new THREE.SphereGeometry(.28, 10, 8); g.scale(1, 1.35, 1); g.translate(lx2, 2.3, lz2); (geos.lantern ??= []).push(g); }   /* 赤ちょうちん */
+    if (sz2) addBox('noren', cx - 1.25, 1.9, pz + sz2 * .2 - .02, cx + 1.25, 2.55, pz + sz2 * .2 + .02); else addBox('noren', px + sx2 * .2 - .02, 1.9, cz - 1.25, px + sx2 * .2 + .02, 2.55, cz + 1.25);   /* のれん */
+    SIGNS.push({ text: IZK_NAMES[bi % IZK_NAMES.length], x: cx, y: 4.6, z: cz, door, hw, hd, w: .7, h: 2.4, vertical: true, bg: '#7a1a14' }); }
+  if (style === 'hotel'){ /* 入口のひさしと、ホテルの名前 */ const [px, pz, sx2, sz2] = dPos();
+    if (sz2) addBox('canopy', cx - 2.6, 2.75, Math.min(pz, pz + sz2 * 3), cx + 2.6, 2.95, Math.max(pz, pz + sz2 * 3)); else addBox('canopy', Math.min(px, px + sx2 * 3), 2.75, cz - 2.6, Math.max(px, px + sx2 * 3), 2.95, cz + 2.6);
+    for (const s of [-1, 1]){ if (sz2) addBox('doorFrame', cx + s * 2.5 - .06, 0, pz + sz2 * 2.9 - .06, cx + s * 2.5 + .06, 2.8, pz + sz2 * 2.9 + .06); else addBox('doorFrame', px + sx2 * 2.9 - .06, 0, cz + s * 2.5 - .06, px + sx2 * 2.9 + .06, 2.8, cz + s * 2.5 + .06); }
+    const nm = HOTEL_NAMES[bi % HOTEL_NAMES.length]; SIGNS.push({ text: nm, x: cx, y: 3.35, z: cz, door, hw, hd, w: 5.4, h: .8, bg: '#2a1e10', fg: '#f4d488' });
+    SIGNS.push({ text: nm, x: cx, y: 8.5, z: cz, door, hw, hd, w: 1.3, h: 9, vertical: true, bg: '#3a1a40' }); }
+  if (style === 'mall'){ /* 大きなショッピングモール: 正面の大きな看板と、のぼりの看板 */
+    SIGNS.push({ text: 'ショッピングモール　みらいモール', x: cx, y: H - 2.2, z: cz, door, hw, hd, w: 24, h: 3, bg: '#e8f0f8', fg: '#c02040' });
+    SIGNS.push({ text: '1F 食品・2F ファッション・3F フードコート・4F 本・おもちゃ・映画館', x: cx, y: 3.4, z: cz, door, hw, hd, w: 14, h: .9, bg: '#1e3a6a', fg: '#ffffff' });
+    { const [px, pz, sx2, sz2] = dPos(); /* 入口だけはガラス張り */ if (sz2) for (const [a0, a1] of [[cx - 6, cx - 1.3], [cx + 1.3, cx + 6]]) addBox('mallGlass', a0, 0, Math.min(pz, pz + sz2 * .2), a1, 2.7, Math.max(pz, pz + sz2 * .2)); else for (const [a0, a1] of [[cz - 6, cz - 1.3], [cz + 1.3, cz + 6]]) addBox('mallGlass', Math.min(px, px + sx2 * .2), 0, a0, Math.max(px, px + sx2 * .2), 2.7, a1); }
+    const [px, pz, sx2, sz2] = dPos(); if (sz2) addBox('canopy', cx - 6, 2.75, Math.min(pz, pz + sz2 * 3.5), cx + 6, 2.95, Math.max(pz, pz + sz2 * 3.5)); else addBox('canopy', Math.min(px, px + sx2 * 3.5), 2.75, cz - 6, Math.max(px, px + sx2 * 3.5), 2.95, cz + 6);
+  }
+  if (style === 'office' && floors >= 4){ /* 入口の上に会社の名前 (通りから見える) */ SIGNS.push({ text: SIGN_NAMES[bi % SIGN_NAMES.length], x: cx, y: 3.3, z: cz, door, hw, hd, w: 4.6, h: .75, bg: '#1a2230', fg: '#e8eef8' }); }
+  if (style === 'office' && floors >= 10){ /* 3階あたりにも大きな看板 */ SIGNS.push({ text: SIGN_NAMES[bi % SIGN_NAMES.length], x: cx, y: 9.4, z: cz, door, hw, hd, w: Math.min(2 * Math.max(hw, hd) - 3, 9), h: 1.5 }); }
+  if (style === 'office' && floors >= 10){ /* 屋上の給水タンクとアンテナ、光る看板 */
+    const g = new THREE.CylinderGeometry(1.4, 1.4, 2.4, 12); g.translate(cx - hw * .4, H + 1.5, cz - hd * .4); (geos.tank ??= []).push(g);
+    addBox('metal', cx + hw * .3, H + .3, cz + hd * .3, cx + hw * .3 + .15, H + 7, cz + hd * .3 + .15);
+    SIGNS.push({ text: SIGN_NAMES[bi % SIGN_NAMES.length], x: cx, y: H + 2.4, z: cz, door, hw, hd, w: Math.min(2 * Math.max(hw, hd) - 2, 12), h: 2.4, top: true }); }
+  else if (style === 'office' && floors >= 4 && bi % 2 === 0){ /* 縦の看板 (かどに) */
+    SIGNS.push({ text: SHOP_NAMES[bi % SHOP_NAMES.length], x: cx, y: Math.min(H - 3, 9), z: cz, door, hw, hd, w: 1.2, h: Math.min(H - 5, 7), vertical: true }); }
+}
+// ---- 区画をつくる (6×6のブロック。まん中ほど高いビル。外がわは住宅地や団地)
+const carM = [0xc0392b, 0x2e86de, 0xf4f4f4, 0x333333, 0xf1c40f, 0x7f8c8d, 0x27ae60];
+{
+  const ringOf = (bi, bj) => Math.max(Math.abs(bi - 2.5), Math.abs(bj - 2.5));
+  const plan = {}; for (let bi = 0; bi < NB; bi++) for (let bj = 0; bj < NB; bj++) plan[bi + ',' + bj] = ringOf(bi, bj) > 2 && Math.random() < .28 ? 'danchi' : 'lots';
+  { const mid = Object.keys(plan).filter(k => { const [i, j] = k.split(',').map(Number); return ringOf(i, j) === 1.5; }); plan[pick(mid)] = 'noya'; }   /* 飲み屋街は、まん中のすぐ外がわのブロック1つ */
+  { const c2 = Object.keys(plan).filter(k => { const [i, j] = k.split(',').map(Number); return plan[k] === 'lots' && ringOf(i, j) >= 1.5; }); plan[pick(c2)] = 'mall'; }   /* ショッピングモールは、ブロック1つまるごと */
+  const shopLots = {}; { const cand = []; for (const k in plan) if (plan[k] === 'lots'){ const [i, j] = k.split(',').map(Number); if (ringOf(i, j) > 1) for (let a = 0; a < 2; a++) for (let c = 0; c < 2; c++) cand.push(k + ',' + a + ',' + c); }
+    cand.sort(() => Math.random() - .5).forEach((k, n) => { if (n < 1) shopLots[k] = 'super'; else if (n < 7) shopLots[k] = 'konbini'; });
+    const hc = []; for (const k in plan) if (plan[k] === 'lots'){ const [i, j] = k.split(',').map(Number); if (ringOf(i, j) === 1.5) for (let a = 0; a < 2; a++) for (let c = 0; c < 2; c++) if (!shopLots[k + ',' + a + ',' + c]) hc.push(k + ',' + a + ',' + c); }
+    hc.sort(() => Math.random() - .5).slice(0, 2).forEach(k => shopLots[k] = 'hotel'); }
+  for (let bi = 0; bi < NB; bi++) for (let bj = 0; bj < NB; bj++){
+    const bx0 = lines[bi] + ST / 2, bz0 = lines[bj] + ST / 2, ring = ringOf(bi, bj); /* 0.5=まん中 1.5=そのまわり 2.5=いちばん外 */
+    if (plan[bi + ',' + bj] === 'noya'){ /* 飲み屋街: 小さい2階建てのお店が、南と北の通りにぎっしりならぶ */
+      for (let c = 0; c < 2; c++) for (let i = 0; i < 4; i++) building(bx0 + 5 + i * 10, c === 0 ? bz0 + 6 : bz0 + 34, R(4.3, 4.6), R(4.6, 5), 2, c === 0 ? 'S' : 'N', 'izakaya');
+      /* 横丁の入口の看板と、歩道につるした赤ちょうちん */
+      SIGNS.push({ text: 'のみや横丁', x: bx0 + 20, y: 5.2, z: bz0 - .9, door: 'S', hw: 0, hd: 0, w: 6, h: 1.2, bg: '#2a1410', fg: '#ffcc60' }); for (const x of [bx0 + 16.9, bx0 + 23.1]) addBox('pole', x - .08, 0, bz0 - 1.0, x + .08, 5.8, bz0 - .8);
+      for (const zz of [bz0 - .4, bz0 + 40.4]) for (let x = bx0 + 1; x < bx0 + 40; x += 2.2){ const g = new THREE.SphereGeometry(.2, 8, 6); g.scale(1, 1.3, 1); g.translate(x, 3.4 + Math.sin(x) * .08, zz); (geos.lantern ??= []).push(g); }
+      /* 歩道の屋根 (アーケード): 店の前から車道のきわまで。車道がわに細い柱 */
+      for (const [za, zb, zp] of [[bz0 - 1.5, bz0 + 1.3, bz0 - 1.35], [bz0 + 38.7, bz0 + 41.5, bz0 + 41.35]]){ addBox('arcade', bx0 - .5, 3.75, za, bx0 + 40.5, 3.9, zb); addBox('arcadeEdge', bx0 - .5, 3.55, zp - .08, bx0 + 40.5, 3.75, zp + .08);
+        for (let x = bx0; x <= bx0 + 40.01; x += 5) addBox('pole', x - .07, 0, zp - .07, x + .07, 3.75, zp + .07); }
+      continue; }
+    if (plan[bi + ',' + bj] === 'mall'){ building(bx0 + 20, bz0 + 20, 19.3, 19.3, 4, pick(['S', 'N', 'W', 'E']), 'mall'); continue; }   /* 4階建ての大きなショッピングモール */
+    if (plan[bi + ',' + bj] === 'danchi'){ /* 団地: 横に長い5階建てが2棟 */
+      for (let c = 0; c < 2; c++) building(bx0 + 20, bz0 + 10 + c * 20, R(16.5, 17.5), R(5.2, 6), 5, c === 0 ? 'S' : 'N', 'danchi');
+      continue; }
+    for (let a = 0; a < 2; a++) for (let c = 0; c < 2; c++){
+      const lx = bx0 + 10 + a * 20, lz = bz0 + 10 + c * 20, r = Math.random(); let style, floors; const sh = shopLots[bi + ',' + bj + ',' + a + ',' + c];
+      if (sh){ const door = Math.random() < .5 ? (a === 0 ? 'W' : 'E') : (c === 0 ? 'S' : 'N'); if (sh === 'super') building(lx, lz, R(8, 8.4), R(8, 8.4), 1, door, 'super'); else if (sh === 'hotel') building(lx, lz, R(7.4, 8.2), R(7.4, 8.2), 10 + ((Math.random() * 5) | 0), door, 'hotel'); else building(lx, lz, R(5.4, 6), R(4.4, 5), 1, door, 'konbini'); continue; }
+      if (ring < 1){ style = 'office'; floors = 10 + ((Math.random() * 7) | 0); }   /* まん中: 高層ビル街 (10〜16階。高すぎると看板が見えないので) */
+      else if (ring < 2){ if (r < .45){ style = 'office'; floors = 5 + ((Math.random() * 8) | 0); } else if (r < .8){ style = 'mansion'; floors = 8 + ((Math.random() * 7) | 0); } else if (r < .9){ style = 'apart'; floors = 2; } else { style = 'house'; floors = 2; } }
+      else { if (r < .12){ style = 'office'; floors = 3 + ((Math.random() * 4) | 0); } else if (r < .42){ style = 'mansion'; floors = 6 + ((Math.random() * 7) | 0); } else if (r < .72){ style = 'apart'; floors = 2 + (Math.random() < .3 ? 1 : 0); } else { style = 'house'; floors = Math.random() < .5 ? 1 : 2; } }
+      const isHouse = style === 'house', small = isHouse || style === 'apart';
+      const hw = isHouse ? R(4, 5) : style === 'apart' ? R(5.5, 6.5) : style === 'office' && ring < 1 ? R(7.4, 8.4) : R(6.2, 7.6), hd = isHouse ? R(4, 5) : style === 'apart' ? R(4.2, 5) : style === 'office' && ring < 1 ? R(7.4, 8.4) : R(6.2, 7.6);
+      const door = Math.random() < .5 ? (a === 0 ? 'W' : 'E') : (c === 0 ? 'S' : 'N');
+      building(lx, lz, hw, hd, floors, door, style);
+    }
+  }
+  // 外のさく (街から出られない)
+  for (const [x0, z0, x1, z1] of [[-C - 8, -C - 8, C + 8, -C - 7], [-C - 8, C + 7, C + 8, C + 8], [-C - 8, -C - 7, -C - 7, C + 7], [C + 7, -C - 7, C + 8, C + 7]]) wall('fence', x0, 0, z0, x1, 3, z1);
+  // 止まっている車 (動かない)
+  for (let k = 0; k < 110; k++){ const i = (Math.random() * lines.length) | 0, along = Math.random() < .5, t = R(-C, C), side = Math.random() < .5 ? -1 : 1, off = lines[i] + side * (ST / 2 - 1.6);
+    const x = along ? off : t, z = along ? t : off; if (NODES.some(n => n.y === 0 && Math.hypot(n.x - x, n.z - z) < 3.2)) continue;
+    const hl = 2.2, hwc = .95, ck = 'car' + (k % carM.length); if (along){ wall(ck, x - hwc, 0, z - hl, x + hwc, 1.4, z + hl); addBox('glassCar', x - hwc + .1, 1.4, z - hl * .5, x + hwc - .1, 1.85, z + hl * .4); } else { wall(ck, x - hl, 0, z - hwc, x + hl, 1.4, z + hwc); addBox('glassCar', x - hl * .5, 1.4, z - hwc + .1, x + hl * .4, 1.85, z + hwc - .1); } }
+  // 道と歩道
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(2 * C + 30, 2 * C + 30), std({ color: 0x3e3e42, roughness: .95 })); road.rotation.x = -Math.PI / 2; scene.add(road);
+  for (let bi = 0; bi < NB; bi++) for (let bj = 0; bj < NB; bj++) addBox('walk', lines[bi] + ST / 2 - .5, 0, lines[bj] + ST / 2 - .5, lines[bi] + ST / 2 + BLK + .5, .06, lines[bj] + ST / 2 + BLK + .5);
+  // 白線と横断歩道
+  for (const v of lines) for (let t = -C; t < C; t += 6){ if (lines.some(w => Math.abs(t + 1.5 - w) < ST / 2 + 1)) continue; addBox('line', v - .08, .02, t, v + .08, .03, t + 3); addBox('line', t, .02, v - .08, t + 3, .03, v + .08); }
+  for (const vx of lines) for (const vz of lines) for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]){ const ox = vx + dx * (ST / 2 + 1.6), oz = vz + dz * (ST / 2 + 1.6); for (let s = -5.5; s <= 5.5; s += 1.1){ if (dx) addBox('line', ox - 1.4, .02, vz + s - .25, ox + 1.4, .03, vz + s + .25); else addBox('line', vx + s - .25, .02, oz - 1.4, vx + s + .25, .03, oz + 1.4); } }
+  // 街灯と信号機
+  for (const v of lines) for (let t = -C + 10; t < C; t += 18){ if (lines.some(w => Math.abs(t - w) < ST / 2 + 2)) continue;
+    for (const s of [-1, 1]){ const px = v + s * (ST / 2 + .3), pz = t; addBox('pole', px - .07, 0, pz - .07, px + .07, 6, pz + .07); addBox('pole', Math.min(px, px - s * 1.2), 5.9, pz - .06, Math.max(px, px - s * 1.2), 6.02, pz + .06); addBox('lamp', px - s * 1.2 - .25, 5.75, pz - .15, px - s * 1.2 + .25, 5.9, pz + .15);
+      const qx = t, qz = v + s * (ST / 2 + .3); addBox('pole', qx - .07, 0, qz - .07, qx + .07, 6, qz + .07); addBox('pole', qx - .06, 5.9, Math.min(qz, qz - s * 1.2), qx + .06, 6.02, Math.max(qz, qz - s * 1.2)); addBox('lamp', qx - .15, 5.75, qz - s * 1.2 - .25, qx + .15, 5.9, qz - s * 1.2 + .25); } }
+  for (const vx of lines) for (const vz of lines){ const px = vx + ST / 2 + .4, pz = vz + ST / 2 + .4; addBox('pole', px - .08, 0, pz - .08, px + .08, 4.6, pz + .08); addBox('dark', px - .2, 3.6, pz - .55, px + .2, 4.4, pz + .2); addBox('sigR', px - .22, 4.1, pz - .45, px - .2, 4.3, pz - .25); addBox('sigG', px - .22, 3.7, pz - .45, px - .2, 3.9, pz - .25); }
+  // 遠くの高層ビル (街の外。大都会がずっと続いているように見せる。入れない)
+  for (let k = 0; k < 170; k++){ const a = R(0, 6.28), r = R(C + 45, C + 330), x = Math.cos(a) * r, z = Math.sin(a) * r, w = R(14, 34), d = R(14, 34), h = R(25, 150) * (r < C + 150 ? 1 : .8); addBox('sky' + (k % 3), x - w / 2, 0, z - d / 2, x + w / 2, h, z + d / 2); }
+}
+// ---- まとめて描く (窓の絵は、1階ごと・3mごとにならぶように貼る)
+{ const TW = 128, TH = 154; /* 1まい = よこ3m × たて1階分 (3.6m) */
+  /* 窓4×4つ分を1まいの絵にして、明かりのついた窓をばらばらにする */
+  const NT = 4, tex = (draw) => { const [c, g] = mk(TW * NT, TH * NT), [ce, ge] = mk(TW * NT, TH * NT); ge.fillStyle = '#000'; ge.fillRect(0, 0, TW * NT, TH * NT);
+    for (let i = 0; i < NT; i++) for (let j = 0; j < NT; j++){ g.save(); ge.save(); g.translate(i * TW, j * TH); ge.translate(i * TW, j * TH); draw(g, ge); g.restore(); ge.restore(); }
+    const t = tx(c), te = tx(ce); for (const q of [t, te]){ q.wrapS = q.wrapT = THREE.RepeatWrapping; } return [t, te]; };
+  const lit = () => Math.random() < .3;
+  const hole = (g, x, y, w, h) => g.clearRect(x, y, w, h);   /* 透ける窓 (ガラスの向こうが見える) */
+  const glassTex = (base, frame, opaque) => tex((g, ge) => { g.fillStyle = frame; g.fillRect(0, 0, TW, TH); for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++){ const on = lit(), x = 4 + i * 62, y = 6 + j * 66; if (on){ g.fillStyle = '#e8d8a8'; g.fillRect(x, y, 58, 60); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(x, y, 58, 10); } else if (opaque){ g.fillStyle = base; g.fillRect(x, y, 58, 60); } else hole(g, x, y, 58, 60); if (on){ ge.fillStyle = '#ffe2a0'; ge.fillRect(x, y, 58, 60); } } g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, TH - 12, TW, 12); });
+  const flatTex = (wallC, winC, wx, wy, ww, wh, door) => tex((g, ge) => { g.fillStyle = wallC; g.fillRect(0, 0, TW, TH); for (let i = 0; i < 6; i++){ g.fillStyle = 'rgba(0,0,0,.05)'; g.fillRect(0, i * 26, TW, 2); }
+    const on = lit(); g.fillStyle = '#e8e4dc'; g.fillRect(wx - 4, wy - 4, ww + 8, wh + 8); if (on){ g.fillStyle = '#f0d8a0'; g.fillRect(wx, wy, ww, wh); } else hole(g, wx, wy, ww, wh); g.fillStyle = '#d8d4cc'; g.fillRect(wx + ww / 2 - 2, wy, 4, wh); if (door) g.fillRect(wx, wy + wh * .45, ww, 4);
+    g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(wx, wy, ww, 8); if (on){ ge.fillStyle = '#ffd890'; ge.fillRect(wx, wy, ww, wh); } });
+  const houseTex = (wallC) => tex((g, ge) => { g.fillStyle = wallC; g.fillRect(0, 0, TW, TH); const on = lit(); g.fillStyle = '#ffffff'; g.fillRect(30, 34, 68, 64); if (on){ g.fillStyle = '#f4dca0'; g.fillRect(36, 40, 56, 52); } else hole(g, 36, 40, 56, 52); g.fillStyle = '#c8a8a0'; g.fillRect(36, 40, 12, 52); g.fillRect(80, 40, 12, 52); g.fillStyle = '#fff'; g.fillRect(62, 40, 4, 52); g.fillRect(36, 64, 56, 4); g.fillStyle = '#7a5a40'; g.fillRect(26, 98, 76, 6); if (on){ ge.fillStyle = '#ffd890'; ge.fillRect(48, 40, 32, 52); } });
+  const T = {};
+  [T.off0, T.off1, T.off2] = [glassTex('#2c4058', '#5a6878'), glassTex('#30485a', '#8a8e94'), glassTex('#28343e', '#3a3e44')];
+  [T.man0, T.man1, T.man2] = [flatTex('#d9d0bf', '#344458', 26, 30, 76, 106, true), flatTex('#c8c0b8', '#2e3e52', 26, 30, 76, 106, true), flatTex('#b8a898', '#344458', 26, 30, 76, 106, true)];
+  T.dan0 = flatTex('#e6e2d6', '#3a4a5e', 30, 40, 68, 70, false);
+  [T.apt0, T.apt1] = [flatTex('#e2d6bc', '#3a4a5c', 36, 46, 56, 50, false), flatTex('#c8d4dc', '#3a4a5c', 36, 46, 56, 50, false)];
+  [T.house0, T.house1, T.house2] = [houseTex('#f0e8d8'), houseTex('#e6d2b4'), houseTex('#d8e0e8')];
+  /* コンビニ・スーパー: 上に色の帯、下は明るいガラス (中が光っている) */
+  const shopTex = (band, stripe) => tex((g, ge) => { g.fillStyle = '#f2f2ee'; g.fillRect(0, 0, TW, TH); g.fillStyle = band; g.fillRect(0, 0, TW, 30); g.fillStyle = stripe; g.fillRect(0, 30, TW, 6); hole(g, 4, 42, TW - 8, TH - 50); g.fillStyle = '#9aa4ae'; g.fillRect(TW / 2 - 2, 42, 4, TH - 50); });
+  T.kon0 = shopTex('#178a48', '#f4a020'); T.sup0 = shopTex('#c0392b', '#f8e8a0'); T.mal0 = tex((g, ge) => { g.fillStyle = '#ece6da'; g.fillRect(0, 0, TW, TH); g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 0, 2, TH); g.fillRect(0, TH / 2, TW, 2); g.fillStyle = '#2a5a9a'; g.fillRect(0, TH - 18, TW, 10); });
+  const hotelTex = (wallC) => { let n = 0; return tex((g, ge) => { g.fillStyle = wallC; g.fillRect(0, 0, TW, TH); g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, TH - 6, TW, 6); if (((n++ / NT) | 0) % 2) return;
+    const wx = 40, wy = 44, ww = 48, wh = 64, on = lit(); g.fillStyle = '#e8e4dc'; g.fillRect(wx - 4, wy - 4, ww + 8, wh + 8); if (on){ g.fillStyle = '#f0d8a0'; g.fillRect(wx, wy, ww, wh); ge.fillStyle = '#ffd890'; ge.fillRect(wx, wy, ww, wh); } else hole(g, wx, wy, ww, wh); }); };
+  [T.hot0, T.hot1] = [hotelTex('#cfc4b2'), hotelTex('#a8b0bc')];
+  /* 街の外の遠くのビルは、透けない窓 */ [T.sky0, T.sky1, T.sky2] = [glassTex('#2c4058', '#5a6878', true), glassTex('#30485a', '#8a8e94', true), glassTex('#28343e', '#3a3e44', true)];
+  /* 居酒屋: こげ茶の板かべに、明かりのついた障子の窓 */
+  const izkTex = (wood) => tex((g, ge) => { g.fillStyle = wood; g.fillRect(0, 0, TW, TH); g.fillStyle = 'rgba(0,0,0,.25)'; for (let x = 0; x < TW; x += 10) g.fillRect(x, 0, 2, TH); const on = Math.random() < .75; g.fillStyle = on ? '#ffe0a8' : '#c8b898'; g.fillRect(34, 40, 60, 54); g.fillStyle = '#3a2416'; for (let x = 34; x <= 94; x += 15) g.fillRect(x, 40, 3, 54); for (let y = 40; y <= 94; y += 18) g.fillRect(34, y, 60, 3); if (on){ ge.fillStyle = '#ffc070'; ge.fillRect(34, 40, 60, 54); } });
+  [T.izk0, T.izk1] = [izkTex('#4a3424'), izkTex('#5a3a28')];
+  const mats = { roof: std({ color: 0x5a5a5e, roughness: .8 }), rooftop: std({ color: 0x8a3a2a, roughness: .8 }),
+    slab: std({ color: 0xa8a29a, roughness: .9 }), ramp: std({ color: 0x6a6660, roughness: .9 }), fence: std({ color: 0x3a3a3a }), walk: std({ color: 0x9a968e, roughness: .95 }), line: new THREE.MeshBasicMaterial({ color: 0xe8e8e8 }),
+    doorFrame: std({ color: 0x4a3a2a }), balc: std({ color: 0xd8d4cc, roughness: .9 }), rail: std({ color: 0xbcc4cc, roughness: .6, metalness: .3 }), tank: std({ color: 0xd8d8d0 }),
+    wood: std({ color: 0x8a6040, roughness: .8 }), wood2: std({ color: 0xb08a60, roughness: .8 }), metal: std({ color: 0x8a8e94, metalness: .5, roughness: .5 }), white: std({ color: 0xeeeeea, roughness: .6 }),
+    dark: std({ color: 0x222428, roughness: .5 }), fabric: std({ color: 0x5a7a9a, roughness: 1 }), bedding: std({ color: 0xd8c8a8, roughness: 1 }), pot: std({ color: 0x8a5a3a }), leaf: std({ color: 0x3a7a3a, roughness: 1 }),
+    pole: std({ color: 0x5a5e64, metalness: .5 }), lamp: new THREE.MeshBasicMaterial({ color: 0xfff0c0 }), sigR: new THREE.MeshBasicMaterial({ color: 0xff3020 }), sigG: new THREE.MeshBasicMaterial({ color: 0x30ff80 }), glassCar: std({ color: 0x1e2a36, metalness: .6, roughness: .2 }),
+    lantern: new THREE.MeshBasicMaterial({ color: 0xff4a28 }), noren: std({ color: 0x1e2a5a, roughness: 1 }), goodsA: std({ color: 0xe0503a }), goodsB: std({ color: 0xf0c040 }), goodsC: std({ color: 0x3a8ad8 }), coolGlass: new THREE.MeshBasicMaterial({ color: 0xd8f0ff }), canopy: std({ color: 0x2a2a30, metalness: .4 }), mallWall: std({ color: 0xf0ece4, roughness: .8 }), esc: std({ color: 0x5a5e66, metalness: .5, roughness: .4 }), escRail: std({ color: 0x18181c }), escStep: std({ color: 0xe8c040 }),
+    cl0: std({ color: 0xd04040 }), cl1: std({ color: 0x3a6ad0 }), cl2: std({ color: 0xf0f0f0 }), cl3: std({ color: 0x2a2a2a }), cl4: std({ color: 0xe8b830 }), cl5: std({ color: 0x48a860 }),
+    mannequin: std({ color: 0xe8e0d6 }), screenW: new THREE.MeshBasicMaterial({ color: 0xf4f6ff }), screenG: new THREE.MeshBasicMaterial({ color: 0x50e0ff }), seat: std({ color: 0xa02434, roughness: 1 }), arcade: std({ color: 0x9aa6b0, roughness: .6, metalness: .3, side: THREE.DoubleSide }), arcadeEdge: std({ color: 0x7a2a20, emissive: 0x401008 }), mallGlass: new THREE.MeshBasicMaterial({ color: 0xbfe0f0, transparent: true, opacity: .35, depthWrite: false }) };
+  for (const k in T) mats[k] = std({ map: T[k][0], emissive: 0xffffff, emissiveMap: T[k][1], emissiveIntensity: .55, roughness: .7, alphaTest: .5 });   /* 透ける窓は alphaTest でぬく */
+  carM.forEach((c, i) => mats['car' + i] = std({ color: c, metalness: .5, roughness: .4 }));
+  for (const k in geos){ if (T[k]) for (const g of geos[k]) worldUV(g, 3 * NT, FH * NT); const m = new THREE.Mesh(mergeGeometries(geos[k]), mats[k] || mats.slab); scene.add(m); }
+  // 看板 (光る文字)
+  for (const s of SIGNS){ const vert = !!s.vertical, cw = vert ? 64 : 512, ch = vert ? 320 : 96, [c, g] = mk(cw, ch); const hue = (s.text.length * 47) % 360; g.fillStyle = s.bg || (vert ? `hsl(${hue},70%,35%)` : '#101418'); g.fillRect(0, 0, cw, ch);
+    g.fillStyle = s.fg || (vert ? '#fff' : `hsl(${hue},90%,70%)`); g.font = `bold ${vert ? 48 : s.text.length > 6 ? 48 : 64}px "BIZ UDPGothic",sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    if (vert){ const chs = [...s.text]; chs.forEach((t, i) => g.fillText(t, cw / 2, (i + .5) * ch / chs.length)); } else { let fs2 = s.text.length > 6 ? 48 : 64; const fnt = () => g.font = "bold " + fs2 + "px \"BIZ UDPGothic\",sans-serif"; fnt(); while (fs2 > 18 && g.measureText(s.text).width > cw - 16){ fs2 -= 2; fnt(); } g.fillText(s.text, cw / 2, ch / 2 + 4); }
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(s.w, s.h), new THREE.MeshBasicMaterial({ map: tx(c, false) }));
+    const d = s.door, ang = { W: -Math.PI / 2, E: Math.PI / 2, S: Math.PI, N: 0 }[d], off = .26;   /* 板の表 (+z) を、建物の外がわへ向ける */
+    if (vert){ if (d === 'W' || d === 'E') m.position.set(s.x + (d === 'W' ? -1 : 1) * (s.hw + off), s.y, s.z + (s.hd - 1)); else m.position.set(s.x + (s.hw - 1), s.y, s.z + (d === 'S' ? -1 : 1) * (s.hd + off)); }
+    else m.position.set(s.x + (d === 'W' ? -s.hw - off : d === 'E' ? s.hw + off : 0), s.y, s.z + (d === 'S' ? -s.hd - off : d === 'N' ? s.hd + off : 0));
+    m.rotation.y = ang;
+    scene.add(m); } }
+
+// ===================== 当たり判定 =====================
+const GRID = 4, grid = new Map();
+const gk = (i, j) => (i + 200) * 1000 + (j + 200);
+for (const w of walls){
+  for (let i = Math.floor(w.x0/GRID); i <= Math.floor(w.x1/GRID); i++)
+    for (let j = Math.floor(w.z0/GRID); j <= Math.floor(w.z1/GRID); j++){
+      const key = gk(i, j); if (!grid.has(key)) grid.set(key, []); grid.get(key).push(w);
+    }
+}
+let qstamp = 0;
+function queryWalls(x0, z0, x1, z1, out){
+  qstamp++; out.length = 0;
+  for (let i = Math.floor(x0/GRID); i <= Math.floor(x1/GRID); i++)
+    for (let j = Math.floor(z0/GRID); j <= Math.floor(z1/GRID); j++){
+      const list = grid.get(gk(i, j)); if (!list) continue;
+      for (const w of list) if (w._s !== qstamp){ w._s = qstamp; out.push(w); }
+    }
+  return out;
+}
+const tmpW = [], tmpL = [];
+function collideBody(b){
+  const p = b.pos, r = b.radius;
+  queryWalls(p.x - r, p.z - r, p.x + r, p.z + r, tmpW);
+  for (const w of tmpW){
+    if (w.y1 <= p.y + .35 || w.y0 >= p.y + 1.7) continue;
+    if (w.pass && w.pass === b) continue; // ニセ出口の門は選ばれた1人だけ通れる
+    if (w.npcBlock && (b === player || b.ev)) continue; // エレベーターに乗れるのはプレイヤーと、エレベーターを使うと決めたNPCだけ (鬼は乗れない)
+    const cx = clamp(p.x, w.x0, w.x1), cz = clamp(p.z, w.z0, w.z1);
+    const dx = p.x - cx, dz = p.z - cz, d2 = dx*dx + dz*dz;
+    if (d2 >= r*r) continue;
+    if (d2 > 1e-8){ const d = Math.sqrt(d2); p.x += dx/d*(r-d); p.z += dz/d*(r-d); }
+    else {
+      const l = p.x - w.x0, rr = w.x1 - p.x, t = p.z - w.z0, bb = w.z1 - p.z, m = Math.min(l, rr, t, bb);
+      if (m === l) p.x = w.x0 - r; else if (m === rr) p.x = w.x1 + r; else if (m === t) p.z = w.z0 - r; else p.z = w.z1 + r;
+    }
+  }
+}
+function surfH(s, x, z){
+  if (s.h0 === s.h1) return s.h0;
+  let t = ((s.axis === 'x' ? x : z) - s.p0) / (s.p1 - s.p0); t = clamp(t, 0, 1);
+  return s.h0 + (s.h1 - s.h0) * t;
+}
+function groundHeight(x, z, maxY){
+  let best = -Infinity;
+  for (const s of surfaces){
+    if (x < s.x0 || x > s.x1 || z < s.z0 || z > s.z1) continue;
+    const h = surfH(s, x, z); if (h <= maxY && h > best) best = h;
+  }
+  return best;
+}
+function moveBody(b, dx, dz, dt){
+  const n = Math.max(1, Math.ceil(Math.hypot(dx, dz) / .2));
+  for (let i = 0; i < n; i++){ b.pos.x += dx/n; b.pos.z += dz/n; collideBody(b); }
+  const h = groundHeight(b.pos.x, b.pos.z, b.pos.y + .6);
+  if (b.pos.y - h < .5){ b.pos.y = h; b.vy = 0; }
+  else { b.vy -= 22 * dt; b.pos.y += b.vy * dt; if (b.pos.y < h){ b.pos.y = h; b.vy = 0; } }
+}
+function segHitsBox(ax, az, bx, bz, w, m){
+  let t0 = 0, t1 = 1; const dx = bx - ax, dz = bz - az;
+  const x0 = w.x0 - m, x1 = w.x1 + m, z0 = w.z0 - m, z1 = w.z1 + m;
+  if (Math.abs(dx) < 1e-9){ if (ax < x0 || ax > x1) return false; }
+  else { let ta = (x0 - ax)/dx, tb = (x1 - ax)/dx; if (ta > tb) [ta, tb] = [tb, ta]; t0 = Math.max(t0, ta); t1 = Math.min(t1, tb); if (t0 > t1) return false; }
+  if (Math.abs(dz) < 1e-9){ if (az < z0 || az > z1) return false; }
+  else { let ta = (z0 - az)/dz, tb = (z1 - az)/dz; if (ta > tb) [ta, tb] = [tb, ta]; t0 = Math.max(t0, ta); t1 = Math.min(t1, tb); if (t0 > t1) return false; }
+  return true;
+}
+function los(ax, az, bx, bz, yLo, yHi, m = 0){
+  queryWalls(Math.min(ax, bx) - m, Math.min(az, bz) - m, Math.max(ax, bx) + m, Math.max(az, bz) + m, tmpL);
+  for (const w of tmpL){
+    if (w.y1 <= yLo || w.y0 >= yHi || w.npcBlock) continue;
+    if (segHitsBox(ax, az, bx, bz, w, m)) return false;
+  }
+  return true;
+}
+const losEye = (a, b) => { const y = Math.max(a.pos.y, b.pos.y); return los(a.pos.x, a.pos.z, b.pos.x, b.pos.z, y + 1.3, y + 1.55, 0); };
+const losBody = (p, q, m = .2) => { const y = Math.max(p.y, q.y); return los(p.x, p.z, q.x, q.z, y + .45, y + 1.2, m); };
+
+// 足場をマス目で引けるように (床がたくさんあるので速くする)
+const SG = new Map(), SGS = 6, sgk = (i, j) => i * 100000 + j;
+for (const s of surfaces){ if (s.ground) continue; for (let i = Math.floor(s.x0 / SGS); i <= Math.floor(s.x1 / SGS); i++) for (let j = Math.floor(s.z0 / SGS); j <= Math.floor(s.z1 / SGS); j++){ const k = sgk(i, j); if (!SG.has(k)) SG.set(k, []); SG.get(k).push(s); } }
+groundHeight = function(x, z, maxY){ let best = maxY >= 0 ? 0 : -Infinity; const list = SG.get(sgk(Math.floor(x / SGS), Math.floor(z / SGS))); if (list) for (const s of list){ if (x < s.x0 || x > s.x1 || z < s.z0 || z > s.z1) continue; const h = surfH(s, x, z); if (h <= maxY && h > best) best = h; } return best; };
+
+// ===================== 人物 =====================
+const GEO = {
+  leg: new THREE.CapsuleGeometry(.085, .735, 4, 8), arm: new THREE.CapsuleGeometry(.06, .46, 4, 8),
+  torso: new THREE.CapsuleGeometry(.19, .36, 4, 10), head: new THREE.SphereGeometry(.135, 18, 14), neck: new THREE.CylinderGeometry(.062, .072, .17, 12), collarNeck: new THREE.CylinderGeometry(.08, .1, .09, 16),
+  hair: new THREE.SphereGeometry(.145, 18, 12, 0, Math.PI*2, 0, Math.PI*.52), eye: new THREE.SphereGeometry(.02, 8, 6),
+  hand: new THREE.SphereGeometry(.055, 10, 8), horn: new THREE.ConeGeometry(.035, .16, 10), shoe: new THREE.BoxGeometry(.12, .07, .24), xbar: new THREE.BoxGeometry(.055, .013, .012),
+  // 髪型・帽子・服・小物のパーツ
+  legUp: new THREE.CapsuleGeometry(.09, .3, 4, 8), legLow: new THREE.CapsuleGeometry(.075, .36, 4, 8),
+  hairBack: new THREE.CapsuleGeometry(.12, .2, 4, 10), tail: new THREE.CapsuleGeometry(.045, .2, 4, 8),
+  bun: new THREE.SphereGeometry(.075, 12, 10), spike: new THREE.ConeGeometry(.045, .13, 6), curl: new THREE.SphereGeometry(.055, 8, 6),
+  bob: new THREE.SphereGeometry(.158, 18, 12, 0, Math.PI*2, 0, Math.PI*.62),
+  capTop: new THREE.SphereGeometry(.15, 18, 10, 0, Math.PI*2, 0, Math.PI*.5), brim: new THREE.CylinderGeometry(.1, .1, .015, 16),
+  beanie: new THREE.SphereGeometry(.153, 18, 12, 0, Math.PI*2, 0, Math.PI*.55), pom: new THREE.SphereGeometry(.045, 10, 8),
+  strawBrim: new THREE.CylinderGeometry(.27, .27, .015, 24), strawTop: new THREE.CylinderGeometry(.12, .14, .11, 16), strawBand: new THREE.CylinderGeometry(.141, .141, .03, 16),
+  band: new THREE.TorusGeometry(.14, .016, 6, 24), phones: new THREE.TorusGeometry(.158, .015, 6, 20, Math.PI), cup: new THREE.CylinderGeometry(.05, .05, .045, 12),
+  bow: new THREE.ConeGeometry(.05, .09, 8), lens: new THREE.TorusGeometry(.037, .007, 6, 16), bridge: new THREE.BoxGeometry(.03, .008, .008),
+  hood: new THREE.TorusGeometry(.12, .055, 8, 16), pocket: new THREE.BoxGeometry(.22, .1, .03), ear: new THREE.ConeGeometry(.05, .1, 8),
+  collar: new THREE.BoxGeometry(.13, .24, .02), tie: new THREE.BoxGeometry(.04, .2, .02), line: new THREE.BoxGeometry(.02, .45, .02),
+  skirt: new THREE.CylinderGeometry(.2, .3, .26, 16, 1, true), dress: new THREE.CylinderGeometry(.2, .34, .5, 16, 1, true),
+  brooch: new THREE.OctahedronGeometry(.032, 0), pin: new THREE.BoxGeometry(.075, .014, .014), miniBow: new THREE.ConeGeometry(.032, .06, 8),
+  button: new THREE.SphereGeometry(.014, 8, 6), standCollar: new THREE.CylinderGeometry(.085, .1, .07, 14, 1, true),
+  sailorBack: new THREE.BoxGeometry(.34, .2, .02), sailorFront: new THREE.BoxGeometry(.05, .2, .02),
+  scarf: new THREE.TorusGeometry(.11, .045, 8, 16), scarfTail: new THREE.BoxGeometry(.07, .22, .03), pack: new THREE.BoxGeometry(.3, .36, .14),
+};
+function stripeTex(c1, c2){
+  const [c, g] = mk(8, 64); g.fillStyle = c1; g.fillRect(0, 0, 8, 64); g.fillStyle = c2;
+  for (let y = 0; y < 64; y += 16) g.fillRect(0, y, 8, 8);
+  const t = tx(c); t.repeat.set(1, 3); return t;
+}
+// 見た目が決まっていない人に、髪形・帽子などをつける (服の色から決めるので、同じ人はどのゲームでも同じ見た目)
+function personalize(o){
+  const L = Object.assign({}, o.look || {});
+  if (o.oni || L.plain || Object.keys(L).length) return L; // 名前つきで見た目が決まっている人は、そのまま
+  let s = (((o.shirt | 0) * 31 + (o.pants | 0) * 17 + (o.hair | 0) * 7 + Math.round((o.scale || 1) * 997)) >>> 0) || 1;
+  const rnd = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  const pk = a => a[Math.floor(rnd() * a.length)];
+  const r = rnd();
+  if (r < .55) return L; // 半分以上は、ひなたのような普通の見た目
+  L.hair = pk(['short', 'short', 'short', 'buzz', 'slick', 'long', 'pony', 'bob', 'bun']);
+  const x = rnd();
+  if (x < .18) L.glasses = true;
+  else if (x < .3){ L.hat = pk(['cap', 'cap', 'beanie', 'headband']); L.hatColor = pk([0x222222, 0x34495e, 0xc62828, 0x1e5aa8, 0xf4f4f4, 0x2e7d32]); }
+  else if (x < .34) L.scarf = pk([0xc0392b, 0x34495e, 0x8a6a4a]);
+  else if (x < .36) L.hair = pk(['spiky', 'curly', 'twin']); // ちょっと目立つ髪形はたまに
+  if (rnd() < .06) L.dye = pk([0x8a5a2a, 0x6a4020, 0xc8a060]); // 茶色っぽく染めた髪 (たまに)
+  return L;
+}
+const XGEO = {}; // 新しい髪形・帽子の形
+function xg(k, f){ return XGEO[k] || (XGEO[k] = f()); }
+function makePerson(o){
+  const mats = [], L = personalize(o);
+  const M = (c, extra = {}) => { const m = std({ color: c, roughness: .85, ...extra }); mats.push(m); return m; };
+  const g = new THREE.Group(); g.rotation.order = 'YXZ';
+  const mSkin = M(o.skin), mPants = M(o.pants), mHair = M(L.dye ?? o.hair), mShoe = M(0x222222);
+  const mShirt = L.stripe ? M(0xffffff, { map: stripeTex('#' + o.shirt.toString(16).padStart(6, '0'), '#f4f4f4') }) : M(o.shirt);
+  const add = (parent, geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
+  const limb = (x, y) => { const l = new THREE.Group(); l.position.set(x, y, 0); g.add(l); return l; };
+  const legL = limb(-.1, .86), legR = limb(.1, .86);
+  for (const l of [legL, legR]){
+    if (L.shorts){ add(l, GEO.legUp, mPants, 0, -.12, 0); add(l, GEO.legLow, mSkin, 0, -.55, 0); }
+    else add(l, GEO.leg, mPants, 0, -.3525, 0); // 脚の上の端は胴体の中まで
+    add(l, GEO.shoe, mShoe, 0, -.82, .04);
+  }
+  add(g, GEO.torso, mShirt, 0, 1.2, 0).scale.set(1, 1, .72);
+  const armL = limb(-.215, 1.42), armR = limb(.215, 1.42); // 腕のつけ根は肩にくっつける
+  armL.rotation.z = -.16; armR.rotation.z = .16; // 腕を少しハの字に開いて、脇の下にすき間をつくる
+  for (const l of [armL, armR]){
+    add(l, GEO.arm, mShirt, 0, -.27, 0); add(l, GEO.hand, mSkin, 0, -.57, 0);
+    if (L.track) add(l, GEO.line, M(0xffffff), l === armL ? -.055 : .055, -.27, 0);
+  }
+  add(g, GEO.head, mSkin, 0, 1.73, 0);
+  add(g, GEO.neck, mSkin, 0, 1.6, 0); // 首 (頭と体をつなぐ)
+  add(g, GEO.collarNeck, mShirt, 0, 1.55, 0); // 首の根元は服のえりで包む (肌が見えすぎないように)
+  // 髪型 (前側を持ち上げるように傾けて、目にかからないようにする)
+  const capHair = () => { const h = add(g, GEO.hair, mHair, 0, 1.745, -.01); h.rotation.x = -.45; return h; };
+  switch (L.hair || 'short'){
+    case 'short': capHair(); break;
+    case 'buzz': capHair(); break; /* 坊主は頭にうまってハゲに見えたので、短い髪と同じにする */
+    case 'long': capHair(); add(g, GEO.hairBack, mHair, 0, 1.58, -.085).scale.set(1.15, 1, .45); break;
+    case 'twin': capHair();
+      add(g, GEO.tail, mHair, -.16, 1.62, -.05).rotation.z = -.35; add(g, GEO.tail, mHair, .16, 1.62, -.05).rotation.z = .35; break;
+    case 'pony': capHair(); add(g, GEO.tail, mHair, 0, 1.64, -.17).rotation.x = .45; break;
+    case 'bun': capHair(); add(g, GEO.bun, mHair, 0, 1.9, -.04); break;
+    case 'slick': { // 整えた七三分け: 短い髪 + 横に流した前髪
+      const h = capHair(); h.scale.set(1, .92, 1);
+      const f = add(g, GEO.curl, mHair, .045, 1.855, .07); f.scale.set(1.9, .55, 1.1); f.rotation.set(-.35, 0, -.25);
+    } break;
+    case 'spiky': capHair();
+      for (let i = 0; i < 7; i++){ const a = i / 7 * Math.PI * 2, s = add(g, GEO.spike, mHair, Math.sin(a) * .08, 1.86, Math.cos(a) * .08 - .02); s.rotation.set(Math.cos(a) * .6, 0, -Math.sin(a) * .6); }
+      add(g, GEO.spike, mHair, 0, 1.9, -.01); break;
+    case 'bob': { const h = add(g, GEO.bob, mHair, 0, 1.74, -.012); h.scale.set(1, .95, 1); h.rotation.x = -.8; } break;
+    case 'afro': { const h = add(g, xg('afro', () => new THREE.IcosahedronGeometry(.2, 2)), mHair, 0, 1.8, -.03); h.scale.set(1.05, .95, 1.05); } break; // アフロ
+    case 'mohawk': { const h = add(g, GEO.hair, mHair, 0, 1.735, -.005); h.scale.set(.94, .78, .94); h.rotation.x = -.45; // モヒカン
+      for (let i = -3; i <= 3; i++){ const sp = add(g, GEO.spike, mHair, 0, 1.87 - Math.abs(i) * .012, i * .045 - .01); sp.scale.set(1.2, 1.3, .8); sp.rotation.x = i * .18; } } break;
+    case 'curly': capHair();
+      for (let i = 0; i < 10; i++){ const a = i / 10 * Math.PI * 2; add(g, GEO.curl, mHair, Math.sin(a) * .11, 1.81 + (i % 2) * .04, Math.cos(a) * .11 - .03); }
+      add(g, GEO.curl, mHair, 0, 1.88, -.02); break;
+  }
+  // 帽子・頭の小物
+  // 帽子はひとまとまりにしておく (やられたときに頭から落とすため)。hatBase = 帽子のいちばん下の高さ
+  let hat = null, hatBase = 0;
+  if (['cap', 'beanie', 'straw', 'tophat', 'party', 'helmet'].includes(L.hat)){ hat = new THREE.Group(); g.add(hat); }
+  if (L.hat === 'cap'){ const mc = M(L.hatColor); add(hat, GEO.capTop, mc, 0, 1.765, -.01).rotation.x = -.35; const b = add(hat, GEO.brim, mc, 0, 1.815, .13); b.scale.set(1, 1, 1.25); b.rotation.x = .12; hatBase = 1.745; }
+  if (L.hat === 'beanie'){ const mc = M(L.hatColor); const b = add(hat, GEO.beanie, mc, 0, 1.75, -.01); b.scale.set(1, 1.15, 1); b.rotation.x = -.5; add(hat, GEO.pom, M(0xf4f4f4), 0, 1.93, -.07); hatBase = 1.72; }
+  if (L.hat === 'straw'){ const mc = M(0xd9b56a); add(hat, GEO.strawBrim, mc, 0, 1.83, 0); add(hat, GEO.strawTop, mc, 0, 1.89, 0); add(hat, GEO.strawBand, M(0xc0392b), 0, 1.86, 0); hatBase = 1.822; }
+  if (L.hat === 'tophat'){ const mt = M(0x1c1c22); add(hat, xg('topBrim', () => new THREE.CylinderGeometry(.21, .21, .015, 20)), mt, 0, 1.84, 0); add(hat, xg('topCrown', () => new THREE.CylinderGeometry(.13, .135, .24, 18)), mt, 0, 1.965, 0); add(hat, xg('topBand', () => new THREE.CylinderGeometry(.137, .137, .04, 18)), M(L.hatColor), 0, 1.87, 0); } // シルクハット
+  if (L.hat === 'party'){ const c = add(hat, xg('party', () => new THREE.ConeGeometry(.1, .26, 14)), M(L.hatColor), .02, 1.97, 0); c.rotation.z = -.15; add(hat, GEO.pom, M(0xffe25a), .04, 2.1, 0); } // パーティー帽
+  if (L.hat === 'helmet'){ const hm = add(hat, xg('helmet', () => new THREE.SphereGeometry(.165, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2)), M(L.hatColor, { roughness: .35 }), 0, 1.75, -.01); hm.scale.set(1.08, 1.05, 1.12); add(hat, xg('helmetLine', () => new THREE.BoxGeometry(.03, .02, .36)), M(0xf4f4f4), 0, 1.925, -.01); } // ヘルメット
+  if (L.hat === 'bandana'){ const mb = M(L.hatColor); const b = add(g, GEO.band, mb, 0, 1.8, -.005); b.rotation.x = Math.PI / 2 - .25; b.scale.set(1.06, 1.06, 2.2); for (const s of [-1, 1]){ const k = add(g, xg('knot', () => new THREE.BoxGeometry(.03, .1, .02)), mb, s * .03, 1.72, -.17); k.rotation.z = s * .4; } } // バンダナ
+  if (L.hat === 'flower'){ const mf = M(L.hatColor === 0x222222 ? 0xff6fa8 : L.hatColor); for (let i = 0; i < 5; i++){ const a = i / 5 * Math.PI * 2; add(g, xg('petal', () => new THREE.SphereGeometry(.028, 8, 6)), mf, -.12 + Math.cos(a) * .035, 1.83 + Math.sin(a) * .035, .06); } add(g, xg('petalC', () => new THREE.SphereGeometry(.022, 8, 6)), M(0xffe25a), -.12, 1.83, .075); } // 花かざり
+  // 帽子のいちばん下の高さは形から正確に計算する (床に置いたときにめり込まないように)
+  if (hat){ g.updateMatrixWorld(true); hatBase = new THREE.Box3().setFromObject(hat, true).min.y; }
+  if (L.hat === 'headband'){ const b = add(g, GEO.band, M(L.hatColor), 0, 1.815, -.005); b.rotation.x = Math.PI / 2 - .2; }
+  if (L.hat === 'phones'){ const mp = M(L.hatColor); add(g, GEO.phones, mp, 0, 1.745, 0); for (const s of [-1, 1]){ const c = add(g, GEO.cup, mp, s * .15, 1.73, 0); c.rotation.z = Math.PI / 2; } }
+  if (L.hat === 'ribbon'){ const mr = M(L.hatColor); for (const s of [-1, 1]){ const b = add(g, GEO.bow, mr, s * .045 + .1, 1.88, -.02); b.rotation.z = s * Math.PI / 2; } }
+  if (L.glasses){ const mg2 = M(0x222222); add(g, GEO.lens, mg2, -.05, 1.755, .13); add(g, GEO.lens, mg2, .05, 1.755, .13); add(g, GEO.bridge, mg2, 0, 1.755, .135); }
+  // 服・体の小物
+  if (L.hood){ const h = add(g, GEO.hood, mShirt, 0, 1.56, -.13); h.rotation.x = 1.1; add(g, GEO.pocket, mShirt, 0, 1.07, .135); }
+  if (L.catEars){ for (const s of [-1, 1]) add(g, GEO.ear, mShirt, s * .08, 1.9, -.01).rotation.z = -s * .35; }
+  if (L.blazer){ add(g, GEO.collar, M(0xf4f4f4), 0, 1.36, .128); add(g, GEO.tie, M(L.tieColor ?? 0xb03030), 0, 1.33, .14); }
+  if (L.skirt) add(g, GEO.skirt, M(L.skirt), 0, .88, 0).material.side = THREE.DoubleSide;
+  if (L.dress) add(g, GEO.dress, mShirt, 0, .82, 0).material.side = THREE.DoubleSide;
+  if (L.scarf){ const ms = M(L.scarf); const s = add(g, GEO.scarf, ms, 0, 1.57, 0); s.rotation.x = Math.PI / 2; add(g, GEO.scarfTail, ms, .07, 1.43, .13); }
+  if (L.pack) add(g, GEO.pack, M(L.pack), 0, 1.25, -.2);
+  if (L.briefcase){ // 左手に黒いカバン
+    const mb = M(0x1c1c1f, { roughness: .5 });
+    add(armL, new THREE.BoxGeometry(.09, .28, .36), mb, -.02, -.73, .02);
+    add(armL, new THREE.BoxGeometry(.03, .05, .12), M(0x777777, { metalness: .5 }), -.02, -.57, .02);
+  }
+  // 小さな個性 (ブローチ・ヘアピン・リボン・学生服)
+  if (L.brooch) add(g, GEO.brooch, M(L.brooch, { metalness: .5, roughness: .3, emissive: L.brooch, emissiveIntensity: .25 }), .08, 1.4, .145).scale.set(1, 1, .5);
+  if (L.hairpin){ const mp = M(L.hairpin, { roughness: .4 }); for (const dy of [0, .03]){ const p = add(g, GEO.pin, mp, .115, 1.8 - dy, .06); p.rotation.set(0, -.5, .5); } }
+  if (L.miniRibbon){ const mr = M(L.miniRibbon); for (const s of [-1, 1]){ const b = add(g, GEO.miniBow, mr, s * .03, 1.7, -.16); b.rotation.z = s * Math.PI / 2; } }
+  if (L.gakuran){
+    const mb = M(0x1b1d22); add(g, GEO.standCollar, mb, 0, 1.57, 0).material.side = THREE.DoubleSide;
+    const mg3 = M(0xd4af37, { metalness: .6, roughness: .3 });
+    for (let i = 0; i < 5; i++) add(g, GEO.button, mg3, 0, 1.46 - i * .1, .142);
+  }
+  if (L.sailor){
+    const mn = M(0x1f2a5a);
+    add(g, GEO.sailorBack, mn, 0, 1.47, -.13);
+    for (const s of [-1, 1]){ const f = add(g, GEO.sailorFront, mn, s * .07, 1.47, .12); f.rotation.z = s * .5; }
+    const mr = M(0xc62828); for (const s of [-1, 1]){ const b = add(g, GEO.miniBow, mr, s * .035, 1.38, .15); b.rotation.z = s * Math.PI / 2; }
+  }
+  const mEye = o.oni ? M(0xffcc33, { emissive: 0xffaa00, emissiveIntensity: 3 }) : M(0x111111);
+  const eyes = [add(g, GEO.eye, mEye, -.05, 1.75, .125), add(g, GEO.eye, mEye, .05, 1.75, .125)];
+  // やられたときの「×」の目 (ふだんは隠しておく)
+  const xEyes = [];
+  if (!o.oni){
+    const mx = M(0x111111);
+    for (const ex of [-.05, .05]) for (const rz of [.785, -.785]){ const b = add(g, GEO.xbar, mx, ex, 1.75, .133); b.rotation.z = rz; b.visible = false; xEyes.push(b); }
+  for (const [k, f] of [['deadHairTop', () => new THREE.SphereGeometry(.142, 18, 6, 0, Math.PI * 2, 0, Math.PI * .3)], ['deadHairBack', () => new THREE.SphereGeometry(.141, 14, 8, Math.PI * 1.08, Math.PI * .84, Math.PI * .2, Math.PI * .4)]]){ const bh = add(g, xg(k, f), mHair, 0, 1.73, -.004); bh.visible = false; xEyes.push(bh); } // 倒れた体の頭がはげて見えないように、てっぺん (目より上) と後頭部 (耳より上) に髪を足す。目が×になるときにいっしょに出る
+  }
+  let light = null;
+  if (o.oni){
+    const mh = M(0xe9e1c9);
+    add(g, GEO.horn, mh, -.07, 1.9, .02).rotation.z = .3;
+    add(g, GEO.horn, mh, .07, 1.9, .02).rotation.z = -.3;
+    light = new THREE.PointLight(0xff3a1a, 0, 8, 1.6); light.position.set(0, 1.7, .5); g.add(light);
+    // 右手のピストル (腕を上げると前を向く)
+    const mgun = M(0x2b2b2e, { metalness: .5, roughness: .4 });
+    add(armR, new THREE.BoxGeometry(.05, .26, .07), mgun, 0, -.69, .01);
+    add(armR, new THREE.BoxGeometry(.045, .07, .12), mgun, 0, -.6, -.07); // 握り (構えたとき下を向く)
+  }
+  g.scale.setScalar(o.scale || 1);
+  scene.add(g);
+  return { group: g, legL, legR, armL, armR, mats, scale: o.scale || 1, light, eyes, xEyes, hat, hatBase };
+}
+// 頭の上の名前 (近くにいるときだけ表示。壁のむこうは見えない)
+/* 名前を出さない (2026-10-07 弟君の指示): NPC の名札は出さず、文字の中の名前は「○番の人」に置きかえる */
+const NAME_LABEL = new Map(); let nameBatchT = -1e9, nameRe = null;
+function registerName(name){ const now = performance.now(); if (now - nameBatchT > 1500){ NAME_LABEL.clear(); } nameBatchT = now; if (!NAME_LABEL.has(name)){ NAME_LABEL.set(name, (NAME_LABEL.size + 1) + '番の人'); nameRe = null; } }
+function hideNames(s){
+  if (typeof s !== 'string' || !NAME_LABEL.size) return s;
+  if (!nameRe) nameRe = new RegExp('(^|[^ぁ-ゖ]|[とがはのもや])(' + [...NAME_LABEL.keys()].sort((a, b) => b.length - a.length).join('|') + ')(?=[がのはとにもをへでかま・「」：:（）()、。,！!？?…\\s　<]|$)', 'g');
+  return s.replace(nameRe, (m, pre, nm) => pre + NAME_LABEL.get(nm));
+}
+{ const ih = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML'); Object.defineProperty(Element.prototype, 'innerHTML', { get(){ return ih.get.call(this); }, set(v){ ih.set.call(this, hideNames(v)); }, configurable: true });
+  const tc = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent'); Object.defineProperty(Node.prototype, 'textContent', { get(){ return tc.get.call(this); }, set(v){ tc.set.call(this, hideNames(v)); }, configurable: true });
+  const C2 = CanvasRenderingContext2D.prototype;
+  for (const k of ['fillText', 'strokeText', 'measureText']){ const f = C2[k]; C2[k] = function(t, ...a){ return f.call(this, hideNames(String(t)), ...a); }; } }
+function makeNameTag(name){
+  registerName(name); { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.Texture() })); Object.defineProperty(s, 'visible', { get(){ return false; }, set(){} }); scene.add(s); return s; } /* 名札は出さない */
+  const [c, g] = mk(256, 64);
+  g.font = 'bold 34px "BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const w = Math.min(248, g.measureText(name).width + 36);
+  g.fillStyle = 'rgba(10,12,20,.6)'; g.beginPath(); g.roundRect(128 - w/2, 8, w, 48, 24); g.fill();
+  g.fillStyle = '#fff'; g.fillText(name, 128, 33);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx(c, false), transparent: true, depthWrite: false }));
+  s.scale.set(.9, .225, 1); s.visible = false; scene.add(s);
+  return s;
+}
+function turnTo(a, target, dt, rate = 10){
+  let d = target - a.heading; while (d > Math.PI) d -= Math.PI*2; while (d < -Math.PI) d += Math.PI*2;
+  a.heading += d * Math.min(1, dt * rate);
+}
+function animModel(a, dt){
+  const m = a.m, sp = a.speedNow;
+  a.phase += dt * (2 + sp * 2.2);
+  const amp = Math.min(1, sp / 4) * .75, s = Math.sin(a.phase) * amp;
+  m.legL.rotation.x = s; m.legR.rotation.x = -s;
+  if (a.reach){ m.armL.rotation.x = -1.35 + s*.2; m.armR.rotation.x = -1.35 - s*.2; }
+  else if (a.aim){ m.armL.rotation.x = -s*.8; m.armR.rotation.x = -1.57; } // ピストルを構える
+  else { m.armL.rotation.x = -s*.8; m.armR.rotation.x = s*.8; }
+  m.group.position.set(a.pos.x, a.pos.y + Math.abs(Math.cos(a.phase)) * amp * .05, a.pos.z);
+  m.group.rotation.set(0, a.heading, 0, 'YXZ');
+  if (a.tag){
+    a.tag.position.set(a.pos.x, a.pos.y + a.tagY, a.pos.z);
+    a.tag.visible = !!player && Math.hypot(a.pos.x - player.pos.x, a.pos.z - player.pos.z, (a.pos.y - player.pos.y) * 2) < 12;
+  }
+}
+
+// ===================== 音 (その場で合成) =====================
+let AC = null, master = null, noiseBuf = null;
+function initAudio(){
+  if (AC){ AC.resume(); return; }
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+  master = AC.createGain(); master.gain.value = .8; master.connect(AC.destination);
+  noiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
+  const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random()*2 - 1;
+  // 風の環境音
+  const src = AC.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+  const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 260;
+  const g = AC.createGain(); g.gain.value = .06; src.connect(f).connect(g).connect(master); src.start();
+}
+function thump(freq, vol, dur, when = 0){
+  if (!AC || vol <= .001) return;
+  const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(freq, t); o.frequency.exponentialRampToValueAtTime(freq * .55, t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(master); o.start(t); o.stop(t + dur + .05);
+}
+function noiseHit(vol, dur, freq, when = 0){
+  if (!AC || vol <= .001) return;
+  const t = AC.currentTime + when, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = noiseBuf; f.type = 'lowpass'; f.frequency.value = freq;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  s.connect(f).connect(g).connect(master); s.start(t, Math.random()); s.stop(t + dur + .05);
+}
+function heartbeat(v){ thump(62, v, .16); thump(52, v * .75, .16, .2); }
+function sfxCatch(v){
+  if (!AC || v <= .01) return;
+  noiseHit(v * .6, .35, 900); thump(90, v * .7, .5);
+  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(), f = AC.createBiquadFilter();
+  o.type = 'sawtooth'; o.frequency.setValueAtTime(420, t); o.frequency.exponentialRampToValueAtTime(110, t + .6);
+  f.type = 'lowpass'; f.frequency.value = 1200;
+  g.gain.setValueAtTime(v * .18, t); g.gain.exponentialRampToValueAtTime(.0001, t + .6);
+  o.connect(f).connect(g).connect(master); o.start(t); o.stop(t + .65);
+}
+function beep(freq, vol = .15, dur = .12){
+  if (!AC) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'square'; o.frequency.value = freq; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(master); o.start(t); o.stop(t + dur + .02);
+}
+
+function rumble(){ for (let i = 0; i < 6; i++) thump(40 + i * 3, .25, .4, i * .2); }
+function crash(v){ thump(45, .9 * v, .8); noiseHit(.6 * v, .7, 700); noiseHit(.3 * v, .4, 3000, .05); }
+const SHIRTS = [0xd9534f,0x5bc0de,0xf0ad4e,0x5cb85c,0x9b59b6,0xecf0f1,0x34495e,0xe67e22,0x1abc9c,0xf06292,0x8d6e63,0x3f51b5];
+const PANTS = [0x2c3e50,0x34495e,0x4e342e,0x263238,0x37474f,0x1a237e];
+// 名前ごとの見た目 (毎回同じ子が同じ格好で出てくる)
+// 1人に目立つ特徴は1つだけ。みなと・ゆい・こうきは小さな個性 (ブローチ・学生服)、ひなたは最初のままの見た目
+const LOOKS = {
+  'ゆうと': { hat: 'cap', hatColor: 0xc62828, shirt: 0xf4f4f4, pants: 0x34495e, hairColor: 0x1a1210 },
+  'はると': { hair: 'slick', blazer: true, tieColor: 0x2e7d32, shirt: 0x1f2a44, pants: 0x1f2a44, hairColor: 0x0f0f0f }, // 緑のネクタイのサラリーマン
+  'そうた': { glasses: true, shirt: 0x9ec9e8, pants: 0xb8a58a, hairColor: 0x2a1a10 },
+  'みなと': { glasses: true, blazer: true, briefcase: true, shirt: 0x4a4f57, pants: 0x3a3e45, hairColor: 0x1a1210 }, // メガネのサラリーマン
+  'あおい': { hat: 'phones', hatColor: 0x333333, shirt: 0x9a9a9a, pants: 0x222222, hairColor: 0x3b2a1a },
+  'りこ': { hair: 'twin', shirt: 0xf3a6c0, pants: 0x3d5a80, hairColor: 0x2a1a10 },
+  'さくら': { hair: 'long', hairpin: 0xf2c230, shirt: 0xf4f1ea, pants: 0xb8a58a, hairColor: 0x1a1210 },
+  'ゆい': { sailor: true, skirt: 0x1f2a5a, shirt: 0xf4f4f4, pants: 0xe8b894, hairColor: 0x3b2a1a },
+  'こうき': { gakuran: true, shirt: 0x1b1d22, pants: 0x1b1d22, hairColor: 0x111111 },
+  'れん': { hat: 'straw', pack: 0x2e7d32, shirt: 0xe67e22, pants: 0x3d5a80, hairColor: 0x2a1a10 },
+  'めい': { hair: 'pony', miniRibbon: 0xe53935, shirt: 0xa8d08d, pants: 0x55595e, hairColor: 0x4a3020 },
+  'たくみ': { hat: 'headband', hatColor: 0xf4f4f4, shirt: 0x3b6fb6, pants: 0x2c2c2c, hairColor: 0x111111 },
+  'かいと': { hood: true, shirt: 0x8a8f96, pants: 0x3d5a80, hairColor: 0x2a1a10 },
+  'いつき': { hair: 'curly', shirt: 0x6a4c93, pants: 0x55595e, hairColor: 0x3b2a1a },
+  'ことね': { hair: 'bob', hairpin: 0x4fc3f7, shirt: 0xf6c9a0, pants: 0x5d4037, hairColor: 0x2a1a10 },
+  'ひまり': { hair: 'bun', shirt: 0xf8bbd0, pants: 0x3d5a80, hairColor: 0x3b2a1a },
+  'そら': { hat: 'cap', hatColor: 0x1e5aa8, shirt: 0xe8e2d0, pants: 0x4e5a3a, hairColor: 0x1a1210 },
+};
+const HAIRS = [0x1a1210,0x2a1a10,0x3b2a1a,0x0f0f0f,0x5a3a20];
+for (const [k, v] of Object.entries({
+  'ひなた': { plain: true, shirt: 0xecf0f1, pants: 0x1a237e, hairColor: 0x1a1210, scale: 1.04 },
+  'だいち': { hair: 'buzz', shirt: 0x5c7a3a, pants: 0x3a3e45, hairColor: 0x111111, scale: 1.1 },
+  'りく': { hat: 'cap', hatColor: 0x222222, shirt: 0x3f51b5, pants: 0x2c3e50, hairColor: 0x1a1210, scale: 1.06 },
+  'はな': { hair: 'long', shirt: 0xf6d6a8, pants: 0x4e342e, hairColor: 0x2a1a10, scale: 1.0 },
+  'ゆな': { hair: 'bob', shirt: 0x8ecae6, pants: 0x34495e, hairColor: 0x3b2a1a, scale: 1.0 },
+  'こはる': { hair: 'pony', shirt: 0xc8e6c9, pants: 0x55595e, hairColor: 0x2a1a10, scale: 1.01 },
+  'あさひ': { hair: 'short', shirt: 0xf4f4f4, pants: 0x8d6e63, hairColor: 0x2a1a10, scale: 1.05 },
+  'いぶき': { hair: 'short', shirt: 0x8d6e63, pants: 0x263238, hairColor: 0x0f0f0f, scale: 1.08 },
+  'つむぎ': { hair: 'bun', shirt: 0xd7bde2, pants: 0x3d3d45, hairColor: 0x3b2a1a, scale: 1.0 },
+  'ほのか': { hair: 'long', glasses: true, shirt: 0xf9e79f, pants: 0x3d5a80, hairColor: 0x1a1210, scale: 1.02 },
+  'りょう': { hair: 'slick', shirt: 0x2e4057, pants: 0x1b1d22, hairColor: 0x111111, scale: 1.09 },
+  'みお': { hair: 'twin', shirt: 0xf8c8d0, pants: 0x2c3e50, hairColor: 0x2a1a10, scale: 1.0 },
+})) if (!LOOKS[k]) LOOKS[k] = v;
+
+// ===================== 道さがし =====================
+function nearestNode(p){ // いちばん近い点のうち、かべにさえぎられずにまっすぐ行ける点
+  const c = []; for (let i = 0; i < NODES.length; i++){ const n = NODES[i], dy = Math.abs(n.y - p.pos.y); if (dy > 1.8) continue; const d = Math.hypot(n.x - p.pos.x, n.z - p.pos.z) + dy * 3; if (d < 30) c.push([d, i]); }
+  c.sort((a, b) => a[0] - b[0]); for (const [, i] of c.slice(0, 8)){ const n = NODES[i]; if (los(p.pos.x, p.pos.z, n.x, n.z, p.pos.y + .4, p.pos.y + 1.5, .25)) return i; }
+  return c.length ? c[0][1] : -1; }
+function dijkstra(from, maxD = 1e9){
+  const Nn = NODES.length, dist = new Float32Array(Nn).fill(1e9), prev = new Int32Array(Nn).fill(-1), done = new Uint8Array(Nn), hp = [[0, from]]; dist[from] = 0;
+  const push = (d, i) => { hp.push([d, i]); let k = hp.length - 1; while (k > 0){ const q = (k - 1) >> 1; if (hp[q][0] <= hp[k][0]) break; [hp[q], hp[k]] = [hp[k], hp[q]]; k = q; } };
+  const pop = () => { const top = hp[0], last = hp.pop(); if (hp.length){ hp[0] = last; let k = 0; for (;;){ const a = k * 2 + 1, b = a + 1; let m = k; if (a < hp.length && hp[a][0] < hp[m][0]) m = a; if (b < hp.length && hp[b][0] < hp[m][0]) m = b; if (m === k) break; [hp[m], hp[k]] = [hp[k], hp[m]]; k = m; } } return top; };
+  while (hp.length){ const [d, u] = pop(); if (done[u]) continue; done[u] = 1; if (d > maxD) break; for (const [v, w] of NODES[u].nb){ const nd = d + w; if (nd < dist[v]){ dist[v] = nd; prev[v] = u; push(nd, v); } } }
+  return { dist, prev };
+}
+const pathFrom = (res, s, t) => { const out = []; for (let u = t; u >= 0 && u !== s; u = res.prev[u]) out.push(NODES[u]); return out.reverse(); };
+function routeTo(p, target){ const s = nearestNode(p); if (s < 0 || target < 0) return []; const res = dijkstra(s); if (res.dist[target] >= 1e9) return []; return [NODES[s], ...pathFrom(res, s, target)]; }
+
+// ===================== 人と鬼 =====================
+let people = [], npcs = [], oni = null, state = 'title', paused = false, locked = false, bloods = [], fx = [];
+let elapsed = 0, lastCount = -1, endT = -1, caughtT = 0, deathBy = '', ghost = false, outcome = '';
+let yaw = 0, pitch = 0, camY = 1.6, bob = 0;
+const gpos = new THREE.Vector3(), keys = {};
+const who = p => p.isPlayer ? 'あなた' : (NAME_LABEL.get(p.name) || p.name); /* 名前は出さない */
+const PLAYER_LOOK = Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {});
+const ONI_LOOK = { shirt: 0x4a5632, pants: 0x3c4630, hair: 0x111111, skin: 0xc89878, scale: 1.25, look: { plain: true } };
+const streetNodes = [...SN.values()];
+let START = null;
+// ---- 飛行船
+const ship = new THREE.Group(); scene.add(ship);
+{ const body = new THREE.Mesh(new THREE.SphereGeometry(6, 24, 14), std({ color: 0x8a8a92, metalness: .3, roughness: .5 })); body.scale.set(3.2, 1, 1); ship.add(body);
+  const stripe = new THREE.Mesh(new THREE.SphereGeometry(6.05, 24, 14, 0, Math.PI * 2, Math.PI * .45, Math.PI * .1), std({ color: 0x8a1a1a })); stripe.scale.set(3.2, 1, 1); ship.add(stripe);
+  const finM = std({ color: 0x5a5a62 }); for (const [ry, rz] of [[0, 0], [0, Math.PI / 2], [0, Math.PI], [0, -Math.PI / 2]]){ const f = new THREE.Mesh(new THREE.BoxGeometry(5, .3, 4), finM); f.position.set(-17, 0, 0); f.rotation.set(rz, 0, 0); f.translateY(3); ship.add(f); }
+  const gond = new THREE.Mesh(new THREE.BoxGeometry(7, 2.2, 3), std({ color: 0x2a2a2e })); gond.position.set(0, -7, 0); ship.add(gond);
+  const win = new THREE.Mesh(new THREE.BoxGeometry(6, .6, 3.05), new THREE.MeshBasicMaterial({ color: 0xffb060 })); win.position.set(0, -6.8, 0); ship.add(win);
+  const lamp = new THREE.PointLight(0xff3020, 0, 40, 1.5); lamp.position.set(0, -8, 0); ship.add(lamp); ship.userData.lamp = lamp; }
+const rope = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 1, 6), std({ color: 0x3a2a1a })); scene.add(rope);
+ship.visible = false; rope.visible = false;
+const SHIP_Y = 42;
+function updateShip(tt){ // tt: スタートからの時間
+  if (!START){ return; }
+  const S = START, fromX = S.x - 260, k = clamp(tt / SHIP_IN, 0, 1), e = 1 - Math.pow(1 - k, 3);
+  if (tt < ONI_DELAY + 2){ ship.visible = true; ship.position.set(fromX + (S.x - fromX) * e, SHIP_Y + Math.sin(tt * .8) * .3, S.z); }
+  else return; // 降ろしたあとは updateFerry が動かす
+  if (tt >= ONI_DELAY + 2) return; ship.userData.lamp.intensity = tt > SHIP_IN - 1 && tt < ONI_DELAY + 2 ? 30 * (Math.sin(tt * 8) > 0 ? 1 : .3) : 0;
+  // ロープと、降りてくる鬼
+  const ropeOn = tt >= SHIP_IN && tt < ONI_DELAY + 1.2, gy = SHIP_Y - 8;
+  rope.visible = ropeOn; if (ropeOn){ const ry = tt < ONI_DELAY ? gy - (gy) * clamp((tt - SHIP_IN) / ROPE_T, 0, 1) : 0; rope.scale.set(1, gy, 1); rope.position.set(S.x, gy / 2, S.z); }
+  if (tt >= SHIP_IN && tt < ONI_DELAY){ const f = clamp((tt - SHIP_IN) / ROPE_T, 0, 1); oni.m.group.visible = true; oni.pos.set(S.x, gy - 1.8 - (gy - 1.8) * (f * f * (3 - 2 * f)), S.z); oni.heading += .02; oni.speedNow = 0; animModel(oni, 0); oni.m.armL.rotation.x = oni.m.armR.rotation.x = -2.9; } // ロープにつかまって降りる
+}
+function newGame(){
+  for (const p of people){ if (p.m) scene.remove(p.m.group); if (p.tag) scene.remove(p.tag); } if (oni) scene.remove(oni.m.group);
+  for (const b of bloods){ scene.remove(b); b.material.dispose(); } bloods = []; for (const f of fx) scene.remove(f.o); fx = [];
+  const ALL = [...NAMES, ...MORE, ...EXTRA], names = [...ALL].sort(() => Math.random() - .5).slice(0, TOTAL - 1);
+  const start = NODES[SN.get(sk(lines[3], lines[3]))];
+  START = start;
+  player = { name: 'あなた', isPlayer: true, pos: new THREE.Vector3(start.x + R(-2, 2), 0, start.z + 6), vy: 0, radius: .3, alive: true, heading: 0, speedNow: 0, phase: 0 };
+  people = [player]; npcs = [];
+  names.forEach((name, k) => { const i = ALL.indexOf(name), lk = LOOKS[name] || {}, a0 = k * 2.39996, r0 = 1.6 + Math.sqrt(k) * .95, sn = { x: start.x + Math.sin(a0) * r0, z: start.z + Math.cos(a0) * r0 }; // 交差点にぎっしり集まる
+    const n = { name, pos: new THREE.Vector3(sn.x, 0, sn.z), vy: 0, radius: .3, alive: true, heading: R(0, 6), speedNow: 0, phase: R(0, 6), path: [], thinkT: R(0, 2), mode: Math.random() < .55 ? 'hide' : 'roam',
+      m: makePerson({ shirt: lk.shirt ?? SHIRTS[i % SHIRTS.length], pants: lk.pants ?? PANTS[i % PANTS.length], hair: lk.hairColor ?? HAIRS[i % HAIRS.length], skin: [0xf1c7a5, 0xe8b894, 0xd9a47f][i % 3], scale: lk.scale ?? 1 + ((i * 37) % 10) / 100, look: lk }),
+      tag: makeNameTag(name), run: R(4.2, 5.0), walk: R(2.0, 2.6), wary: R(.5, 1) };
+    n.tagY = 2.15 * n.m.scale; animModel(n, 0); npcs.push(n); people.push(n); });
+  // 鬼: 街のはしから出てくる。スナイパーライフルとマシンガン
+  const corner = START;
+  oni = { name: '鬼', pos: new THREE.Vector3(corner.x, 0, corner.z), vy: 0, radius: .35, alive: true, heading: 0, speedNow: 0, phase: 0, path: [], thinkT: 0, aimT: 0, target: null, cd: 0, burst: 0, m: makePerson(ONI_LOOK) };
+  { const g = oni.m.group, olive = std({ color: 0x3e4a2a, roughness: .8 }), dark = std({ color: 0x23281a, roughness: .8 }), gunM = std({ color: 0x1a1a1a, metalness: .6, roughness: .4 });
+    const helmet = new THREE.Mesh(new THREE.SphereGeometry(.165, 16, 8, 0, Math.PI * 2, 0, Math.PI * .55), olive); helmet.position.set(0, 1.76, -.01); g.add(helmet); // ヘルメット
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(.16, .015, 6, 20), olive); rim.rotation.x = Math.PI / 2; rim.position.set(0, 1.77, -.01); g.add(rim);
+    const goggle = new THREE.Mesh(new THREE.BoxGeometry(.2, .05, .04), std({ color: 0x111111, metalness: .7, roughness: .2 })); goggle.position.set(0, 1.8, .13); g.add(goggle);
+    const vest = new THREE.Mesh(new THREE.BoxGeometry(.4, .38, .27), dark); vest.position.set(0, 1.2, 0); g.add(vest); // ベスト
+    for (const s of [-1, 1]){ const pouch = new THREE.Mesh(new THREE.BoxGeometry(.09, .1, .06), olive); pouch.position.set(s * .1, 1.1, .15); g.add(pouch); }
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(.38, .06, .26), dark); belt.position.set(0, .92, 0); g.add(belt);
+    for (const leg of [oni.m.legL, oni.m.legR]){ const boot = new THREE.Mesh(new THREE.BoxGeometry(.13, .16, .24), dark); boot.position.set(0, -.78, .03); leg.add(boot); }
+    // 銃は右うでの先 (手) に持つ。うでを前に上げると前を向く
+    const rifle = new THREE.Group(); const rb = new THREE.Mesh(new THREE.BoxGeometry(.05, 1.25, .07), gunM); rb.position.y = -.25; rifle.add(rb); const sc = new THREE.Mesh(new THREE.CylinderGeometry(.035, .035, .28, 8), gunM); sc.position.set(0, -.15, -.07); rifle.add(sc);
+    rifle.position.set(0, -.56, .06); oni.m.armR.add(rifle);
+    const mg = new THREE.Group(); const mb = new THREE.Mesh(new THREE.BoxGeometry(.1, .7, .14), gunM); mb.position.y = -.12; mg.add(mb); const mag = new THREE.Mesh(new THREE.BoxGeometry(.06, .08, .16), gunM); mag.position.set(0, .05, -.12); mg.add(mag);
+    mg.position.set(0, -.56, .06); oni.m.armR.add(mg); mg.visible = false; oni.rifle = rifle; oni.mg = mg; }
+  oni.laser = new THREE.Mesh(new THREE.CylinderGeometry(.015, .015, 1, 6), new THREE.MeshBasicMaterial({ color: 0xff2020, transparent: true, opacity: .7 })); oni.laser.visible = false; scene.add(oni.laser);
+  oni.m.group.visible = false; ship.visible = false; rope.visible = false; oni.mode = null; oni.repos = 0; oni.stayT = 0; SURV_T = 21 + Math.floor(Math.random() * 8); ship.userData.state = 'arrive'; ship.rotation.y = 0;
+  yaw = 0; pitch = 0; camY = 1.6;
+  elapsed = 0; lastCount = -1; endT = -1; caughtT = 0; deathBy = ''; ghost = false; outcome = '';
+  for (const id of ['red', 'bloodScreen']) $(id).style.opacity = 0; $('ghostTint').style.display = 'none'; $('aimWarn').style.display = 'none'; $('feed').innerHTML = '';
+}
+
+// ---------- やられたとき ----------
+function kill(r, cause){
+  if (!r.alive || (r.isPlayer && window.__godMode)) return;
+  r.alive = false; r.deathT = 0; r.cause = cause;
+  const v = r.isPlayer ? 1 : Math.max(.12, 1 - r.pos.distanceTo(camera.position) / 50);
+  thump(55, .9 * v, .5); noiseHit(.5 * v, .3, 900);
+  if (r.isPlayer){ r.heading = yaw + Math.PI; r.m = makePerson(PLAYER_LOOK); r.m.group.visible = false; deathBy = cause; $('aimWarn').style.display = 'none'; if (state === 'play'){ state = 'caught'; caughtT = 0; } if (settings.gore >= 2) paintBloodScreen(); if (document.pointerLockElement) document.exitPointerLock(); }
+  else { r.tag.visible = false; feed(`${r.name}が${cause}`); }
+  for (const e of r.m.eyes) e.visible = false; for (const x of r.m.xEyes) x.visible = true;
+  r.prone = Math.random() < .4; r.lieHeading = r.heading + (r.prone ? Math.PI : 0) + R(-.4, .4);
+  if (settings.gore){ const lh = r.lieHeading; pool(r.pos.x - Math.sin(lh) * 1.4, r.pos.y, r.pos.z - Math.cos(lh) * 1.4, settings.gore >= 2 ? 2.2 : 1.4); if (settings.gore >= 2) for (let k = 0; k < 3; k++) pool(r.pos.x + R(-1.2, 1.2), r.pos.y, r.pos.z + R(-1.2, 1.2), R(.3, .6)); }
+}
+function pool(x, y, z, size){
+  const mat = new THREE.MeshStandardMaterial({ map: BLOOD_TEX, transparent: true, roughness: .15, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat); m.rotation.set(-Math.PI / 2, 0, Math.random() * 6); m.position.set(x, y + .03 + bloods.length * .0004, z);
+  m.userData = { grow: 0, size }; m.scale.setScalar(.05); scene.add(m); bloods.push(m);
+}
+function paintBloodScreen(){
+  const c = $('bloodScreen'); c.width = innerWidth; c.height = innerHeight; const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height);
+  for (let i = 0; i < 12; i++){ const x = Math.random() < .5 ? R(0, .3) * c.width : R(.7, 1) * c.width, y = R(0, .75) * c.height, r = R(20, 70);
+    g.fillStyle = `rgba(${90 + Math.random() * 40 | 0},0,0,${R(.55, .85)})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillRect(x - r * .12, y, r * .24, R(40, 140)); }
+}
+function updateDeath(n, dt){
+  if (n.gone || !n.m) return; n.deathT += dt;
+  const k = Math.min(1, n.deathT / .4), e = k * k, fl = n.prone ? -1 : 1;
+  n.m.group.rotation.set(fl * Math.PI / 2 * (.6 + .4 * e), n.lieHeading + (n.prone ? Math.PI : 0), 0, 'YXZ');
+  n.m.group.position.set(n.pos.x, n.pos.y + .14 * n.m.scale * e, n.pos.z);
+  n.m.armL.rotation.set(e * fl * .19, 0, -e * .45); n.m.armR.rotation.set(e * fl * .19, 0, e * .45);
+  if (!settings.gore && n.deathT > 1.4){ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
+}
+function los3(ax, ay, az, bx, by, bz){ // 線の上を0.25mごとに調べ、その高さでかべ・床にぶつかるか
+  const d = Math.hypot(bx - ax, bz - az, by - ay), n = Math.max(1, Math.ceil(d / .25));
+  for (let i = 2; i < n - 1; i++){ const f = i / n, x = ax + (bx - ax) * f, z = az + (bz - az) * f, y = ay + (by - ay) * f; const list = grid.get(gk(Math.floor(x / GRID), Math.floor(z / GRID))); if (!list) continue;
+    for (const w of list) if (x >= w.x0 && x <= w.x1 && z >= w.z0 && z <= w.z1 && y >= w.y0 && y <= w.y1) return false; }
+  return true; }
+const sees = (a, b, yA = 1.5, yB = 1.3) => los3(a.pos.x, a.pos.y + yA, a.pos.z, b.pos.x, b.pos.y + yB, b.pos.z);
+function tracer(a, b, col){ const A = new THREE.Vector3(a.x, a.y, a.z), B = new THREE.Vector3(b.x, b.y, b.z), l = A.distanceTo(B), m = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, l, 4), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .9 })); m.position.copy(A).add(B).multiplyScalar(.5); m.lookAt(B); m.rotateX(Math.PI / 2); scene.add(m); fx.push({ o: m, t: 0, life: .12 }); }
+function shot(kind, target, p){
+  const a = { x: oni.pos.x + Math.sin(oni.heading) * .5, y: oni.pos.y + 1.3, z: oni.pos.z + Math.cos(oni.heading) * .5 };
+  const v = Math.max(.15, 1 - oni.pos.distanceTo(camera.position) / 120); noiseHit((kind === 'sniper' ? .9 : .4) * v, kind === 'sniper' ? .5 : .12, kind === 'sniper' ? 1400 : 2200);
+  if (!target.isPlayer && people.filter(q => q.alive).length <= SURV_T) p = 0;
+  const hit = Math.random() < p, miss = hit ? 0 : R(.6, 1.6);
+  tracer(a, { x: target.pos.x + (hit ? 0 : R(-1, 1) * miss), y: target.pos.y + 1.2 + (hit ? 0 : R(-.5, .8)), z: target.pos.z + (hit ? 0 : R(-1, 1) * miss) }, kind === 'sniper' ? 0xffe0a0 : 0xffd060);
+  if (hit) kill(target, kind === 'sniper' ? '鬼のスナイパーライフルに撃たれた…' : '鬼のマシンガンに撃たれた…');
+}
+
+// ---------- 鬼 ----------
+// 飛行船で運ぶ: 'toOni' 鬼の真上へ → 'pickup' ロープで上がる → 'toDest' 目的地の真上へ → 'drop' ロープで降りる → 'idle'
+function chooseRoof(){ // 生きている人が多くいるあたりの、高いビル
+  let best = null, bs = -1; for (const b of BUILD){ if (b.kind === 'house' || b.floors < 4 || b.floors > 12) continue;   /* 高すぎるビルの屋上だと下が見えないので、12階まで */ let c = 0; for (const p of people) if (p.alive && Math.hypot(p.pos.x - b.cx, p.pos.z - b.cz) < 70) c++; const s = c + R(0, 6); if (s > bs){ bs = s; best = b; } }
+  let cx = 0, cz = 0, n = 0; for (const p of people) if (p.alive && Math.hypot(p.pos.x - best.cx, p.pos.z - best.cz) < 70){ cx += p.pos.x; cz += p.pos.z; n++; } // 人が多いほうの屋上のはしに降りる
+  const dx = n ? cx / n - best.cx : 1, dz = n ? cz / n - best.cz : 0, l = Math.hypot(dx, dz) || 1;
+  return { x: best.cx + clamp(dx / l * best.hw, -(best.hw - 1), best.hw - 1), y: best.roofY, z: best.cz + clamp(dz / l * best.hd, -(best.hd - 1), best.hd - 1), roof: best };
+}
+function chooseStreet(){ let near = null, nd = 1e9; const alive = people.filter(p => p.alive); const p = pick(alive) || player; for (const i of streetNodes){ const n = NODES[i], d = Math.hypot(n.x - p.pos.x, n.z - p.pos.z); if (d > 25 && d < nd){ nd = d; near = n; } } return { x: near.x, y: 0, z: near.z }; }
+const outdoors = p => !BUILD.some(b => Math.abs(p.pos.x - b.cx) < b.hw + .3 && Math.abs(p.pos.z - b.cz) < b.hd + .3) || p.pos.y > 1 && oni.mode === 'roof';
+const CRUISE_Y = 105;   /* 飛行船は、高層ビルより高いところを飛んで移動する */
+function shipFly(tx, ty, tz, dt){ const cy = Math.max(ty + 28, 48), dx = tx - ship.position.x, dz = tz - ship.position.z, d = Math.hypot(dx, dz), st = Math.min(d, 34 * dt), wantY = d > 6 ? Math.max(cy, CRUISE_Y) : cy;
+  const climbing = d > 6 && ship.position.y < CRUISE_Y - 4; /* 上がりきるまでは、横に動かない */
+  if (!climbing){ ship.position.x += d ? dx / d * st : 0; ship.position.z += d ? dz / d * st : 0; } ship.position.y += (wantY - ship.position.y) * Math.min(1, dt * (climbing ? 2.2 : 1.5)); if (d > .5) ship.rotation.y = Math.atan2(-dz, dx);
+  return d < .6 && Math.abs(ship.position.y - cy) < .8; }
+function updateFerry(dt){
+  const S = ship.userData, gy = () => ship.position.y - 8;
+  if (S.state === 'toOni'){ if (shipFly(oni.pos.x, oni.pos.y, oni.pos.z, dt)){ S.state = 'pickup'; S.t = 0; S.from = oni.pos.y; } }
+  else if (S.state === 'pickup'){ S.t += dt; const f = clamp(S.t / 2.5, 0, 1); oni.pos.set(ship.position.x, S.from + (gy() - 1.8 - S.from) * f * f, ship.position.z); rope.visible = true; rope.scale.set(1, gy() - S.from, 1); rope.position.set(ship.position.x, (gy() + S.from) / 2, ship.position.z);
+    if (f >= 1){ rope.visible = false; S.dest = oni.mode === 'ground' ? chooseRoof() : chooseStreet(); S.next = oni.mode === 'ground' ? 'roof' : 'ground'; oni.mode = 'ship'; S.state = 'toDest'; feed(S.next === 'roof' ? '鬼が飛行船でビルの屋上へ向かった…' : '鬼が飛行船で地上へ向かった…'); } }
+  else if (S.state === 'toDest'){ oni.pos.set(ship.position.x, gy() - 1.8, ship.position.z); if (shipFly(S.dest.x, S.dest.y, S.dest.z, dt)){ S.state = 'drop'; S.t = 0; } }
+  else if (S.state === 'drop'){ S.t += dt; const f = clamp(S.t / 2.5, 0, 1), top = gy() - 1.8, y = top + (S.dest.y - top) * (f * f * (3 - 2 * f)); oni.pos.set(S.dest.x, y, S.dest.z); rope.visible = true; rope.scale.set(1, gy() - S.dest.y, 1); rope.position.set(S.dest.x, (gy() + S.dest.y) / 2, S.dest.z);
+    if (f >= 1){ rope.visible = false; oni.pos.y = S.dest.y; oni.vy = 0; oni.mode = S.next; oni.modeT = 0; oni.path = []; S.state = 'idle'; if (oni.mode === 'roof'){ showMsg('鬼がビルの屋上に降りた！ 上からねらわれる', 3); feed('鬼が屋上に降りた'); } } }
+  else if (S.state === 'idle'){ ship.position.y += (Math.max(oni.pos.y + 30, 48) - ship.position.y) * Math.min(1, dt * .5); }
+  if (S.state === 'pickup' || S.state === 'toDest' || S.state === 'drop'){ oni.speedNow = 0; animModel(oni, dt); oni.m.armL.rotation.x = oni.m.armR.rotation.x = -2.9; oni.laser.visible = false; }
+  ship.userData.lamp.intensity = S.state !== 'idle' ? 30 * (Math.sin(elapsed * 8) > 0 ? 1 : .3) : 0;
+}
+// 飛行船で移動しているあいだも、下にいる人をマシンガンでねらう
+function shipShoot(dt){
+  oni.shipCd = (oni.shipCd || 0) - dt; if (oni.shipCd > 0) return;
+  oni.shipCd = .45 / paceK();
+  let best = null, bd = 1e9;
+  for (const p of people){ if (!p.alive || p.cleared) continue; const d = Math.hypot(p.pos.x - oni.pos.x, p.pos.z - oni.pos.z); if (d < 70 && d < bd && sees(oni, p)){ bd = d; best = p; } }
+  if (best) shot('mg', best, .38);
+}
+function updateOni(dt){
+  const tt = elapsed - COUNTDOWN; updateShip(Math.max(0, tt));
+  if (tt >= SHIP_IN - 4 && !oni.shipMsg){ oni.shipMsg = true; showMsg('飛行船が飛んできた…！', 3); feed('飛行船が近づいてくる'); }
+  if (tt >= SHIP_IN && !oni.dropMsg){ oni.dropMsg = true; showMsg('鬼が飛行船から降りてくる！ にげろ！', 3); feed('鬼が降りてきた'); }
+  if (tt < ONI_DELAY || endT >= 0){ if (tt < SHIP_IN) oni.m.group.visible = false; oni.laser.visible = false; return; }
+  if (!oni.mode){ oni.mode = 'ground'; oni.modeT = 0; oni.pos.y = 0; ship.userData.state = 'idle'; }
+  oni.modeT += dt;
+  if (oni.mode === 'ship' || ['pickup', 'toDest', 'drop'].includes(ship.userData.state)){ updateFerry(dt); shipShoot(dt); return; }
+  updateFerry(dt);
+  oni.noTgtT = oni.target && oni.target.alive ? 0 : (oni.noTgtT || 0) + dt; // だれも見えていない時間
+  if (ship.userData.state === 'idle' && ((oni.mode === 'ground' && (oni.modeT > 20 || (oni.noTgtT > 8 && oni.modeT > 6)) && outdoors(oni)) || (oni.mode === 'roof' && (oni.modeT > 18 || (oni.noTgtT > 2.5 && oni.modeT > 4))))){ ship.userData.state = 'toOni'; oni.noTgtT = 0; } // 見える人がいなければ、早めに場所を変える
+  if (oni.mode === 'ground' && oni.modeT > 20 && !outdoors(oni) && !oni.path.length){ let near = null, nd = 1e9; for (const i of streetNodes){ const n = NODES[i], d = Math.hypot(n.x - oni.pos.x, n.z - oni.pos.z); if (d < nd){ nd = d; near = i; } } oni.path = routeTo(oni, near); } // 建物から出て、飛行船を呼ぶ
+  oni.thinkT -= dt; oni.cd -= dt;
+  if (oni.thinkT <= 0){ oni.thinkT = .3;
+    const alive = people.filter(p => p.alive && !p.cleared); for (const p of alive){ let c = 0; for (const q of alive) if (q !== p && Math.abs(q.pos.y - p.pos.y) < 2 && Math.hypot(q.pos.x - p.pos.x, q.pos.z - p.pos.z) < 8) c++; p.crowd = c; } // 集団の大きさ
+    let best = null; const cand = alive.map(p => [oni.pos.distanceTo(p.pos), p]).filter(c => c[0] < ONI.range).sort((x, y) => (y[1].crowd - x[1].crowd) || (x[0] - y[0])); for (const [, p] of cand.slice(0, 30)) if (sees(oni, p)){ best = p; break; } // 人数の多い集団から順に
+    if (best !== oni.target){ oni.target = best; oni.aimT = 0; }
+    if (!best && oni.mode === 'ground' && (!oni.path.length || oni.repathT <= 0)){ oni.repathT = 2.5; // 見えないときは、いちばん近い人のほうへ歩く
+      let near = null, ns = -1e9; for (const p of people) if (p.alive){ const s = (p.crowd || 0) * 25 - oni.pos.distanceTo(p.pos); if (s > ns){ ns = s; near = p; } } // 見えないときは、大きい集団 (近いほど) のほうへ
+      if (near) oni.path = routeTo(oni, nearestNode(near)); } }
+  oni.repathT = (oni.repathT || 0) - dt;
+  const t0 = oni.target;
+  if (oni.mode === 'ground' && oni.repos > 0){ // 場所を変えている途中
+    oni.repos -= dt; oni.laser.visible = false;
+    const w = oni.path[0]; if (w){ const dx = w.x - oni.pos.x, dz = w.z - oni.pos.z, d = Math.hypot(dx, dz); if (d < .5 && Math.abs(w.y - oni.pos.y) < 1.5) oni.path.shift(); else { const st = Math.min(d, ONI.speed * dt), ox = oni.pos.x, oz = oni.pos.z; moveBody(oni, dx / d * st, dz / d * st, dt); oni.speedNow = Math.hypot(oni.pos.x - ox, oni.pos.z - oz) / dt; turnTo(oni, Math.atan2(dx, dz), dt, 8); } } else oni.repos = 0;
+    if (t0 && t0.alive && oni.pos.distanceTo(t0.pos) <= 22 && oni.cd <= 0){ oni.aim = true; if (oni.burst <= 0) oni.burst = 8; shot('mg', t0, clamp(.42 - oni.pos.distanceTo(t0.pos) / 70, .08, .42) * (t0.speedNow > 4 ? .6 : 1)); oni.burst--; oni.cd = oni.burst > 0 ? .1 : .8 / paceK(); } else oni.aim = false;
+    animModel(oni, dt); if (oni.aim){ oni.m.armR.rotation.set(-1.55, 0, .02); oni.m.armL.rotation.set(-1.4, 0, -.45); } else oni.m.armR.rotation.x = -.5; oni.rifle.visible = !oni.aim; oni.mg.visible = oni.aim; return;
+  }
+  const t = oni.target;
+  if (t && t.alive){
+    const d = oni.pos.distanceTo(t.pos); turnTo(oni, Math.atan2(t.pos.x - oni.pos.x, t.pos.z - oni.pos.z), dt, 8);
+    if (d > 22 || oni.mode === 'roof'){ // スナイパー: 止まってレーザーでねらう → 撃つ (屋上ではいつもスナイパー)
+      oni.speedNow = 0; moveBody(oni, 0, 0, dt); oni.aimT += dt; oni.aim = true;
+      const A = new THREE.Vector3(oni.pos.x, oni.pos.y + 1.33, oni.pos.z), B = new THREE.Vector3(t.pos.x, t.pos.y + 1.2, t.pos.z); oni.laser.visible = true; oni.laser.scale.set(1, A.distanceTo(B), 1); oni.laser.position.copy(A).add(B).multiplyScalar(.5); oni.laser.lookAt(B); oni.laser.rotateX(Math.PI / 2);
+      const K = paceK(); if (oni.aimT > ONI.aim / Math.sqrt(K) && oni.cd <= 0){ shot('sniper', t, Math.min(.97, (t.speedNow > 4 ? ONI.hitRun : ONI.hit) * (K > 1.5 ? 1.12 : 1))); oni.cd = ONI.cd / K; oni.aimT = 0; }
+      oni.stayT = (oni.stayT || 0) + dt;
+      if (oni.mode === 'ground' && oni.stayT > 4){ oni.stayT = 0; // 4秒たったら、人の多いほうの20〜45m先へ場所を変える
+        let best = -1, bs = -1e9; for (const i of streetNodes){ const n = NODES[i], d = Math.hypot(n.x - oni.pos.x, n.z - oni.pos.z); if (d < 20 || d > 45) continue; let c = 0; for (const p of people) if (p.alive && Math.hypot(p.pos.x - n.x, p.pos.z - n.z) < 40) c++; const s = c + R(0, 8); if (s > bs){ bs = s; best = i; } }
+        if (best >= 0){ oni.path = routeTo(oni, best); oni.repos = 7; oni.laser.visible = false; } }
+    } else { // マシンガン: 近づきながら連射
+      oni.laser.visible = false; oni.aim = true;
+      const dx = t.pos.x - oni.pos.x, dz = t.pos.z - oni.pos.z, l = Math.hypot(dx, dz) || 1; if (d > 6){ const ox = oni.pos.x, oz = oni.pos.z; moveBody(oni, dx / l * 2.4 * dt, dz / l * 2.4 * dt, dt); oni.speedNow = Math.hypot(oni.pos.x - ox, oni.pos.z - oz) / dt; } else { oni.speedNow = 0; moveBody(oni, 0, 0, dt); }
+      if (oni.cd <= 0){ if (oni.burst <= 0){ oni.burst = 8; } shot('mg', t, clamp(.42 - d / 70, .08, .42) * (t.speedNow > 4 ? .6 : 1)); oni.burst--; oni.cd = oni.burst > 0 ? .1 : .8 / paceK(); }
+    }
+  } else if (oni.mode === 'roof'){ oni.laser.visible = false; oni.aim = false; oni.speedNow = 0; oni.heading += dt * .6; /* 屋上で見まわす */ }
+  else { // さがす (建物の中にも入る)
+    oni.laser.visible = false; oni.aim = false;
+    const w = oni.path[0]; if (w){ const dx = w.x - oni.pos.x, dz = w.z - oni.pos.z, d = Math.hypot(dx, dz); if (d < .5 && Math.abs(w.y - oni.pos.y) < 1.5) oni.path.shift(); else { const st = Math.min(d, ONI.speed * dt), ox = oni.pos.x, oz = oni.pos.z; moveBody(oni, dx / d * st, dz / d * st, dt); oni.speedNow = Math.hypot(oni.pos.x - ox, oni.pos.z - oz) / dt; turnTo(oni, Math.atan2(dx, dz), dt, 8); if (oni.speedNow < 1){ oni.stuck = (oni.stuck || 0) + dt; if (oni.stuck > 1.5){ oni.stuck = 0; oni.path = []; oni.repathT = 0; } } else oni.stuck = 0; } }
+    else { oni.speedNow = 0; moveBody(oni, 0, 0, dt); }
+  }
+  animModel(oni, dt); if (oni.aim){ oni.m.armR.rotation.set(-1.55, 0, .02); oni.m.armL.rotation.set(-1.4, 0, -.45); } else oni.m.armR.rotation.x = -.5; /* 歩くときも銃を少し前に */
+  const near = oni.target && oni.target.alive && oni.pos.distanceTo(oni.target.pos) <= 22 && oni.mode !== 'roof'; oni.rifle.visible = !near; oni.mg.visible = near;
+}
+
+// ---------- NPC ----------
+function updateNPC(n, dt){
+  if (!n.alive){ const far = n.pos.distanceTo(camera.position) > VIS; if (!n.gone) n.m.group.visible = !far; if (!far) updateDeath(n, dt); return; }
+  if (elapsed < COUNTDOWN || endT >= 0){ n.speedNow = 0; moveBody(n, 0, 0, dt); animIf(n, dt); return; }
+  n.thinkT -= dt;
+  if (n.thinkT <= 0){ n.thinkT = R(.4, .7);
+    const tt = elapsed - COUNTDOWN, seeOni = tt >= ONI_DELAY && oni.mode !== 'ship' && oni.pos.distanceTo(n.pos) < 150 && sees(n, oni, 1.5, 1.5);
+    if (seeOni && (n.mode !== 'flee' || !n.path.length)){ n.mode = 'flee'; n.fleeT = R(5, 9); // 鬼が見えた → 見えないところへ逃げる (近くの建物の上の階か、遠くの通り)
+      const s = nearestNode(n), res = dijkstra(s, 160); let best = -1, bs = -1e9;
+      for (let k = 0; k < 60; k++){ const i = (Math.random() * NODES.length) | 0; if (res.dist[i] >= 1e9) continue; const N0 = NODES[i], sc = Math.hypot(N0.x - oni.pos.x, N0.z - oni.pos.z) * .6 - res.dist[i] * .4 + (N0.y > 0 ? 15 : 0) + R(0, 8); if (sc > bs){ bs = sc; best = i; } }
+      if (best >= 0) n.path = [NODES[s], ...pathFrom(res, s, best)]; }
+    if (seeOni) n.fleeT = Math.max(n.fleeT, 3); /* 見えているあいだは逃げつづける */
+    if (n.mode === 'flee' && (n.fleeT -= .5) <= 0 && !seeOni){ n.mode = Math.random() < .6 ? 'hide' : 'roam'; n.hidden = false; n.path = []; }
+    if (!n.path.length && n.mode !== 'flee'){
+      if (n.mode === 'hide' && !n.hidden){ const b = BUILD.slice().sort((a, c) => Math.hypot(a.cx - n.pos.x, a.cz - n.pos.z) - Math.hypot(c.cx - n.pos.x, c.cz - n.pos.z))[(Math.random() * 4) | 0]; const goal = b.hideNodes.length ? pick(b.hideNodes) : pick(b.nodes); n.path = routeTo(n, goal); n.hidden = true; }
+      else if (n.mode === 'roam'){ n.path = routeTo(n, pick(streetNodes.filter(i => Math.hypot(NODES[i].x - n.pos.x, NODES[i].z - n.pos.z) < 70))); }
+      else if (n.hidden && Math.random() < .08) n.hidden = false; } }
+  const w = n.path[0];
+  if (w){ const dx = w.x - n.pos.x, dz = w.z - n.pos.z, d = Math.hypot(dx, dz);
+    if (d < .45 && Math.abs(w.y - n.pos.y) < 1.5) n.path.shift();
+    else { const sp = n.mode === 'flee' ? n.run : n.walk, st = Math.min(d, sp * dt), ox = n.pos.x, oz = n.pos.z; moveBody(n, dx / d * st, dz / d * st, dt); n.speedNow = Math.hypot(n.pos.x - ox, n.pos.z - oz) / dt; turnTo(n, Math.atan2(dx, dz), dt, 10);
+      if (n.speedNow < sp * .2){ n.stuckT = (n.stuckT || 0) + dt; if (n.stuckT > 1.5){ n.stuckT = 0; n.path = []; } } else n.stuckT = 0; }
+  } else { n.speedNow = 0; moveBody(n, 0, 0, dt); }
+  animIf(n, dt);
+}
+function animIf(n, dt){ // 遠くの人は描かない・動かさない (速くするため)
+  const far = n.pos.distanceTo(camera.position) > VIS; n.m.group.visible = !far; if (far){ if (n.tag) n.tag.visible = false; return; } animModel(n, dt);
+}
+
+// ---------- あなた ----------
+function updatePlayer(dt){
+  if (ghost){ updateGhost(dt); return; }
+  const can = elapsed >= COUNTDOWN && player.alive && endT < 0;
+  const f = can ? (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) : 0, s = can ? (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) : 0;
+  let dx = -Math.sin(yaw) * f + Math.cos(yaw) * s, dz = -Math.cos(yaw) * f - Math.sin(yaw) * s;
+  const len = Math.hypot(dx, dz); if (len > 0){ dx /= len; dz /= len; }
+  const running = keys.ShiftLeft || keys.ShiftRight, speed = running ? 5.6 : 3.2;
+  const ox = player.pos.x, oz = player.pos.z;
+  moveBody(player, dx * speed * dt, dz * speed * dt, dt);
+  const moved = Math.hypot(player.pos.x - ox, player.pos.z - oz); bob += moved * (running ? 2.4 : 2.9); player.speedNow = moved / dt; player.heading = yaw + Math.PI;
+  camera.position.set(player.pos.x, player.pos.y + camY + Math.sin(bob) * (moved > .001 ? .035 : 0), player.pos.z);
+  camera.rotation.set(pitch, yaw, 0);
+}
+function startGhost(){
+  state = 'play'; ghost = true; if (player.m) player.m.group.visible = true;
+  gpos.set(player.pos.x, player.pos.y + 8, player.pos.z + 6); pitch = -.4;
+  for (const id of ['red', 'bloodScreen']) $(id).style.opacity = 0; $('ghostTint').style.display = 'block';
+  showMsg('幽霊になった… 最後まで観戦できる。Q で観戦をやめる', 3);
+}
+function updateGhost(dt){
+  const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), s = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  const sp = (keys.ShiftLeft || keys.ShiftRight) ? 30 : 10, fx2 = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch);
+  gpos.x = clamp(gpos.x + (fx2 * f + Math.cos(yaw) * s) * sp * dt, -C - 10, C + 10); gpos.z = clamp(gpos.z + (fz * f - Math.sin(yaw) * s) * sp * dt, -C - 10, C + 10); gpos.y = clamp(gpos.y + (fy * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, .5, 80);
+  camera.position.copy(gpos); camera.rotation.set(pitch, yaw, 0);
+}
+
+// ---------- 毎フレーム ----------
+function update(dt){
+  elapsed += dt;
+  if (elapsed < COUNTDOWN){ const c = Math.ceil(COUNTDOWN - elapsed); if (c !== lastCount){ lastCount = c; beep(660); showMsg(String(c), .8); } }
+  else if (lastCount !== 0){ lastCount = 0; beep(990, .15, .3); showMsg('スタート！ 鬼がどこから来るかわからない…', 3); }
+  const tt = elapsed - COUNTDOWN;
+  if (tt >= GAME_T && endT < 0){ endT = 0; outcome = 'clear'; for (const p of people) if (p.alive) p.cleared = true; showMsg('4分たった！ 逃げきった人はクリア！', 4); beep(523, .15, .2); beep(784, .15, .3); }
+  updatePlayer(dt);
+  for (const n of npcs) updateNPC(n, dt); if (player.m && !player.alive) updateDeath(player, dt);
+  updateOni(dt);
+  for (let i = fx.length - 1; i >= 0; i--){ const f = fx[i]; f.t += dt; f.o.material.opacity = Math.max(0, 1 - f.t / f.life); if (f.t > f.life){ scene.remove(f.o); f.o.geometry.dispose(); fx.splice(i, 1); } }
+  if (state !== 'play') return;
+  common(dt);
+}
+function common(dt){
+  for (const b of bloods){ const u = b.userData; if (u.grow < 1){ u.grow = Math.min(1, u.grow + dt / 3); b.scale.setScalar(u.size * (.05 + .95 * (1 - Math.pow(1 - u.grow, 2)))); } }
+  if (endT < 0 && !people.some(p => p.alive)){ endT = 0; outcome = 'dead'; showMsg('全員いなくなった…', 3); }
+  if (endT >= 0){ endT += dt; if (endT > 4.5) endGame(); }
+  if (msgT > 0){ msgT -= dt; if (msgT <= 0) $('msg').style.opacity = 0; }
+  const t = Math.max(0, GAME_T - Math.max(0, elapsed - COUNTDOWN));
+  $('timer').textContent = elapsed < COUNTDOWN ? 'まもなく開始' : `のこり ${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`; $('timer').classList.toggle('hurry', t < 30);
+  $('alive').textContent = `生きている人 ${people.filter(p => p.alive).length}人 ／ ${TOTAL}人　${player.pos.y > 1 ? Math.round(player.pos.y / FH) + 1 + '階' : ''}`;
+  $('obj').textContent = ghost ? '' : elapsed - COUNTDOWN < ONI_DELAY ? 'かくれる場所をさがせ！' : '鬼から逃げきれ！';
+  const aimed = !ghost && player.alive && oni.target === player && oni.laser.visible;
+  $('aimWarn').style.display = aimed ? 'block' : 'none';
+  const near = !ghost && player.alive && oni.m.group.visible && oni.pos.distanceTo(player.pos) < 40 && sees(player, oni, 1.6, 1.5);
+  $('warn').textContent = aimed ? 'スナイパーにねらわれている！' : near ? '鬼が見える！' : ''; $('warn').style.opacity = aimed || near ? (performance.now() % 300 < 180 ? 1 : .45) : 0;
+  if (ghost){ $('prompt').style.display = 'block'; $('prompt').textContent = '幽霊モード（観戦中）　W・A・S・D：移動　スペース／C：上下　シフト：はやく　Q：観戦をやめる'; } else $('prompt').style.display = 'none';
+}
+function updateCaught(dt){
+  caughtT += dt; update(dt); if (state !== 'caught') return;
+  pitch += (-.5 - pitch) * Math.min(1, dt * 2); camY += (.35 - camY) * Math.min(1, dt * 2.5);
+  camera.position.set(player.pos.x, player.pos.y + camY, player.pos.z); camera.rotation.set(pitch, yaw, .25 * Math.min(1, caughtT));
+  $('red').style.opacity = settings.gore ? Math.min(1, caughtT) : Math.min(.5, caughtT * .6);
+  if (settings.gore >= 2) $('bloodScreen').style.opacity = Math.min(.95, caughtT * 4);
+  if (caughtT > 2.5){ camY = 1.6; startGhost(); }
+}
+let msgT = 0;
+function showMsg(t, dur){ $('msg').textContent = t; $('msg').style.opacity = 1; msgT = dur; }
+function feed(t){ const d = document.createElement('div'); d.textContent = t; $('feed').prepend(d); while ($('feed').children.length > 6) $('feed').lastChild.remove(); setTimeout(() => d.style.opacity = 0, 5500); setTimeout(() => d.remove(), 6700); }
+function endGame(quit = false){
+  if (state === 'over') return; state = 'over'; ghost = false; $('ghostTint').style.display = 'none'; $('aimWarn').style.display = 'none';
+  const win = outcome === 'clear' && player.alive;
+  if (win && window.ACH) ACH.clear('survival'); // 実績: クリア回数
+  if (document.pointerLockElement) document.exitPointerLock();
+  $('resTitle').textContent = win ? 'クリア！ 逃げきった' : quit ? '観戦をやめた' : 'ゲームオーバー';
+  $('resText').innerHTML = `<p>${player.alive ? '' : deathBy}</p><p>逃げきった人：${people.filter(p => p.alive).length}人 ／ ${TOTAL}人</p>`;
+  $('hud').style.display = 'none'; $('result').classList.add('on');
+}
+
+// ---------- 操作 ----------
+function startGame(){ initAudio(); newGame(); state = 'play'; paused = false; for (const id of ['title', 'result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); }
+function toTitle(){ ship.visible = false; rope.visible = false; state = 'title'; paused = false; ghost = false; $('ghostTint').style.display = 'none'; $('aimWarn').style.display = 'none'; for (const n of npcs) n.tag.visible = false; for (const id of ['result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'none'; for (const id of ['red', 'bloodScreen']) $(id).style.opacity = 0; $('title').classList.add('on'); }
+document.querySelectorAll('[data-gore]').forEach(b => b.onclick = () => { settings.gore = Number(b.dataset.gore); document.querySelectorAll('[data-gore]').forEach(x => x.classList.toggle('sel', x === b)); });
+$('startBtn').onclick = startGame; $('retryBtn').onclick = startGame;
+let lockFailed = false;
+function tryLock(){ try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => { lockFailed = true; showLookHint(); }); } catch (e){ lockFailed = true; showLookHint(); } }
+function showLookHint(){ if (state === 'play') showMsg('マウスをドラッグして見回してね', 3); }
+function setPaused(p){ paused = p; $('pause').classList.toggle('on', p); if (p){ for (const k in keys) keys[k] = false; } else clock.getDelta(); }
+document.addEventListener('pointerlockerror', () => { lockFailed = true; showLookHint(); });
+$('resumeBtn').onclick = () => { setPaused(false); tryLock(); };
+$('pause').onclick = e => { if (e.target === $('pause')){ setPaused(false); tryLock(); } };
+$('toTitle1').onclick = toTitle; $('toTitle2').onclick = toTitle;
+canvas.addEventListener('click', () => { if (state === 'play' && !locked && !lockFailed) tryLock(); });
+document.addEventListener('pointerlockchange', () => { locked = document.pointerLockElement === canvas; if (state !== 'play') return; setPaused(!locked); });
+document.addEventListener('mousemove', e => {
+  if (state !== 'play' || paused) return;
+  if (locked){ yaw -= e.movementX * .0022; pitch = clamp(pitch - e.movementY * .0022, -1.45, 1.45); }
+  else if (e.buttons & 1){ yaw -= e.movementX * .005; pitch = clamp(pitch - e.movementY * .005, -1.45, 1.45); }
+});
+addEventListener('keydown', e => {
+  if ((e.code === 'Escape' || e.code === 'KeyP') && state === 'play' && !locked){ setPaused(!paused); e.preventDefault(); return; }
+  if (state === 'play' && !paused && !e.repeat && e.code === 'KeyQ' && ghost){ endGame(true); return; }
+  keys[e.code] = true; if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault();
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+
+// ---------- ループ ----------
+const clock = new THREE.Clock();
+let titleT = 0, lastTick = 0;
+function loop(){ requestAnimationFrame(loop); tick(); }
+setInterval(() => { if (performance.now() - lastTick > 120) tick(); }, 33);
+function tick(){
+  lastTick = performance.now();
+  const real = Math.min(.25, clock.getDelta()), steps = Math.max(1, Math.ceil(real / .04)), dt = real / steps;
+  for (let i = 0; i < steps; i++){ if (state === 'play' && !paused) update(dt); else if (state === 'caught') updateCaught(dt); }
+  if (state === 'title'){ titleT += real; const a = titleT * .04; camera.position.set(Math.sin(a) * 120, 60, Math.cos(a) * 120); camera.lookAt(0, 0, 0); }
+  renderer.render(scene, camera);
+}
+window.__ready = true;
+window.__game = { _mb: moveBody, _B: BUILD, _N: NODES, get survT(){ return SURV_T; }, paceK, get state(){ return state; }, get people(){ return people; }, get npcs(){ return npcs; }, get player(){ return player; }, get oni(){ return oni; }, get elapsed(){ return elapsed; }, get outcome(){ return outcome; }, get ghost(){ return ghost; }, keys, get camera(){ return camera; }, BUILD, NODES, ONI,
+  setView(y, p){ yaw = y; pitch = p; }, set god(v){ window.__godMode = v; }, routeTo, nearestNode, groundHeight: (x, z, y) => groundHeight(x, z, y),
+  sim(sec, render = true){ const n = Math.round(sec * 30); for (let i = 0; i < n; i++){ if (state === 'play') update(1 / 30); else if (state === 'caught') updateCaught(1 / 30); } if (render) renderer.render(scene, camera); } };
+loop();
+</script>
+<!-- ===== 実績 (全ゲーム共通。ブラウザに保存される) ===== -->
+<style>
+#achToast{position:fixed;left:50%;top:70px;transform:translate(-50%,-20px);background:linear-gradient(180deg,#ffe08a,#e9b400);color:#1a1200;font-weight:800;font-size:20px;padding:10px 22px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transition:opacity .4s,transform .4s;z-index:60;pointer-events:none;white-space:nowrap}
+#achToast.on{opacity:1;transform:translate(-50%,0)}
+#achToast small{display:block;font-size:13px;font-weight:700;opacity:.8}
+#achBook{z-index:40}
+#achBook .ach{display:flex;gap:12px;align-items:center;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 12px;margin:8px 0;background:rgba(255,255,255,.04)}
+#achBook .ach .no{font-size:13px;color:#aab;width:34px;text-align:center}
+#achBook .ach .ic{font-size:26px;width:36px;text-align:center}
+#achBook .ach .nm{font-size:19px;font-weight:800}
+#achBook .ach .how{font-size:14px;color:#cfd6e4;line-height:1.5}
+#achBook .ach .dt{font-size:12px;color:#9ab}
+#achBook .ach.lock{opacity:.75}
+#achBook .ach.lock .nm{color:#8a8f9e;letter-spacing:4px}
+#achBook .ach.got{border-color:#e9b400;background:rgba(233,180,0,.1)}
+#achCount{color:#ffe08a;font-weight:700;margin:4px 0 6px}
+</style>
+<div id="achToast"></div>
+<div class="screen" id="achBook"><div class="panel">
+  <h2>実績図鑑</h2>
+  <div id="achCount"></div>
+  <div id="achList"></div>
+  <button class="big" id="achClose">とじる</button>
+  <button class="sub" id="achReborn">リボーン（実績を0個からやり直す）</button>
+</div></div>
+<script>
+(function(){
+  var KEY = 'deathgame_achievements_v1';
+  var LIST = [
+    { id: '01', name: '当り屋',     how: 'おみくじデスゲームで、自分から火矢に当たりに行って死亡する' },
+    { id: '02', name: 'プロ',       how: '全ゲームを20回ずつクリアする' },
+    { id: '03', name: '裏切り者',   how: '首輪マーク当てゲームで、3人だまして殺す' },
+    { id: '04', name: 'ディーラー', how: '地下ブラックジャックを15回クリアする' },
+    { id: '05', name: '知ってた',   how: 'トンネル逃亡ゲームを10回クリアする' },
+    { id: '06', name: '騙された人', how: '首輪マーク当てゲームで、20回マークをまちがえて死亡する' },
+    { id: '07', name: '猛獣ハンター', how: '猛獣ハンターで、猛獣を合計20匹たおす' },
+    { id: '08', name: '運動音痴',   how: 'ドローンレーザーで10回死亡する' },
+    { id: '09', name: '爆弾マニア', how: '缶蹴りで5回死亡する' },
+    { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
+    { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
+  ];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa'];
+  function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
+  function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
+  var D = load();
+  var byId = function(id){ for (var i = 0; i < LIST.length; i++) if (LIST[i].id === id) return LIST[i]; };
+  var toastQ = [], toastOn = false;
+  function toast(a){ toastQ.push(a); if (!toastOn) nextToast(); }
+  function nextToast(){
+    var a = toastQ.shift(), el = document.getElementById('achToast'); if (!a){ toastOn = false; return; }
+    toastOn = true; el.innerHTML = '<small>実績解除！</small>' + a.id + '　' + a.name; el.classList.add('on');
+    setTimeout(function(){ el.classList.remove('on'); setTimeout(nextToast, 500); }, 3200);
+  }
+  function unlock(id){ D = load(); if (D.unlocked[id]) return; D.unlocked[id] = Date.now(); save(); var a = byId(id); if (a) toast(a); }
+  function check(){
+    var c = D.clears, s = D.stats;
+    if (GAMES.every(function(g){ return (c[g] || 0) >= 20; })) unlock('02');
+    if ((s.tricked || 0) >= 3) unlock('03');
+    if ((c.bj || 0) >= 15) unlock('04');
+    if ((c.tunnel || 0) >= 10) unlock('05');
+    if ((s.wrongDeaths || 0) >= 20) unlock('06');
+    if ((s.beastKills || 0) >= 20) unlock('07');
+    if ((s.droneDeaths || 0) >= 10) unlock('08');
+    if ((s.canDeaths || 0) >= 5) unlock('09');
+    if ((s.elevDrops || 0) >= 3) unlock('10');
+  }
+  function render(){
+    D = load();
+    var got = LIST.filter(function(a){ return D.unlocked[a.id]; }).length;
+    document.getElementById('achCount').textContent = '解除した実績：' + got + ' ／ ' + LIST.length;
+    document.getElementById('achList').innerHTML = LIST.map(function(a){
+      var t = D.unlocked[a.id];
+      if (t){ var d = new Date(t); return '<div class="ach got"><div class="no">' + a.id + '</div><div class="ic">🏆</div><div><div class="nm">' + a.name + '</div><div class="how">' + a.how + '</div><div class="dt">' + (d.getMonth() + 1) + '月' + d.getDate() + '日に解除</div></div></div>'; }
+      return '<div class="ach lock"><div class="no">' + a.id + '</div><div class="ic">🔒</div><div><div class="nm">？？？</div><div class="how">解除方法：' + a.how + '</div></div></div>';
+    }).join('');
+  }
+  function open(){ render(); document.getElementById('achBook').classList.add('on'); }
+  /* おさいふ (みらいモールで使えるお金。ゲームをクリアするとチケットがもらえる。実績のリボーンでは消えない) */
+  var WKEY = 'mirai_wallet_v1';
+  function wload(){ try { var w = JSON.parse(localStorage.getItem(WKEY)); if (w && typeof w.yen === 'number'){ w.items = w.items || []; w.log = w.log || []; return w; } } catch (e){} return { yen: 0, items: [], log: [] }; }
+  function wsave(w){ try { localStorage.setItem(WKEY, JSON.stringify(w)); } catch (e){} }
+  function wtoast(t){ var el = document.getElementById('walletToast'); if (!el){ el = document.createElement('div'); el.id = 'walletToast'; el.style.cssText = 'position:fixed;left:50%;top:20%;transform:translateX(-50%);z-index:99998;background:linear-gradient(#fff8d0,#f4d060);color:#5a3a00;font:bold 20px "BIZ UDPGothic","Hiragino Sans",sans-serif;padding:12px 24px;border-radius:12px;border:3px solid #c08a10;box-shadow:0 6px 20px rgba(0,0,0,.45);opacity:0;transition:opacity .4s;pointer-events:none;text-align:center;line-height:1.5'; document.body.appendChild(el); } el.innerHTML = t; el.style.opacity = 1; clearTimeout(el._t); el._t = setTimeout(function(){ el.style.opacity = 0; }, 4500); }
+  /* 着られる物 (名前 → どこに着るか・見た目の変化)。同じ場所の物は1つだけ */
+  var WEAR = {
+    '白いTシャツ': { at: '服', set: { shirt: 0xf4f4f4 } }, '恐竜のTシャツ': { at: '服', set: { shirt: 0x3a9a4a } }, 'しましまTシャツ': { at: '服', set: { shirt: 0x2e5aa8, stripe: true } },
+    'ワイシャツ': { at: '服', set: { shirt: 0xf8f8f8 } }, 'ジャケット': { at: '服', set: { shirt: 0x2a2e3a, blazer: true } }, 'ワンピース': { at: '服', set: { shirt: 0xd06a8a, dress: true } },
+    'ブラウス': { at: '服', set: { shirt: 0xf4e4ee } }, 'カーディガン': { at: '服', set: { shirt: 0xc8a878 } }, 'パーカー': { at: '服', set: { shirt: 0x6a6a72, hood: true } },
+    'トレーナー': { at: '服', set: { shirt: 0x3a5aa0 } }, 'ダウンコート': { at: '服', set: { shirt: 0x1e2a3a } }, 'レインコート': { at: '服', set: { shirt: 0xf4c430, hood: true } },
+    'ダッフルコート': { at: '服', set: { shirt: 0x8a6a4a } }, 'パジャマ': { at: '服', set: { shirt: 0x9ac0e8, pants: 0x9ac0e8 } }, '着ぐるみパジャマ': { at: '服', set: { shirt: 0xf0c8a0, pants: 0xf0c8a0, hood: true, catEars: true } },
+    '半ズボン': { at: 'ズボン', set: { shorts: true } },
+    'キャップ': { at: 'ぼうし', set: { hat: 'cap', hatColor: 0xc62828 } }, '麦わらぼうし': { at: 'ぼうし', set: { hat: 'straw' } }, 'ニット帽': { at: 'ぼうし', set: { hat: 'beanie', hatColor: 0x2e7d32 } },
+    'めがね': { at: '顔', set: { glasses: true } }, 'サングラス': { at: '顔', set: { glasses: true } },
+    'ネクタイ': { at: '首', set: { blazer: true, tieColor: 0xb03030 } }, 'マフラー': { at: '首', set: { scarf: 0xc62828 } }, 'リュック': { at: 'せなか', set: { pack: 0x2a4a8a } }, 'ショルダーバッグ': { at: 'せなか', set: { pack: 0x8a5a3a } }
+  };
+  window.WALLET = {
+    get: function(){ return wload(); },
+    add: function(n, why){ var w = wload(); w.yen += n; w.log.unshift({ t: Date.now(), n: n, why: why || '' }); w.log = w.log.slice(0, 60); wsave(w); wtoast('🎫 ' + n.toLocaleString() + '円チケットをもらった！<br><small>みらいモールで使える（所持金 ' + w.yen.toLocaleString() + '円）</small>'); },
+    spend: function(n, item){ var w = wload(); if (w.yen < n) return false; w.yen -= n; if (item) w.items.push(item); w.log.unshift({ t: Date.now(), n: -n, why: item ? item.name : '' }); w.log = w.log.slice(0, 60); wsave(w); return true; },
+    save: wsave, toast: wtoast,
+    /* スキン: 基本 (肌・髪型・色) + 着ている服や小物 (モールで買った物) */
+    WEAR: WEAR,
+    skin: function(){ var s = wload().skin; return s && s.base ? s : { base: { skin: 0xf1c7a5, hairStyle: 'short', hair: 0x1a1210, shirt: 0x3a7bd5, pants: 0x2c3e50 }, equip: [] }; },
+    setSkin: function(s){ var w = wload(); w.skin = s; wsave(w); },
+    lookOf: function(s){ var b = s.base, o = { shirt: b.shirt, pants: b.pants, hair: b.hair, skin: b.skin, look: { hair: b.hairStyle || 'short' } };
+      (s.equip || []).forEach(function(n){ var p = WEAR[n]; if (!p) return; for (var k in p.set){ if (k === 'shirt' || k === 'pants') o[k] = p.set[k]; else o.look[k] = p.set[k]; } }); return o; },
+    skinLook: function(){ var w = wload(); return w.skin && w.skin.base ? window.WALLET.lookOf(w.skin) : {}; }
+  };
+  window.ACH = {
+    clear: function(g, opt){ D = load(); D.clears[g] = (D.clears[g] || 0) + 1; save(); check(); var pay = opt && typeof opt.pay === 'number' ? opt.pay : 5000; if (pay > 0 && window.WALLET) WALLET.add(pay, g); },
+    add: function(k, n){ D = load(); D.stats[k] = (D.stats[k] || 0) + (n || 1); save(); check(); },
+    unlock: unlock, open: open, data: function(){ return load(); }
+  };
+  check(); // ひらいたときにも、条件を満たしている実績がないか確かめる
+  // タイトル画面に「実績図鑑」ボタン
+  var sb = document.getElementById('startBtn');
+  if (sb){ var b = document.createElement('button'); b.className = 'sub'; b.id = 'achBtn'; b.textContent = '🏆 実績図鑑'; b.onclick = open; sb.parentNode.insertBefore(b, sb.nextSibling); }
+  document.getElementById('achClose').onclick = function(){ document.getElementById('achBook').classList.remove('on'); };
+  document.getElementById('achReborn').onclick = function(){
+    if (!confirm('リボーンすると、解除した実績とクリア回数などの記録がすべて0になります。いいですか？')) return;
+    D = fresh(); save(); render(); document.getElementById('achToast').classList.remove('on');
+  };
+})();
+</script>
+<!-- ===== コントローラー (プロコンなど) でも操作できる。キーボードとマウスの操作はそのまま ===== -->
+<style>
+.gp-focus{outline:4px solid #ffd400!important;outline-offset:3px!important;box-shadow:0 0 0 8px rgba(255,212,0,.35)!important}
+#gpHelp{position:fixed;right:10px;bottom:10px;z-index:99999;background:rgba(10,14,24,.9);color:#fff;font:12px/1.55 "BIZ UDPGothic","Hiragino Sans",sans-serif;padding:10px 13px;border-radius:10px;border:1px solid rgba(255,255,255,.25);pointer-events:none;display:none;max-width:275px;text-align:left}
+#gpHelp b{color:#ffd400}
+#gpToast{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:rgba(10,14,24,.9);color:#fff;font:bold 15px "BIZ UDPGothic",sans-serif;padding:8px 16px;border-radius:20px;pointer-events:none;opacity:0;transition:opacity .4s}
+</style>
+<div id="gpHelp"><b>コントローラーの操作</b><br>
+左スティック：移動（スティックを押しこむ か ZL：走る）<br>
+右スティック：見回す<br>
+B：スペース（ジャンプ）　A：E<br>
+Y：Q　X：C（かがむ）<br>
+R：F　L：R　ZR：マウスのクリック<br>
+＋：ポーズ　－：M<br>
+十字キー：← 1　↑ 2　→ 3　↓ エンター<br>
+メニューでは、十字キーで選んで <b>A で決定</b>、B でもどる</div>
+<div id="gpToast"></div>
+<script>
+(() => {
+  const DEAD = .18, STICK = .45, LOOK_X = 2.6, LOOK_Y = 1.9;   /* 右スティックをいっぱいに倒すと、1秒で約150°回る */
+  const held = {};   /* コントローラーが押しているキー */
+  let blocked = {}, wasMenu = false, used = false, zrOn = false, helpT = 0, focus = null, prev = [], navHold = '', navT = 0, last = performance.now(), toastT = 0, dragOn = false, vx = innerWidth / 2, vy = innerHeight / 2;
+  const $h = document.getElementById('gpHelp'), $t = document.getElementById('gpToast');
+  const keyName = c => c.startsWith('Key') ? c.slice(3).toLowerCase() : c.startsWith('Digit') ? c.slice(5) : c === 'Space' ? ' ' : c === 'ShiftLeft' ? 'Shift' : c;
+  function key(code, down){ if (!!held[code] === down) return; held[code] = down; document.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', { code, key: keyName(code), bubbles: true, cancelable: true })); }
+  const tap = code => { key(code, true); setTimeout(() => key(code, false), 60); };
+  const releaseAll = () => { for (const c in held) if (held[c]) key(c, false); if (dragOn) endDrag(); if (zrOn){ zrOn = false; mouse('mouseup', 0); } };
+  const cv = () => document.querySelector('canvas') || document.body;
+  function mouse(type, button){ cv().dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button, buttons: type === 'mouseup' || type === 'click' ? 0 : button === 2 ? 2 : 1, clientX: vx, clientY: vy, view: window })); }
+  const DRAGGAME = $h.dataset.mode === 'drag';   /* てんびん: 画面をドラッグして見回すゲーム */
+  function startUsing(){ if (used) return; used = true; /* マウスを画面に閉じこめない遊び方にする (ゲームに「閉じこめられなかった」と知らせる) */ if (!document.pointerLockElement) document.dispatchEvent(new Event('pointerlockerror')); }
+  function endDrag(){ dragOn = false; cv().dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 0, buttons: 0, clientX: vx, clientY: vy })); }
+  function toast(t){ $t.textContent = t; $t.style.opacity = 1; toastT = 3; }
+  addEventListener('gamepadconnected', () => { toast('コントローラーがつながりました'); helpT = 8; });
+  addEventListener('gamepaddisconnected', () => { releaseAll(); toast('コントローラーがはずれました'); });
+
+  // ---------- メニュー (タイトル・ポーズ・終わりの画面) のボタン選び ----------
+  const SEL = 'button, a[href], .opt, select, [onclick], [data-gp]';
+  const inScroller = el => { for (let p = el.parentElement; p && p !== document.body; p = p.parentElement){ const o = getComputedStyle(p).overflowY; if ((o === 'auto' || o === 'scroll') && p.scrollHeight > p.clientHeight + 4){ const r = p.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; } } return false; };
+  const scrollable = () => document.documentElement.scrollHeight > innerHeight + 4;
+  /* ゲームの画面では、タイトル・ポーズ・終わりなどの「画面いっぱいのメニュー」の中のボタンだけを選ぶ (ゲーム中に出ているボタンで歩けなくならないように) */
+  const menuSel = () => !document.querySelector('canvas') || $h.dataset.menu === 'all' ? null : '.screen' + ($h.dataset.menu ? ', ' + $h.dataset.menu : '');
+  function clickables(){
+    const out = [], ms = menuSel();
+    for (const el of document.querySelectorAll(SEL)){
+      if (el.disabled || el.closest('#gpHelp') || (ms && !el.closest(ms))) continue; const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
+      const on = r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+      if (on){ const hit = document.elementFromPoint(Math.min(innerWidth - 1, Math.max(0, r.left + r.width / 2)), Math.min(innerHeight - 1, Math.max(0, r.top + r.height / 2))); if (!hit || !(hit === el || el.contains(hit) || hit.contains(el))) continue; }
+      else if (!(scrollable() || inScroller(el)) || !(el.checkVisibility ? el.checkVisibility({ opacityProperty: true, visibilityProperty: true }) : true)) continue;
+      out.push(el); }
+    return out;
+  }
+  function setFocus(el){ if (focus === el) return; if (focus) focus.classList.remove('gp-focus'); focus = el; if (el){ el.classList.add('gp-focus'); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } }
+  function firstFocus(list){ return list.find(e => /startBtn|resumeBtn|retryBtn/.test(e.id)) || list.find(e => e.classList.contains('sel')) || list[0]; }
+  function move(list, dir){
+    if (!focus || !list.includes(focus)){ setFocus(firstFocus(list)); return; }
+    const a = focus.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2; let best = null, bs = 1e9;
+    for (const el of list){ if (el === focus) continue; const b = el.getBoundingClientRect(), dx = b.left + b.width / 2 - ax, dy = b.top + b.height / 2 - ay;
+      const main = dir === 'L' ? -dx : dir === 'R' ? dx : dir === 'U' ? -dy : dy, side = dir === 'L' || dir === 'R' ? Math.abs(dy) : Math.abs(dx); if (main < 4) continue; const s = main + side * 2.2; if (s < bs){ bs = s; best = el; } }
+    if (best) setFocus(best);
+  }
+
+  // 右スティックで見回す (マウスを動かしたのと同じにする)
+  function look(rx, ry, dt){
+    if (rx || ry){
+      if (!DRAGGAME && document.querySelector('canvas')){ const k = document.pointerLockElement ? .0022 : .005; document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, movementX: rx * LOOK_X * dt / k, movementY: ry * LOOK_Y * dt / k, buttons: document.pointerLockElement ? 0 : 1, clientX: vx, clientY: vy, view: window })); }
+      else if (DRAGGAME){ if (!dragOn){ dragOn = true; vx = innerWidth / 2; vy = innerHeight / 2; cv().dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, buttons: 1, clientX: vx, clientY: vy })); } vx += rx * LOOK_X * dt / .005; vy += ry * LOOK_Y * dt / .005; dispatchEvent(new MouseEvent('mousemove', { bubbles: true, buttons: 1, clientX: vx, clientY: vy })); }
+      else { vx = Math.min(innerWidth, Math.max(0, vx + rx * 700 * dt)); vy = Math.min(innerHeight, Math.max(0, vy + ry * 500 * dt)); dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: vx, clientY: vy })); }
+    } else if (dragOn) endDrag();
+  }
+  function loop(){ requestAnimationFrame(loop); step(performance.now()); }
+  setInterval(() => { if (performance.now() - last > 120) step(performance.now()); }, 33);   /* 画面が隠れていても止まらないように */
+  function step(now){
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    if (toastT > 0 && (toastT -= dt) <= 0) $t.style.opacity = 0;
+    const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : []; const gp = pads[0];
+    if (!gp){ if (Object.values(held).some(Boolean)) releaseAll(); $h.style.display = 'none'; if (focus){ focus.classList.remove('gp-focus'); focus = null; } return; }
+    const raw = i => !!(gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > .5)); for (const i in blocked) if (!raw(i)) delete blocked[i]; const B = i => raw(i) && !blocked[i], ax = i => { const v = gp.axes[i] || 0; return Math.abs(v) < DEAD ? 0 : v; };
+    const now_ = gp.buttons.map((b, i) => B(i)), was = prev, down = i => now_[i] && !was[i]; prev = now_;
+    const lx = ax(0), ly = ax(1), rx = ax(2), ry = ax(3);
+    if (now_.some(Boolean) || lx || ly || rx || ry) startUsing();
+    if (helpT > 0) helpT -= dt;
+    const list = clickables(), menu = list.length > 0;
+    $h.style.display = used && (menu || helpT > 0) ? 'block' : 'none';
+    // ＋ はいつでもポーズ (マウスが閉じこめられていたら外す。外れるとゲームがポーズになる)
+    if (down(9)){ if (document.pointerLockElement) document.exitPointerLock(); else tap('KeyP'); }
+
+    if (menu !== wasMenu){ wasMenu = menu; gp.buttons.forEach((b, i) => { if (raw(i)) blocked[i] = true; }); }   /* メニューとゲームが切りかわったら、押しっぱなしのボタンは一度はなすまで効かない */
+    if (menu){
+      for (const c in held) if (held[c]) key(c, false); if (zrOn){ zrOn = false; mouse('mouseup', 0); }
+      if (!focus || !list.includes(focus)) setFocus(firstFocus(list));
+      const dir = B(12) || ly < -STICK ? 'U' : B(13) || ly > STICK ? 'D' : B(14) || lx < -STICK ? 'L' : B(15) || lx > STICK ? 'R' : '';
+      if (dir && (dir !== navHold || (navT -= dt) <= 0)){ move(list, dir); navT = dir !== navHold ? .38 : .14; } navHold = dir;
+      if (down(1) && focus) focus.click();
+      if (down(0)){ const back = list.find(e => /もどる|戻る|とじる|閉じる|再開|キャンセル/.test(e.textContent)); if (back) back.click(); }
+      if (ry && scrollable()) scrollBy(0, ry * 900 * dt);
+      else if (document.querySelector('canvas')) look(rx, ry, dt);   /* ボタンが出ていても、右スティックで見回せる */
+      if (down(8)) tap('KeyM');
+      return;
+    }
+    if (focus){ focus.classList.remove('gp-focus'); focus = null; } navHold = '';
+
+    // ---------- ゲーム中 ----------
+    key('KeyW', ly < -STICK); key('KeyS', ly > STICK); key('KeyA', lx < -STICK); key('KeyD', lx > STICK);
+    key('ShiftLeft', B(6) || B(10));
+    key('Space', B(0)); key('KeyE', B(1)); key('KeyQ', B(2)); key('KeyC', B(3)); key('KeyR', B(4)); key('KeyF', B(5)); key('KeyM', B(8));
+    key('Digit1', B(14)); key('Digit2', B(12)); key('Digit3', B(15)); key('Enter', B(13));
+    if (B(7) && !zrOn) mouse('mousedown', 0); if (!B(7) && zrOn){ mouse('mouseup', 0); mouse('click', 0); } zrOn = B(7);
+    look(rx, ry, dt);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+<!-- /gamepad -->
+</body>
+</html>

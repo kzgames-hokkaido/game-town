@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>最新コーナー</title>
+<style>
+:root{--bg:#0d1226;--panel:#151c38;--line:rgba(255,255,255,.12);--text:#eef2fb;--sub:#a9b4d0;--accent:#ffe14d;--new:#ff5a7a;--game:#4fc3f7;--fix:#7bd88f;--look:#c792ea;--move:#ffb74d}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#1d2752 0%,var(--bg) 60%);color:var(--text);font-family:"BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;min-height:100vh}
+header{padding:28px 16px 10px;text-align:center}
+header small{display:block;color:var(--sub);letter-spacing:.3em;font-size:13px}
+header h1{margin:4px 0 6px;font-size:40px;letter-spacing:.08em}
+header h1 .neon{color:var(--accent);text-shadow:0 0 12px rgba(255,225,77,.6)}
+header p{margin:0;color:var(--sub)}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 40px}
+.tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.tabs button{background:var(--panel);color:var(--text);border:2px solid var(--line);border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer}
+.tabs button.on{border-color:var(--accent);color:var(--accent)}
+section{display:none}
+section.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0}
+.day{margin:22px 0 6px;color:var(--accent);font-weight:800;font-size:18px}
+.item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:none}
+.tag{flex:none;font-size:12px;font-weight:800;border-radius:6px;padding:3px 7px;color:#0d1226;margin-top:2px}
+.tag.game{background:var(--game)}.tag.chg{background:#ff8a65}.tag.fix{background:var(--fix)}.tag.look{background:var(--look)}.tag.move{background:var(--move)}.tag.town{background:var(--accent)}
+.newb{flex:none;font-size:11px;font-weight:900;color:#fff;background:var(--new);border-radius:6px;padding:2px 6px;margin-top:3px}
+.txt b{color:#fff}
+.timeline .row{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.timeline .row:last-child{border-bottom:none}
+.no{font-size:22px;font-weight:900;color:var(--accent);text-align:center}
+.nm{font-weight:800;font-size:17px}
+.dt{color:var(--sub);font-size:13px}
+.play{background:#2b6fd6;color:#fff;border:none;border-radius:10px;padding:8px 14px;font:inherit;font-weight:700;text-decoration:none;white-space:nowrap}
+.legend{display:flex;gap:10px;flex-wrap:wrap;color:var(--sub);font-size:13px;margin:6px 0 4px}
+.legend span{display:flex;gap:5px;align-items:center}
+.back{display:block;width:max-content;margin:26px auto 0;background:#e8eef8;color:#13233a;border-radius:12px;padding:12px 26px;font-weight:800;text-decoration:none}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.stat b{display:block;font-size:30px;color:var(--accent)}
+@media (max-width:520px){header h1{font-size:30px}.timeline .row{grid-template-columns:40px 1fr}.timeline .play{grid-column:2;justify-self:start}}
+</style>
+</head>
+<body>
+<header>
+  <small>さいしん コーナー</small>
+  <h1><span class="neon">最新</span>コーナー</h1>
+  <p>新しいゲームや、変わったところのお知らせ</p>
+</header>
+<div class="wrap">
+  <div class="tabs">
+    <button class="on" data-tab="news">最新のお知らせ</button>
+    <button data-tab="order">ゲームができた順番</button>
+    <button data-tab="info">いろいろ</button>
+  </div>
+
+  <section id="news" class="on">
+    <div class="legend"><span><i class="tag game">新しいゲーム</i></span><span><i class="tag chg">変わった</i></span><span><i class="tag move">新しい動き</i></span><span><i class="tag look">見た目</i></span><span><i class="tag fix">直した</i></span><span><i class="tag town">街</i></span><span><i class="newb">NEW</i>前に来たときより後のお知らせ</span></div>
+    <div id="newsList"></div>
+  </section>
+
+  <section id="order">
+    <div class="card timeline" id="orderList"></div>
+  </section>
+
+  <section id="info">
+    <div class="stat" id="stats"></div>
+    <div class="card" id="infoText"></div>
+  </section>
+
+  <a class="back" href="街.html">街へもどる</a>
+</div>
+
+<script>
+/* ===== 最新コーナーのデータ =====
+   新しいゲーム・NPC・見た目(スキン)の変更・新しい動きができたら、ここに足す (新しいものを上に)。
+   ひみつの仕かけ (にせのゴールなど) は書かない。 */
+const NEWS = [
+  { d: '2026-10-25', items: [
+    ['chg', '鉄骨渡り第一ゾーン：地下の仕事から<b>トンネル掘りをなくした</b>（石くだき・荷物運び・ランプ交換・支柱直しの4つ）。そのかわり、<b>ノルマが終わったら、トンネルの好きなところを掘れる</b>（スペース3回で穴があく）。時々<b>アンモナイトの化石・三葉虫の化石・恐竜の歯の化石・水晶・金のかけら・さびたコイン</b>が出てくる。見つけたものは持ち物の「発掘したもの」にたまる'],
+    ['new', '鉄骨渡り第一ゾーン：地下の<b>まんが券</b>で、まんが「ポコと流れ星」（4コマ×4ページ）が本当に読めるようになった（→ か スペースで次のページ）。<b>けいたいゲーム券</b>で、けいたいゲーム「ポコラン」（スペースでジャンプしてよける。スコアとベスト）が遊べる。自由行動は<b>30秒</b>に、睡眠は<b>15秒</b>になった（1日は1分30秒のまま）'],
+    ['chg', '鉄骨渡り第一ゾーン：地下の看板で<b>文字が板からはみ出していた</b>のを直した（長い行があるときは、文字が自動で小さくなって板におさまる）'],
+    ['new', '鉄骨渡り第一ゾーン：班の部屋の「地下のきまり」のとなりに<b>「地下娯楽」の看板</b>がついた。購買に<b>食事ステーキ券</b>（10万イソ。食事の献立にステーキ、元気＋40）・<b>まんが券</b>（3万イソ）・<b>けいたいゲーム券</b>（8万イソ）・<b>ふろ券</b>（5万イソ。共同のお風呂）が増えた（自由行動のときに持ち物から使う）。監督の「手が止まってるぞ」は、<b>8秒間なにも仕事をしなかったとき</b>だけ言うようになった（荷物運びのように1回が長い仕事でも、まじめにやっていれば言われない）'],
+    ['chg', '鉄骨渡り第一ゾーン：地下で<b>朝に起きると5秒だけ、班の部屋で今日の仕事・場所・やり方が大きく出る</b>ようになった（1日は1分30秒に）。トンネルでは<b>仕事をする場所に黄色い矢印</b>が立って、画面の下に「あと何m・どっちの向き」が出る。ちがう場所でスペースを押すと、矢印のほうを教えてくれる。地下の保存は2重になって、消えにくくなった'],
+    ['new', '鉄骨渡り第一ゾーン：地下の仕事が<b>日がわり</b>になった。<b>石くだき・荷物運び・ランプ交換・支柱直し</b>の4つから監督が決める（トンネルのおくの看板に出る）。給料日の給料は<b>最大5万イソ</b>になった'],
+    ['new', '鉄骨渡り第一ゾーン：落ちた人は<b>地下で働かされる</b>ようになった（3Dの地下を歩ける）。1日1分30秒（朝5秒・労働30秒・食事10秒・自由行動30秒・睡眠15秒）。<b>3日に1回 給料日</b>（最大5万イソ）。地下のお金<b>イソ</b>（10イソ＝1円）で、購買の<b>一日個室券</b>（15万イソ。テレビ・お風呂・エアコン・カラオケ）や<b>一日外出券</b>（50万イソ。地上の商店街へ）が買える。日数とイソは保存されて、タイトルの「地下のつづきから」で続けられる'],
+    ['new', 'みらいモールの<b>本屋</b>が<b>本棚</b>になった。背表紙をクリックすると本を引き出せて、表紙と説明が出て買える。<b>迷路ブック</b>（遊べる迷路5つ）・<b>デスゲーム漫画</b>「だるまさんが転んだデスゲーム」<b>1巻・2巻</b>（1話が4ページ、1巻に3話）・<b>漫画「星の姫と大要塞」1巻・2巻</b>・4コマまんが・<b>小説</b>・<b>絵本</b>・図かん・クイズの本・なぞなぞの本・ゲーム攻略本の12さつ。買った本は持ち物から<b>読める</b>'],
+    ['chg', '首輪マーク当てゲーム：ほかの人がやられる流れを変えた（くわしくはひみつ）。あおいの人は、このゲームでは長い髪の女の子の見た目になった'],
+    ['chg', '「都市を破壊しろ！」を<b>横から見た2D</b>にした。<b>マウスのクリック1つ</b>で、その場所にミサイル（空から落ちる）・時限爆弾・バリケードを置ける。ビルは<b>ひびが入り、かたむいて倒れこみ</b>、倒れた先のビルも巻きこむ。火事や地震では<b>上の階から順にくずれ落ちる</b>'],
+    ['new', 'みらいバースに新しい体験<b>「都市を破壊しろ！」</b>が来た。ミサイル・時限爆弾・津波・地震・火事・警察のバリケード（<b>ぜんぶ無料</b>）で町をこわす。マップは<b>ダウンタウン・ネオンタウン・ビーチ街・大要塞</b>の4つ。住民はちゃんといて、ビルから落ちると4階より上では大けが（救急車で病院へ）。大要塞の住民は敵で、うってくる'],
+    ['chg', 'ミライビデオ：動画の前に<b>広告（5〜10秒）</b>が入るようになった。みらいモールのお店や映画の宣伝が流れる'],
+    ['new', 'みらいモール 4階の映画館に、新しい映画<b>「星の姫と大要塞」</b>（約3分）が来た。さらわれた姫を助けに、3人で敵の大要塞へ。16機の敵との追いかけっこ、せまいトンネル、洞穴の最終兵器……。チケットは<b>2本の映画から選べる</b>'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：3番の人がにげたあと、鬼は<b>西階段から</b>3番の人を追いかけるようにした（中央階段からは下りない）。3番の人は1階の西通路で<b>後ろからうたれる</b>'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：あなたがやられて幽霊になったら、<b>仲間はもうついてこない</b>（その場にとどまる）。幽霊は<b>NPC にぶつからない</b>ようにした'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：1番の人と2番の人は、<b>4階の西階段のすぐ前</b>まで走ってから、<b>後ろからうたれる</b>ようにした（鬼に背中を向けたまま、前にうつぶせに倒れる）'],
+  ] },
+  { d: '2026-10-23', items: [
+    ['new', 'レースゲーム（ゲームセンター・ゲームソフト）：道に<b>？箱</b>を置いた。さわるとアイテムが出て、<b>E</b> で使う（マウスでねらう）。<b>ボム</b>は4秒後に爆発、<span style="color:#2ecc40">緑のボール</span>はねらったところへ、<span style="color:#e8312f">赤のボール</span>は1つ前の車にかならず当たる。ほかの車も使ってくる'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：4番の人がやられたあと、<b>7番の人と6番の人が3階の中央階段で合流</b>して、そのあと<b>あなたの仲間（8番の人）が加わる</b>流れにした'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：3番の人は<b>1階 西通路のまん中あたり</b>でやられるようにした。7番の人は、4番の人がやられたあとから<b>3階の中央階段</b>で6番の人と待っている'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：3人で鬼をたおそうとする場面を変えた。<b>3階でまちぶせ</b>して1人がやられ、もう1人は<b>西通路をにげて5階の西通路</b>でやられる'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：仲間の2人を、<b>鉄骨渡り第一ゾーンの4番の人</b>と、<b>けんた</b>にした（けんたの見た目は、雪合戦などに出てくるいぶきと同じ）'],
+    ['chg', '何でも豆知識屋：<b>りく</b>（青い服にキャップ）・けんた・ひなた など13人の見た目が、ゲームとちがっていたのを直した'],
+    ['new', '何でも豆知識屋：NPC図鑑に「<b>ほかのゲームに出てくる人</b>」（62人）と「<b>熱湯スタジアム（崩壊モード）に出てくる人</b>」（6人）を足した'],
+    ['chg', '何でも豆知識屋：鉄骨渡りの人の服の色を、ゲームと同じにした'],
+  ] },
+  { d: '2026-10-22', items: [
+    ['chg', 'みらいモール：<b>カードのスリーブ</b>に、カードを<b>何枚でも</b>入れられるようにした（スリーブをクリックすると、中のカードを見る・入れる・出すができる。カードをスリーブの上に重ねてもぜんぶ入る。中のカードもカードバトルに使える）'],
+    ['chg', 'スマホの<b>カメラが真っ暗</b>だったのと、<b>矢印を1回押すとずっと回る</b>のを直した'],
+    ['new', 'みらいモール：首に着ける<b>マフラー</b>を、2階のコート屋で売りはじめた'],
+    ['new', 'スキン：服の色・ズボンの色に、鉄骨渡り第一ゾーンの<b>4番の人の服の色（あい色）</b>を足した'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：鬼が<b>ぐるぐる回って、流れがおくれる</b>のを直した（追いかける相手の行き先を目指すようにした）'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：鬼が<b>4階の南階段でぐるぐる回り続ける</b>ことがあったのを直した'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：あなたと仲間2人は<b>1階の西階段</b>からスタート。待っている人は、<b>鬼が近づくとにげて</b>、いなくなるともどってくる（鬼のそばで立ったままにならない）。<b>幽霊モード</b>は、見ている方向に進む（上を見ながら W で上へ）'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：鬼はまず<b>5階</b>へ行く。鬼をたおそうとする人は、さいしょは<b>1人だけ</b>3階にいて、あとから仲間が来る'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：<b>ゴール以外の部屋はぜんぶしまっている</b>。ゴールの<b>ボタン2つは部屋の中</b>にあって、2人で同時に押すとクリア。さいごのヒントは「<b>4階の西階段のほうに行ってみよう</b>」'],
+    ['chg', 'L字マンション鬼ごっこ Bパターン：全員<b>1階の中央階段</b>からスタート。中央階段は<b>1つの部屋</b>になっていて、中に西通路へつながる部屋・南通路へつながる部屋・エレベーターがある。参加者は全員男性。<b>4分たつとアパートごと爆破される</b>（ゴールに入るしか助からない）。<b>幽霊モード</b>をえらぶと、やられたあとも空を飛んで、みんなのようすを見ていられる'],
+    ['chg', 'L字マンション鬼ごっこ：タイトル画面で<b>Bパターン</b>をえらべるようになった。<b>9階建て・11人</b>、鬼は1人で<b>マシンガン</b>を持っている。階段は中央階段・<b>西階段</b>・南階段。だれかに何かが起きる<b>決まった流れ</b>がある（ゴールは、さいごにヒントが出るまでわからない）'],
+    ['chg', '鉄骨渡り第一ゾーン：VIP席の料理から<b>ロブスターをなくした</b>。VIP席に<b>街のビルがめりこんでいた</b>のを直した'],
+    ['chg', '鉄骨渡り第一ゾーン：VIPは食べるとき、<b>テーブルまで歩いて料理を手に取り</b>、自分の場所にもどって食べる。テーブルのまん中には<b>ローストビーフなどが山もりの大きなおわん</b>がある'],
+    ['chg', '鉄骨渡り第一ゾーン：VIP席は<b>緑のマットの両がわ</b>になった。<b>白いテーブル</b>にローストビーフ・ぶどう・ワインがならんでいて、VIPは<b>食べながら</b>見ている。レースの始めは「渡らないのか！？」「走れー！」と言ってくる'],
+    ['chg', '鉄骨渡り第一ゾーン：かけ金の看板は<b>ゴール側のビルの壁</b>に貼ってある。下は安全ネットではなく、<b>いちばん下に緑の大きなマット</b>が置いてある。鉄骨に手をついて失格になっても、<b>渡りきればかけ金だけはもらえる</b>'],
+    ['chg', '鉄骨渡り第一ゾーン：VIPたちは<b>だれがクリアするか</b>にお金をかけている。ゴール側のビルの屋上に<b>かけ金の看板</b>（ゼッケンごとの合計）がある。<b>クリアすると、自分にかけられたお金がもらえる</b>（ファイナルステージの前に。400〜700円くらいで、人によってちがう）'],
+    ['chg', 'スマホ：<b>最初から入っているアプリも消せる</b>ようになった（ホーム画面で長押しして「−」、またはアプリストアで「けす」）。アプリストアからまた入れられる（アプリストアだけは消せない）'],
+    ['chg', 'スマホのトーク：友だちからの話しかけは、<b>遊んでいるときだけ</b>来るようになった。返事をしていない人からは続けて来ない。たまっていた通知は1人3件までにへらした'],
+    ['chg', '鉄骨渡り第一ゾーン：だれかが落ちそうなときや、鉄骨の上の人数がふえてきたとき、<b>VIPたちが「いけーーー！！！」「押せ！」とさけぶ</b>'],
+  ] },
+  { d: '2026-10-21', items: [
+    ['chg', 'みらいバースの生き残りゲーム：<b>つな引きの相手チームを弱くした</b>'],
+    ['chg', 'みらいバース：結果の画面に<b>「もう一回あそぶ」</b>ができた。もどらなくても、すぐ同じ体験をもう一度遊べる。生き残りゲームのガラスの橋は、<b>2まいとも同じ見た目</b>になった（外れは割れてはじめてわかる）'],
+    ['chg', 'みらいバースの生き残りゲーム：<b>ビー玉をなくして4つのゲーム</b>にした（だるまさんがころんだ → 型ぬき → つな引き → ガラスの橋）。<b>ガラスの橋で生き残れるのは1人だけ</b>（最初にわたりきった人）'],
+    ['chg', 'みらいバース：同じようなゲームが多すぎたので、<b>10種類・10個</b>にした。新しく<b>こおりおに公園</b>・<b>3対3ミニサッカー</b>・<b>ぐるぐるカートGP</b>・<b>いそがしカフェ</b>・<b>ドッジボール大会</b>・<b>色ぬり陣取りバトル</b>ができた'],
+    ['chg', 'みらいバースの<b>生き残りゲーム</b>が、40人で<b>5つのゲーム</b>を勝ち抜く形になった：だるまさんがころんだ → <b>型ぬき</b> → <b>つな引き</b> → <b>ビー玉</b> → <b>ガラスの橋</b>'],
+    ['chg', 'スマホ：ホーム画面にアプリが3段しか並ばなくなっていたのを直した（4段にもどった）'],
+    ['chg', 'スマホ：ホーム画面のアプリを押しても開かなくなっていたのを直した。並べかえで、<b>下の列（電話・メッセージなど）にもアプリを入れられる</b>ようになった（4つまで。重ねたアプリと入れかわる）'],
+    ['town', 'スマホのアプリストアに<b>大きなオンラインゲーム「みらいバース」</b>ができた（みらいモールの無料Wi-Fiで遊べる）。体験（ゲーム）が数えきれないほど入っていて、検索もできる。<b>収容所からの脱出</b>（ホラー。ふしぎな収容物がうろつく施設からキーカードを集めて脱出）・<b>感染者パニック</b>（感染者をワクチン玉で元にもどして町を守る）・<b>生き残りゲーム</b>（だるまさんがころんだ → 消える色の床）・<b>アスレチック</b>。どれもほかのプレイヤーといっしょに3Dで遊べる'],
+    ['chg', 'スマホのホーム画面：アプリを<b>長押し</b>すると、アイコンがゆれて<b>場所を動かせる</b>ようになった。つかんだまま画面のはしで止めると、となりのページへ移せる。「完了」でおしまい'],
+    ['chg', 'スマホのホーム画面：アプリが入りきらないときは、下にスクロールするのではなく<b>横の次のページ</b>に並ぶようになった。画面をドラッグするか、横の矢印・下の点・マウスホイールでページを切りかえる'],
+    ['chg', 'ミライビデオ：<b>サムネが動画ごとにちがう絵</b>になった（大きな文字つき）。ゲーム実況は<b>ゲームの名前に合った画面</b>（レース・パズル・ブロック積み・忍者・宇宙船・島づくり・サバイバル・ジャンプ）。チャンネル名を押すと<b>チャンネルのページ</b>に行けて、<b>チャンネル登録</b>もできる。動画に<b>コメント</b>を書くと、しばらくしてチャンネルの人から返信が来る'],
+    ['town', 'スマホのアプリストアに<b>動画アプリ「ミライビデオ」</b>ができた（みらいモールの無料Wi-Fiで見られる。圏外では見られない）。ゲーム実況・ホラー・料理・動物・科学・音楽・スポーツ・工作・旅行・おもしろ・ダンス・お絵かき・電車など、動画がものすごくたくさんあって、<b>検索するとほぼ必ず見つかる</b>。チャンネル名はどれも個性的。再生すると動くアニメと字幕が流れて、いいねもできる'],
+  ] },
+  { d: '2026-10-20', items: [
+    ['chg', '鉄骨渡り第一ゾーン：第1レースで<b>8番の人は9番の人に押されて</b>落ちるようにした（渡る順番と落ちる順番は同じ）。<b>5番の人が渡りだすと、地上のVIPたちがざわつく</b>。落ちた人は<b>安全ネットの上に残る</b>（次のレースで消える）。<b>ゼッケンはどのレースも1〜12番</b>になった'],
+    ['chg', 'ともだちバトル：<b>知らない人とオンライン対戦</b>ができるようになった（計算・はやおし・アスレチック対決のどれでも）。勝つと<b>レート</b>が上がって、全国の順位が出る。みらいタウンには、オンラインで<b>知らない人</b>が遊びに来て歩いている'],
+    ['town', 'スマホのアプリストアに、インターネットのゲームができた（みらいモールの無料Wi-Fiで遊べる。圏外では遊べない）。<b>ともだちバトル</b>：番号を交換した友だちと対戦（計算バトル・はやおしバトル・<b>アスレチック対決（3D）</b>）。<b>みらいタウン（3D）</b>：町でくらすゲーム。木をゆらして果物、池でつり、花を育てる、お店で売り買いして家に家具をかざる。友だちが住人として歩いている'],
+    ['chg', 'トーク：返事をもっと<b>ふつうの会話</b>にした（「○○好き？」「○○したことある？」「いつ遊ぶ？」などの質問にちゃんと答える）'],
+    ['fix', '待ち合わせ：番号を交換した人とは<b>別の見た目の人</b>が来ていたのを直した。交換したときの服・めがね・髪型をおぼえて、いつも<b>同じ見た目</b>で来る。「入口で待ってて」でもモールの入口に来る'],
+    ['chg', 'トーク：<b>待ち合わせ</b>ができるようになった。「フードコートで会おう」「おみくじの所に来て」のように場所を決めると、その人（グループならみんな）が<b>本当にそこへ走っていって待っている</b>。着いたらトークで知らせてきて、頭の上に「○番の人」と出る。近くに行くと話しかけてくれる'],
+    ['chg', 'トーク：<b>スタンプ</b>が使えるようになった（入力らんの左の😊から12しゅるい）。相手はスタンプの意味に合わせて返事をして、スタンプを送り返してくることもある'],
+    ['fix', 'トーク：「まだ行ってない」などに「〜のこと教えて」と変な返事をしていたのを直した。「まだ○○ない」「ねむい」「ひま」「おなかすいた」「すごい」「おわった」なども、ちゃんと返事する'],
+    ['fix', 'トーク：返事が<b>ちゃんと会話になる</b>ようにした。送った文の中身（好きなもの・食べた物・買った物・遊ぼう・何時？など）を読んで答え、前に聞いたことへの「うん」「ううん」にも話の流れで返す'],
+    ['chg', 'スマホに<b>トーク</b>アプリができた。電話番号を交換した人が友だちになって、文字を打って送ると<b>10秒くらいで返事</b>がくる。<b>グループ</b>も3つまで作れる。相手から話しかけてくることもあって、とどくと<b>通知の音とお知らせ</b>が出る'],
+    ['chg', 'スマホは一度買ったら<b>捨てられない</b>ようにした'],
+    ['chg', 'スマホ：みらいモールのお客さんや街の人の前で <b>R</b> を押すと<b>電話番号を交換</b>できる。電話アプリのれんらく先に「○番の人」と番号が出て、<b>その番号を入れてかけると通話</b>できる（相手によって話し方がちがう）'],
+    ['chg', 'スマホのホーム画面に、最初から<b>いろいろなアプリ</b>が並ぶようになった（カレンダー・天気・モールの地図・ニュース・時計・電卓・メモ・音楽、下に電話・メッセージ・アプリストア・設定）。入れたアプリもホーム画面に出る。設定でかべ紙も変えられる'],
+    ['town', 'みらいモールに<b>無料Wi-Fi</b>ができた。<b>スマホ</b>（Q か持ち物から開く）のアプリストアで、アプリを入れられる：<b>みらい通販</b>（スマホから品物が買える）・<b>写真アルバム</b>（スマホに写っている景色を撮る）・<b>ミニゲーム</b>3種類（もぐらたたき・フルーツキャッチ・ぴょんぴょんジャンプ。3こまで）・電卓・時計・メモ'],
+    ['chg', 'みらいモール：スマホの値段を<b>5000円</b>にした'],
+    ['chg', 'みらいモール：品物の値段は<b>一の位がぜんぶ0</b>になった（198円→200円など）。所持金の一の位も0にそろえた'],
+    ['fix', 'みらいモール：ソフトの<b>レースゲーム</b>が始まらなかったのを直した。ゲーム機（またはテレビ）の画面のまん中で遊べる'],
+    ['chg', 'みらいモール：<b>ゲームソフトだけで遊べる</b>ようにした（左右に青と赤のコントローラーがついたゲーム機の画面で遊ぶ。テレビを持っていればテレビで）。電気屋のゲーム機はやめて、かわりに<b>スマホ</b>を売るようにした'],
+    ['town', 'みらいモール：<b>ゲームソフト</b>（アクション「ポコのぼうけん」・パズル「いろいろブロック」・レース）を買うと、持ち物から遊べるようになった。<b>テレビ</b>か、左右に青と赤のコントローラーがついた<b>ゲーム機</b>（手で持って遊べる）が必要'],
+    ['chg', 'みらいモール：テレビの値段を<b>9800円</b>にした'],
+    ['town', 'みらいモール：4階の<b>映画館</b>で、映画のチケットを買うと<b>アニメ映画「ポコと流れ星」</b>（約2分）が見られるようになった'],
+    ['fix', 'みらいモール：リズムゲームを<b>ゆっくり</b>にした（テンポを下げて、ノーツが落ちる速さもおそく、ノーツの数も減らした）。レースゲームは、<b>相手の車もぶつかると遅くなる</b>ようにした（あなたとぶつかっても、相手どうしでぶつかっても、三角コーンにぶつかっても）'],
+    ['town', 'みらいモール：ゲームセンターの<b>レースゲーム</b>（4台で走って1位をめざす）と<b>リズムゲーム</b>（D F J K でノーツに合わせる）が本当に遊べるようになった'],
+    ['chg', 'カードバトル：<b>先にセットした人から攻撃</b>するルールに直した。攻撃が相手の防御か攻撃より多ければ勝ち。ただし早さで負けていたら、よけられて負け'],
+    ['town', 'みらいモール：4階に<b>カードテーブル</b>ができた。カードパックから出たカードを3まい使って、お客さんと<b>カードバトル</b>（3回勝負）。カードには<b>攻撃・防御・早さ</b>がある（ルールはテーブルの画面に書いてある）'],
+    ['chg', '持ち物：着けた服や小物は、左の<b>そうびのマス</b>に移る（クリックではずすと持ち物にもどる）。<b>長押し</b>で持ち物を好きなマスへ動かせる。<b>ゴミ箱</b>に入れると捨てられる（すぐなら「もどす」もできる）'],
+    ['chg', '<b>持ち物</b>がマインクラフトみたいなマス目になった（I で開く。画面の下にホットバー）。買った服や小物はクリックで<b>着られる</b>。<b>スキン</b>のタブで髪型・肌・髪・服・ズボンの色も変えられる。自分の見た目は、自分の体が見える場面で全部のゲームに反映される'],
+    ['town', 'みらいモール：<b>カードパック</b>を開けられる（5まい入り・レアもある）。<b>プラモデル</b>を組み立てられる（ロボット・車・新幹線。最後に色をぬる）。ゲームセンターで<b>クレーンゲーム</b>が遊べる'],
+    ['town', '街に<b>AD地点「みらいモール」</b>ができた。4階建てのショッピングモールで、お客さんがたくさんいる。お店の前で E を押すと買い物ができて、3階のフードコートではラーメンなどを食べられる'],
+    ['chg', 'ゲームを<b>クリアすると 5000円チケット</b>がもらえるようになった。みらいモールで使える。街の左上（ワープの下）に<b>所持金</b>が出る'],
+    ['chg', '鉄骨渡り：第一ゾーンから始めたときは、<b>1着は10000円・2着は5000円</b>のチケット。ただし<b>ファイナルステージをクリアしたときだけ</b>もらえる。ファイナルステージから始めたときは5000円'],
+    ['look', 'サバイバル：ショッピングモールの中を作り直した。まん中は<b>吹きぬけ</b>で、<b>エスカレーター</b>で4階まで行ける。お店は各階12店で、1階は<b>食品</b>、2階は<b>服屋</b>（ハンガーラック・マネキン）、3階は<b>フードコート</b>、4階は<b>本屋・おもちゃ・ゲームセンター・映画館</b>など。商品の棚もびっしり'],
+    ['look', 'サバイバル：建物の<b>窓から外が見える</b>ようになった（外から中も見える）。看板が<b>左右反対</b>になっていたのを直し、入口の上にも看板をつけて通りから読めるようにした。まん中のビルは10〜16階に下げた'],
+    ['look', 'サバイバル：<b>ホテル</b>（入口のひさしつき・どれも入れる）と、4階建ての大きな<b>ショッピングモール「みらいモール」</b>（窓なし・入口はガラス張り）ができた。コンビニとスーパーの棚を<b>ぐっと増やした</b>。飲み屋街の歩道に<b>屋根</b>がついた'],
+    ['look', 'サバイバル：大都会に<b>飲み屋街</b>（赤ちょうちん・のれん・のみや横丁）、<b>コンビニ</b>5軒、<b>スーパー</b>2軒ができた。お店の中には商品の棚やレジ、カウンターもある'],
+    ['look', 'サバイバル：会場が<b>大都会</b>になった。まん中は12〜22階の高層ビル街。マンション（ベランダつき）・団地・アパート（外廊下つき）・一軒家ができて、どの建物にも窓がある。建物の中には家具も置いた。街灯・信号機・横断歩道・看板もできた'],
+    ['fix', '鉄骨渡り 第一ゾーン：部屋でベンチに座れない人がいたのを直した'],
+    ['chg', '鉄骨渡り 第一ゾーン：押し合いは、9番の人が落ちて、7番の人がゴールの直前まで来てから始まるようになった。しゃがんだあとは、もう人を押せない'],
+    ['chg', '鉄骨渡り 第一ゾーン：あなたと12番の人の押し合いのあとで、7番と4番の人がクリアするようになった。7番と4番は、ほとんど続けてゴールする'],
+    ['chg', '鉄骨渡り 第一ゾーン：ゴールの手前で、6番の人が先に落ち、そのあと8番の人も同じくらいの場所で落ちるようになった'],
+    ['move', '鉄骨渡り 第一ゾーン：生き残った人の部屋で、E で座れるようになった（ベンチの近くならベンチ、ほかは床）。ほかの人たちも、床やベンチに座る'],
+    ['chg', '鉄骨渡り 第一ゾーン：賞金をもらえるのは各レースの1着と2着だけになった。第2〜第4レースでは、それ以外の生き残った人は鉄骨に手をついた（失格）'],
+    ['look', '鉄骨渡り 第一ゾーン：地上にVIP席ができた。VIPたちがレースを見上げている'],
+    ['chg', '鉄骨渡り 第一ゾーン：8番の人は7番の人のすぐ後ろ、6番の人は4番の人のすぐ後ろを歩き、ゴールの直前で落ちる。4番の人がゴールの手前で止まったままにならなくなった'],
+    ['chg', '鉄骨渡り 第一ゾーン：第2〜第5レースは全員男の人。生き残りは第2レース6人・第3レース5人・第4レース4人・第5レース1人で、毎回同じ'],
+    ['fix', '鉄骨渡り 第一ゾーン：クリアした人が、一つ下の階の部屋にちゃんと入るようになった'],
+    ['chg', '鉄骨渡り 第一ゾーン：はじめは5番の人だけが渡り、落ちたあと3秒しずかになってから、みんなが順番に渡りはじめる。9番の人は8番の人に押されて落ちる'],
+    ['look', '鉄骨渡り：ファイナルステージであなたのすぐ前にいる人（第一ゾーンの12番）の服が赤になった'],
+  ] },
+  { d: '2026-10-19', items: [
+    ['chg', '鉄骨渡り 第一ゾーン：ゼッケンはチームの印になった（右の鉄骨から1〜3番・4〜6番・7〜9番・10〜12番）。いつ鉄骨に乗るかは自分たちで決める。あなたの番では「行く？」と聞かれる'],
+    ['chg', '鉄骨渡り 第一ゾーン：ゴールしたら、屋上の階段から一つ下の階の部屋へ。部屋からは出られないが、モニターでほかのレースが観られる'],
+    ['move', '鉄骨渡り 第一ゾーン：E で、すぐ前の人を押せるようになった'],
+    ['chg', '鉄骨渡り 第一ゾーン：鉄骨は4本で、1本に3人ずつ。歩き方と強い風はファイナルステージと同じになった。落ちても安全ネットで助かり、観戦できる'],
+    ['chg', '鉄骨渡り 第一ゾーン：第1レースはファイナルステージのメンバーといっしょ。あなたのゼッケンは10番。クリアするとファイナルステージへ進める'],
+    ['game', '鉄骨渡りに新しいモード「<b>第一ゾーン</b>」。60人が12人ずつ、5レースで鉄骨を渡る。タイトル画面の「モード」で切りかえ'],
+  ] },
+  { d: '2026-10-13', items: [
+    ['chg', '空中ケンパ：第二ゾーンのゴールまでの距離を短くした（100重→60重）。第一ゾーンのパネルも丸くなった'],
+    ['chg', '空中ケンパ：マネキンが聞き直すまでの秒数が出るようになり、3秒前に予告するようになった。第二ゾーンのスタートは、最初の時刻で乗れる文字のパネル'],
+    ['chg', '空中ケンパ：第二ゾーンが、スカイツリーのまわりに<b>平らに巻き付いた白い丸いパネル</b>（中心から外へ100重）になった。いちばん外側のどこかのパネルからスタート'],
+    ['chg', '空中ケンパ：第一ゾーンは<b>15人</b>で渡るようになり、長さも2倍以上になった。パネルは真っ白'],
+    ['move', '空中ケンパ：クリックか F で、前にいる人を<b>押せる</b>ようになった'],
+    ['look', '空中ケンパ：スカイツリーが本物そっくりの形（三角から丸くなる鉄骨・展望デッキ・展望回廊）になった'],
+  ] },
+  { d: '2026-10-11', items: [
+    ['move', '全部のゲームと街が、<b>コントローラー</b>（プロコンなど）でも遊べるようになった。キーボードとマウスの操作はそのまま'],
+  ] },
+  { d: '2026-10-08', items: [
+    ['game', '新しいゲーム「<b>空中ケンパ</b>」（AC地点）。東京スカイツリーの上空で、76人でケンケンパ'],
+    ['move', '空中ケンパ：<b>Q で片足</b>、<b>E で両足</b>で跳べるようになった'],
+    ['chg', '空中ケンパ：第二ゾーンが、<b>スカイツリーに巻き付いた</b>らせんの足場になった。パネルは<b>丸く</b>なって、数も増えた'],
+    ['move', '空中ケンパ：第一ゾーンの出口の<b>ワープゲート</b>に入ると、第二ゾーンへワープできるようになった'],
+    ['chg', 'ミニゲームホール：ミニゲームを作り直した。運だけで決まるゲームや、ほかのゲームと似ているゲームをやめて、新しいゲームを入れた'],
+    ['look', 'ミニゲームホール：ゲームマスターが、玉座に座った<b>仮面の男</b>になった'],
+    ['move', 'ミニゲームホール：NPCがよく動くようになった。<b>突き飛ばす</b>（E）・<b>風船を割る</b>（E）などの新しい動き'],
+    ['chg', 'ミニゲームホール：NPCが固まらずに、ホールじゅうに散らばるようになった'],
+    ['game', '新しいゲーム「<b>ミニゲームホール</b>」（AB地点）。50人で、ゲームマスターが用意した20種類のミニゲームを勝ち残れ'],
+  ]},
+  { d: '2026-10-07', items: [
+    ['chg', '実験ゲーム：見えない道が<b>迷路</b>になった（かべはない。行き止まりもある）'],
+    ['game', '新しいゲーム「<b>実験ゲーム</b>」（AA地点。名前はまだ決まっていない）。スマホのARカメラで、見えない道をさがして進む'],
+    ['town', '<b>何でも豆知識屋</b>ができた（Z地点）。NPCの名前と顔、ゲームの攻略、豆知識がわかる'],
+    ['town', '<b>最新コーナー</b>ができた（Y地点）。新しいゲームや、変わったところがわかる'],
+    ['look', '全部のゲーム：<b>NPCの名前</b>をなくした。知らせなどでは「○番の人」とよぶ'],
+    ['fix',  '全部のゲーム：<b>坊主の髪型</b>の人がハゲに見えていたのを直した'],
+    ['game', '新しいゲーム「<b>鉄骨渡り</b>」（X地点）'],
+    ['chg', '鉄骨渡り：簡単すぎたので、<b>鉄骨を長く</b>して、むずかしくした'],
+    ['move', '鉄骨渡り：<b>C でしゃがめる</b>ようになった'],
+    ['look', '鉄骨渡り：参加者が<b>全員男の子</b>になった。金髪で緑の服の人が新しく出てくる'],
+    ['fix',  '鉄骨渡り：風のときにNPCのうでがおかしくなるのを直した'],
+  ]},
+  { d: '2026-10-06', items: [
+    ['game', '新しいゲーム「<b>ビル</b>」（W地点）'],
+    ['chg', 'ビル：簡単すぎたので、むずかしくした'],
+    ['look', '全部のゲーム：画面の<b>英語の文字</b>を日本語にした'],
+    ['game', '新しいゲーム「<b>ロープ</b>」（V地点）'],
+    ['move', 'ロープ：<b>歩ける橋</b>とつなぐ橋ができた。ロープの上で<b>スペース</b>を押すと、橋にとびおりられる'],
+    ['fix',  'ロープ：見えないロープがあったのを直した'],
+  ]},
+  { d: '2026-10-05', items: [
+    ['town', '<b>ゲームの街</b>ができた。会場の前のスマホで E を押すと、そのゲームに参加できる'],
+    ['move', '街：<b>ワープ</b>（M キー）で、会場の前にとべるようになった'],
+    ['game', '新しいゲーム「<b>バトルロワイアル</b>」（U地点）'],
+  ]},
+  { d: '2026-10-04', items: [
+    ['chg', '熱湯スタジアム：<b>崩壊モード</b>を大きく作りなおした（ドームなし・6人の見た目が決まった・通気口・幽霊モード）'],
+    ['fix',  '熱湯スタジアム崩壊モード：熱湯の音がずっと鳴っていたのを直した'],
+    ['chg', 'サバイバル：生き残るのが<b>二十数人</b>になるようにした'],
+  ]},
+  { d: '2026-10-03', items: [
+    ['game', '熱湯スタジアムに<b>崩壊モード</b>ができた（タイトルで切りかえ）'],
+    ['game', '新しいゲーム「<b>サバイバル</b>」'],
+    ['game', '新しいゲーム「<b>ラビリンス</b>」（T地点）'],
+    ['game', '新しいゲーム「<b>自然災害</b>」（S地点）'],
+  ]},
+];
+/* ゲームができた順番 */
+const ORDER = [
+  ['2026-09-26', 'L字マンション鬼ごっこ', 'B', '鬼ごっこマンション.html'],
+  ['2026-09-27', '熱湯スタジアム脱出', 'A', '熱湯スタジアム.html'],
+  ['2026-09-27', '首輪マーク当てゲーム', 'C', '首輪マーク当て.html'],
+  ['2026-09-27', '地下ブラックジャック', 'D', 'ブラックジャック.html'],
+  ['2026-09-27', 'トンネル逃亡ゲーム', 'E', 'トンネル逃亡.html'],
+  ['2026-09-27', 'ぶら下がり耐久', 'F', 'ぶら下がり耐久.html'],
+  ['2026-09-27', 'おみくじデスゲーム', 'G', 'おみくじデスゲーム.html'],
+  ['2026-09-28', '巨大草園かくれんぼ', 'H', '巨大草園かくれんぼ.html'],
+  ['2026-09-28', '猛獣ハンター', 'I', '猛獣ハンター.html'],
+  ['2026-09-29', '缶蹴り', 'J', '缶蹴り.html'],
+  ['2026-09-29', 'ドローンレーザー', 'K', 'ドローンレーザー.html'],
+  ['2026-09-30', '二択問題', 'L', '二択問題.html'],
+  ['2026-09-30', '雪合戦（魔女狩り）', 'M', '雪合戦.html'],
+  ['2026-09-30', 'アンケート', 'N', 'アンケート.html'],
+  ['2026-10-01', '東京ビンゴタワー', 'O', '東京ビンゴタワー.html'],
+  ['2026-10-01', '足跡かくれんぼ', 'P', '足跡かくれんぼ.html'],
+  ['2026-10-01', '買い物競争', 'Q', '買い物競争.html'],
+  ['2026-10-02', 'てんびん', 'R', 'てんびん.html'],
+  ['2026-10-03', '自然災害', 'S', '自然災害.html'],
+  ['2026-10-03', 'ラビリンス', 'T', 'ラビリンス.html'],
+  ['2026-10-03', 'サバイバル', '街', 'サバイバル.html'],
+  ['2026-10-05', 'バトルロワイアル', 'U', 'バトルロワイアル.html'],
+  ['2026-10-06', 'ロープ', 'V', 'ロープ.html'],
+  ['2026-10-06', 'ビル', 'W', 'ビル.html'],
+  ['2026-10-07', '鉄骨渡り', 'X', '鉄骨渡り.html'],
+  ['2026-10-07', '実験ゲーム（名前はまだない）', 'AA', '実験ゲーム.html'],
+  ['2026-10-08', 'ミニゲームホール', 'AB', 'ミニゲームホール.html'],
+  ['2026-10-08', '空中ケンパ', 'AC', '空中ケンパ.html'],
+];
+
+const fmt = d => { const [y, m, dd] = d.split('-'); return `${+m}月${+dd}日`; };
+/* NEW: 前にこのコーナーに来たときより後にふえたお知らせ (古いほうから番号をつけて比べる) */
+let seen = -1; try { seen = +(localStorage.getItem('news_seen_n') ?? -1); } catch (e) {}
+const TOTAL_N = NEWS.reduce((s, n) => s + n.items.length, 0); let idn = TOTAL_N;
+const TAGS = { chg: '変わった', game: '新しいゲーム', move: '新しい動き', look: '見た目', fix: '直した', town: '街' };
+document.getElementById('newsList').innerHTML = NEWS.map(n => `<div class="day">${fmt(n.d)}</div><div class="card">${n.items.map(([k, t]) =>
+  `<div class="item">${(() => { const id = --idn; return (seen < 0 ? n === NEWS[0] : id >= seen) ? '<i class="newb">NEW</i>' : ''; })()}<i class="tag ${k}">${TAGS[k]}</i><div class="txt">${t}</div></div>`).join('')}</div>`).join('');
+document.getElementById('orderList').innerHTML = ORDER.map(([d, nm, L, f], i) =>
+  `<div class="row"><div class="no">${i + 1}</div><div><div class="nm">${nm}</div><div class="dt">${fmt(d)}にできた　／　${L === '街' ? '街のタイトル画面から' : L + '地点'}</div></div><a class="play" href="${encodeURI(f)}">遊ぶ</a></div>`).join('');
+const days = new Set(ORDER.map(o => o[0])).size;
+document.getElementById('stats').innerHTML = `<div><b>${ORDER.length}</b>ゲーム</div><div><b>${NEWS.reduce((s, n) => s + n.items.length, 0)}</b>件のお知らせ</div><div><b>${fmt(ORDER[0][0])}</b>最初のゲーム</div><div><b>${fmt(ORDER[ORDER.length - 1][0])}</b>いちばん新しいゲーム</div>`;
+document.getElementById('infoText').innerHTML = `<p>いちばん最初にできたのは「<b>${ORDER[0][1]}</b>」。いちばん新しいのは「<b>${ORDER[ORDER.length - 1][1]}</b>」。</p>
+<p>ゲームができた日は${days}日。1日にいちばんたくさんできたのは${fmt('2026-09-27')}の6本。</p>
+<p>このコーナーは、新しいゲームができたときや、NPC・見た目（スキン）が変わったとき、新しい動きができるようになったときに、お知らせがふえる。</p>`;
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === b.dataset.tab));
+});
+try { localStorage.setItem('news_seen_n', TOTAL_N); } catch (e) {}
+</script>
+
+
+
+
+
+
+
+
+
+<!-- ===== コントローラー (プロコンなど) でも操作できる。キーボードとマウスの操作はそのまま ===== -->
+<style>
+.gp-focus{outline:4px solid #ffd400!important;outline-offset:3px!important;box-shadow:0 0 0 8px rgba(255,212,0,.35)!important}
+#gpHelp{position:fixed;right:10px;bottom:10px;z-index:99999;background:rgba(10,14,24,.9);color:#fff;font:12px/1.55 "BIZ UDPGothic","Hiragino Sans",sans-serif;padding:10px 13px;border-radius:10px;border:1px solid rgba(255,255,255,.25);pointer-events:none;display:none;max-width:275px;text-align:left}
+#gpHelp b{color:#ffd400}
+#gpToast{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:rgba(10,14,24,.9);color:#fff;font:bold 15px "BIZ UDPGothic",sans-serif;padding:8px 16px;border-radius:20px;pointer-events:none;opacity:0;transition:opacity .4s}
+</style>
+<div id="gpHelp"><b>コントローラーの操作</b><br>
+左スティック：移動（スティックを押しこむ か ZL：走る）<br>
+右スティック：見回す<br>
+B：スペース（ジャンプ）　A：E<br>
+Y：Q　X：C（かがむ）<br>
+R：F　L：R　ZR：マウスのクリック<br>
+＋：ポーズ　－：M<br>
+十字キー：← 1　↑ 2　→ 3　↓ エンター<br>
+メニューでは、十字キーで選んで <b>A で決定</b>、B でもどる</div>
+<div id="gpToast"></div>
+<script>
+(() => {
+  const DEAD = .18, STICK = .45, LOOK_X = 2.6, LOOK_Y = 1.9;   /* 右スティックをいっぱいに倒すと、1秒で約150°回る */
+  const held = {};   /* コントローラーが押しているキー */
+  let blocked = {}, wasMenu = false, used = false, zrOn = false, helpT = 0, focus = null, prev = [], navHold = '', navT = 0, last = performance.now(), toastT = 0, dragOn = false, vx = innerWidth / 2, vy = innerHeight / 2;
+  const $h = document.getElementById('gpHelp'), $t = document.getElementById('gpToast');
+  const keyName = c => c.startsWith('Key') ? c.slice(3).toLowerCase() : c.startsWith('Digit') ? c.slice(5) : c === 'Space' ? ' ' : c === 'ShiftLeft' ? 'Shift' : c;
+  function key(code, down){ if (!!held[code] === down) return; held[code] = down; document.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', { code, key: keyName(code), bubbles: true, cancelable: true })); }
+  const tap = code => { key(code, true); setTimeout(() => key(code, false), 60); };
+  const releaseAll = () => { for (const c in held) if (held[c]) key(c, false); if (dragOn) endDrag(); if (zrOn){ zrOn = false; mouse('mouseup', 0); } };
+  const cv = () => document.querySelector('canvas') || document.body;
+  function mouse(type, button){ cv().dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button, buttons: type === 'mouseup' || type === 'click' ? 0 : button === 2 ? 2 : 1, clientX: vx, clientY: vy, view: window })); }
+  const DRAGGAME = $h.dataset.mode === 'drag';   /* てんびん: 画面をドラッグして見回すゲーム */
+  function startUsing(){ if (used) return; used = true; /* マウスを画面に閉じこめない遊び方にする (ゲームに「閉じこめられなかった」と知らせる) */ if (!document.pointerLockElement) document.dispatchEvent(new Event('pointerlockerror')); }
+  function endDrag(){ dragOn = false; cv().dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 0, buttons: 0, clientX: vx, clientY: vy })); }
+  function toast(t){ $t.textContent = t; $t.style.opacity = 1; toastT = 3; }
+  addEventListener('gamepadconnected', () => { toast('コントローラーがつながりました'); helpT = 8; });
+  addEventListener('gamepaddisconnected', () => { releaseAll(); toast('コントローラーがはずれました'); });
+
+  // ---------- メニュー (タイトル・ポーズ・終わりの画面) のボタン選び ----------
+  const SEL = 'button, a[href], .opt, select, [onclick], [data-gp]';
+  const inScroller = el => { for (let p = el.parentElement; p && p !== document.body; p = p.parentElement){ const o = getComputedStyle(p).overflowY; if ((o === 'auto' || o === 'scroll') && p.scrollHeight > p.clientHeight + 4){ const r = p.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; } } return false; };
+  const scrollable = () => document.documentElement.scrollHeight > innerHeight + 4;
+  /* ゲームの画面では、タイトル・ポーズ・終わりなどの「画面いっぱいのメニュー」の中のボタンだけを選ぶ (ゲーム中に出ているボタンで歩けなくならないように) */
+  const menuSel = () => !document.querySelector('canvas') || $h.dataset.menu === 'all' ? null : '.screen' + ($h.dataset.menu ? ', ' + $h.dataset.menu : '');
+  function clickables(){
+    const out = [], ms = menuSel();
+    for (const el of document.querySelectorAll(SEL)){
+      if (el.disabled || el.closest('#gpHelp') || (ms && !el.closest(ms))) continue; const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
+      const on = r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+      if (on){ const hit = document.elementFromPoint(Math.min(innerWidth - 1, Math.max(0, r.left + r.width / 2)), Math.min(innerHeight - 1, Math.max(0, r.top + r.height / 2))); if (!hit || !(hit === el || el.contains(hit) || hit.contains(el))) continue; }
+      else if (!(scrollable() || inScroller(el)) || !(el.checkVisibility ? el.checkVisibility({ opacityProperty: true, visibilityProperty: true }) : true)) continue;
+      out.push(el); }
+    return out;
+  }
+  function setFocus(el){ if (focus === el) return; if (focus) focus.classList.remove('gp-focus'); focus = el; if (el){ el.classList.add('gp-focus'); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } }
+  function firstFocus(list){ return list.find(e => /startBtn|resumeBtn|retryBtn/.test(e.id)) || list.find(e => e.classList.contains('sel')) || list[0]; }
+  function move(list, dir){
+    if (!focus || !list.includes(focus)){ setFocus(firstFocus(list)); return; }
+    const a = focus.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2; let best = null, bs = 1e9;
+    for (const el of list){ if (el === focus) continue; const b = el.getBoundingClientRect(), dx = b.left + b.width / 2 - ax, dy = b.top + b.height / 2 - ay;
+      const main = dir === 'L' ? -dx : dir === 'R' ? dx : dir === 'U' ? -dy : dy, side = dir === 'L' || dir === 'R' ? Math.abs(dy) : Math.abs(dx); if (main < 4) continue; const s = main + side * 2.2; if (s < bs){ bs = s; best = el; } }
+    if (best) setFocus(best);
+  }
+
+  // 右スティックで見回す (マウスを動かしたのと同じにする)
+  function look(rx, ry, dt){
+    if (rx || ry){
+      if (!DRAGGAME && document.querySelector('canvas')){ const k = document.pointerLockElement ? .0022 : .005; document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, movementX: rx * LOOK_X * dt / k, movementY: ry * LOOK_Y * dt / k, buttons: document.pointerLockElement ? 0 : 1, clientX: vx, clientY: vy, view: window })); }
+      else if (DRAGGAME){ if (!dragOn){ dragOn = true; vx = innerWidth / 2; vy = innerHeight / 2; cv().dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, buttons: 1, clientX: vx, clientY: vy })); } vx += rx * LOOK_X * dt / .005; vy += ry * LOOK_Y * dt / .005; dispatchEvent(new MouseEvent('mousemove', { bubbles: true, buttons: 1, clientX: vx, clientY: vy })); }
+      else { vx = Math.min(innerWidth, Math.max(0, vx + rx * 700 * dt)); vy = Math.min(innerHeight, Math.max(0, vy + ry * 500 * dt)); dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: vx, clientY: vy })); }
+    } else if (dragOn) endDrag();
+  }
+  function loop(){ requestAnimationFrame(loop); step(performance.now()); }
+  setInterval(() => { if (performance.now() - last > 120) step(performance.now()); }, 33);   /* 画面が隠れていても止まらないように */
+  function step(now){
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    if (toastT > 0 && (toastT -= dt) <= 0) $t.style.opacity = 0;
+    const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : []; const gp = pads[0];
+    if (!gp){ if (Object.values(held).some(Boolean)) releaseAll(); $h.style.display = 'none'; if (focus){ focus.classList.remove('gp-focus'); focus = null; } return; }
+    const raw = i => !!(gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > .5)); for (const i in blocked) if (!raw(i)) delete blocked[i]; const B = i => raw(i) && !blocked[i], ax = i => { const v = gp.axes[i] || 0; return Math.abs(v) < DEAD ? 0 : v; };
+    const now_ = gp.buttons.map((b, i) => B(i)), was = prev, down = i => now_[i] && !was[i]; prev = now_;
+    const lx = ax(0), ly = ax(1), rx = ax(2), ry = ax(3);
+    if (now_.some(Boolean) || lx || ly || rx || ry) startUsing();
+    if (helpT > 0) helpT -= dt;
+    const list = clickables(), menu = list.length > 0;
+    $h.style.display = used && (menu || helpT > 0) ? 'block' : 'none';
+    // ＋ はいつでもポーズ (マウスが閉じこめられていたら外す。外れるとゲームがポーズになる)
+    if (down(9)){ if (document.pointerLockElement) document.exitPointerLock(); else tap('KeyP'); }
+
+    if (menu !== wasMenu){ wasMenu = menu; gp.buttons.forEach((b, i) => { if (raw(i)) blocked[i] = true; }); }   /* メニューとゲームが切りかわったら、押しっぱなしのボタンは一度はなすまで効かない */
+    if (menu){
+      for (const c in held) if (held[c]) key(c, false); if (zrOn){ zrOn = false; mouse('mouseup', 0); }
+      if (!focus || !list.includes(focus)) setFocus(firstFocus(list));
+      const dir = B(12) || ly < -STICK ? 'U' : B(13) || ly > STICK ? 'D' : B(14) || lx < -STICK ? 'L' : B(15) || lx > STICK ? 'R' : '';
+      if (dir && (dir !== navHold || (navT -= dt) <= 0)){ move(list, dir); navT = dir !== navHold ? .38 : .14; } navHold = dir;
+      if (down(1) && focus) focus.click();
+      if (down(0)){ const back = list.find(e => /もどる|戻る|とじる|閉じる|再開|キャンセル/.test(e.textContent)); if (back) back.click(); }
+      if (ry && scrollable()) scrollBy(0, ry * 900 * dt);
+      else if (document.querySelector('canvas')) look(rx, ry, dt);   /* ボタンが出ていても、右スティックで見回せる */
+      if (down(8)) tap('KeyM');
+      return;
+    }
+    if (focus){ focus.classList.remove('gp-focus'); focus = null; } navHold = '';
+
+    // ---------- ゲーム中 ----------
+    key('KeyW', ly < -STICK); key('KeyS', ly > STICK); key('KeyA', lx < -STICK); key('KeyD', lx > STICK);
+    key('ShiftLeft', B(6) || B(10));
+    key('Space', B(0)); key('KeyE', B(1)); key('KeyQ', B(2)); key('KeyC', B(3)); key('KeyR', B(4)); key('KeyF', B(5)); key('KeyM', B(8));
+    key('Digit1', B(14)); key('Digit2', B(12)); key('Digit3', B(15)); key('Enter', B(13));
+    if (B(7) && !zrOn) mouse('mousedown', 0); if (!B(7) && zrOn){ mouse('mouseup', 0); mouse('click', 0); } zrOn = B(7);
+    look(rx, ry, dt);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+<!-- /gamepad -->
+</body>
+</html>

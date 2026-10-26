@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ゲームの街</title>
+<meta name="description" content="小学4年生が考えた、ブラウザで遊べる3Dゲームの街。鬼ごっこ・脱出・かくれんぼ・クイズなど30本以上。パソコンのキーボードとマウスで遊べます。">
+<style>
+:root{--bg:#0d1226;--panel:#151c38;--line:rgba(255,255,255,.12);--text:#eef2fb;--sub:#a9b4d0;--accent:#ffe14d;--blue:#4fc3f7;--green:#7bd88f;--pink:#ff5a7a;--orange:#ffb74d}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at top,#1d2752 0%,var(--bg) 60%);color:var(--text);font-family:"BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;min-height:100vh;line-height:1.7}
+a{color:var(--blue)}
+header{padding:40px 16px 16px;text-align:center}
+header small{display:block;color:var(--sub);letter-spacing:.35em;font-size:13px}
+header h1{margin:6px 0 8px;font-size:52px;letter-spacing:.08em;line-height:1.2}
+header h1 .neon{color:var(--accent);text-shadow:0 0 14px rgba(255,225,77,.6)}
+header p{margin:0 auto;color:var(--sub);max-width:600px}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px 60px}
+.hero{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin:22px 0}
+.big{display:flex;flex-direction:column;justify-content:center;background:linear-gradient(135deg,#2b6fd6,#1f4fa3);border-radius:20px;padding:26px 28px;color:#fff;text-decoration:none;box-shadow:0 10px 30px rgba(43,111,214,.35);transition:transform .15s}
+.big:hover{transform:translateY(-3px)}
+.big b{font-size:30px;display:block}
+.big span{color:#dbe7ff;font-size:15px}
+.side{display:grid;gap:10px}
+.side a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 18px;color:var(--text);text-decoration:none;transition:border-color .15s}
+.side a:hover{border-color:var(--accent)}
+.side a b{display:block;font-size:18px}
+.side a span{color:var(--sub);font-size:13px}
+h2{margin:40px 0 12px;font-size:26px;letter-spacing:.05em}
+h2::before{content:"■ ";color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:10px 0}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.how .card{margin:0}
+.how .card b{display:block;font-size:17px;margin-bottom:4px;color:var(--accent)}
+.how .card p{margin:0;color:var(--sub);font-size:14px}
+kbd{display:inline-block;background:#e8eef8;color:#13233a;border-radius:6px;padding:0 7px;font:700 13px/1.6 inherit;margin:0 1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.game{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;text-decoration:none;color:var(--text);transition:transform .15s,border-color .15s;position:relative}
+.game:hover{transform:translateY(-3px);border-color:var(--blue)}
+.game .no{position:absolute;top:12px;right:14px;color:var(--sub);font-size:12px;font-weight:800}
+.game b{font-size:19px;display:block;margin:0 40px 4px 0;line-height:1.3}
+.game p{margin:0;color:var(--sub);font-size:14px;flex:1}
+.game .meta{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;color:#0d1226;background:var(--blue)}
+.tag.ppl{background:var(--green)}.tag.time{background:var(--orange)}.tag.scary{background:var(--pink);color:#fff}
+.note{color:var(--sub);font-size:14px}
+footer{text-align:center;color:var(--sub);font-size:13px;padding:30px 16px 40px;border-top:1px solid var(--line);margin-top:50px}
+@media (max-width:640px){header h1{font-size:36px}.hero{grid-template-columns:1fr}.big b{font-size:24px}}
+</style>
+</head>
+<body>
+<header>
+  <small>ようこそ</small>
+  <h1><span class="neon">ゲーム</span>の街</h1>
+  <p>小学4年生が考えた、ブラウザでそのまま遊べる3Dゲームの街です。鬼ごっこ、脱出、かくれんぼ、クイズ、デスゲーム風のサバイバルなど、30本以上のゲームがあります。</p>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <a class="big" href="街.html">
+      <b>▶ 街に入る</b>
+      <span>夕方6時の街を歩いて、会場の前のスマホで <kbd>E</kbd> を押すとゲームに参加できます。ここから始めるのがおすすめ。</span>
+    </a>
+    <div class="side">
+      <a href="みらいモール.html"><b>みらいモール</b><span>ゲームをクリアしてもらったチケットで、買い物・食事・着せ替え・ゲームセンター・映画館</span></a>
+      <a href="最新コーナー.html"><b>最新コーナー</b><span>新しいゲームや、変わったところのお知らせ</span></a>
+      <a href="何でも豆知識屋.html"><b>何でも豆知識屋</b><span>ゲームの攻略、登場人物の図鑑、豆知識</span></a>
+    </div>
+  </div>
+
+  <h2>遊び方</h2>
+  <div class="how">
+    <div class="card"><b>パソコンで遊ぶ</b><p>キーボードとマウスを使います。<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> で移動、マウスで見回す、<kbd>E</kbd> で調べる・参加する、<kbd>スペース</kbd> でジャンプ。スマホやタブレットでは操作できません。</p></div>
+    <div class="card"><b>ブラウザはそのままでOK</b><p>インストールは要りません。Chrome か Edge がおすすめです。はじめて開くときは、3Dの部品を読み込むので少し時間がかかります。</p></div>
+    <div class="card"><b>こわい表現は切り替えられる</b><p>多くのゲームは、タイトル画面で「こわい表現 あり（ひかえめ）／なし」を選べます。小さい子と遊ぶときは「なし」にしてください。</p></div>
+    <div class="card"><b>記録はこのブラウザの中に残る</b><p>所持金・持ち物・実績は、遊んでいるパソコンのブラウザの中に保存されます。別のパソコンやブラウザでは、最初からになります。</p></div>
+  </div>
+
+  <h2>ゲーム一覧（できた順）</h2>
+  <p class="note">どのゲームも「街」の会場から参加できますが、ここから直接開くこともできます。番号は、できた順番です。</p>
+  <div class="grid" id="games"></div>
+
+  <h2>遊ぶ前に</h2>
+  <div class="card note">
+    <p>・どのゲームも無料です。お金がかかることはありません。</p>
+    <p>・ゲームの中の人物の名前は、すべて作り物です。</p>
+    <p>・ゲームの中に、ほかの人と文章をやり取りする仕組みはありません（トークやコメントは、ゲームの中だけで動く作り物です）。</p>
+    <p>・大きな音が出ることがあります。音量に気をつけてください。</p>
+  </div>
+</div>
+
+<footer>ゲームの街 — 2026年9月から、少しずつ作っています。</footer>
+
+<script>
+// [名前, ファイル, 説明, 人数, 時間, こわい表現の切り替えあり]
+const GAMES = [
+  ['L字マンション鬼ごっこ', '鬼ごっこマンション.html', 'L字型のマンションで、ピストルを持った鬼から逃げ切る。ロッカーに隠れたり、仲間と合流したり、ゴールの部屋を探したり。', '13〜19人', '3〜4分', true],
+  ['熱湯スタジアム脱出', '熱湯スタジアム.html', 'ドーム球場のグラウンドから熱いお湯が噴き出す。泡立つ地面から逃げて、12秒しか開かないゲートから脱出しよう。崩壊モードにも切り替えられる。', '17人', '3分', true],
+  ['首輪マーク当てゲーム', '首輪マーク当て.html', '自分の首輪のマークだけが見えない。ほかの人に聞いて回るけれど、ウソをつく人もまざっている。独房で自分のマークを答えよう。', '20人', 'ターン制', true],
+  ['地下ブラックジャック', 'ブラックジャック.html', '地下のカジノで、チップ100枚から始まる命がけのブラックジャック。最低ベットはラウンドごとに上がっていく。', '5人', 'ラウンド制', false],
+  ['トンネル逃亡ゲーム', 'トンネル逃亡.html', 'まっすぐなトンネルに4つの関門。チーター、ワニのいる水路、凍える寒さ、大爆発。最後まで生き残れ。', '多数', '約4分', true],
+  ['ぶら下がり耐久', 'ぶら下がり耐久.html', '奈落の上の鉄棒に4人でぶら下がる。握力はどんどん減る。ときどき出るミッションを失敗すると電流が流れる。', '4人', '2分', true],
+  ['おみくじデスゲーム', 'おみくじデスゲーム.html', '神社のお祭りで始まるデスゲーム。おみくじの運勢に合った難しさの問題が出る。まちがえた分だけ火矢が飛んでくる。', '25人', '10回', true],
+  ['巨大草園かくれんぼ', '巨大草園かくれんぼ.html', 'ドームの中のジャングルで、4人のかくれんぼ。オオカミ役に「見られる」とオオカミが移る。背の高いやぶに隠れよう。', '4人', '5分', true],
+  ['猛獣ハンター', '猛獣ハンター.html', '遊園地に放たれた4匹の猛獣（トラ・ワシ・チーター・ライオン）。落ちている銃や刀を拾って、4匹とも倒せばクリア。', '16人', '制限なし', true],
+  ['缶蹴り', '缶蹴り.html', '10階建てのドーム型ビルで缶蹴り。缶を取ると60秒のタイマーが動き出す。1階のホールの中央に入れた人だけがクリア。', '17人', '10ラウンド', true],
+  ['ドローンレーザー', 'ドローンレーザー.html', 'ドローンがつないだレーザーが、ゴールのほうから次々に進んでくる。しゃがんで、跳んで、よけながら進め。', '36人', '制限なし', true],
+  ['二択問題', '二択問題.html', 'テレビ局のスタジオで、全7問の二択問題。床のAかBに移動して答える。まちがえた側には天井からレーザー。', '8人', '7問', true],
+  ['雪合戦', '雪合戦.html', '雪のお城で66人の雪合戦。雪玉に当たると雪だるまになる。雪だるまはたき火へ運ぶ。どこかにいる雪の女王を探せ。', '66人', '5分', true],
+  ['アンケート', 'アンケート.html', '20階建てのビルの外壁を、ゴンドラに乗って上り下り。2択のアンケートの「本当の答え」を、少数派か多数派かで当てる。', '5人', 'ラウンド制', true],
+  ['東京ビンゴタワー', '東京ビンゴタワー.html', '東京タワーの骨組みを渡りながら、5×5のビンゴを完成させる。数字はタワーのどこかにあるボタンにかくれている。', '24人', 'ビンゴまで', true],
+  ['足跡かくれんぼ', '足跡かくれんぼ.html', '古いお屋敷のホール。歩いたところには足跡が残る。ニセの足跡で鬼をまどわして、6つのドアのどれかに隠れろ。', '多数', '30秒＋', true],
+  ['買い物競争', '買い物競争.html', '2階建ての巨大スーパーで、お題の品物をさがす。店の中にたった1つ。見つけたら中央のお皿にのせよう。', '15人', '90秒×10', true],
+  ['てんびん', 'てんびん.html', '古い裁判所で、5人が1〜100の数字を選ぶ。全員の平均×0.8にいちばん近い人の勝ち。読み合いのゲーム。', '5人', 'ターン制', true],
+  ['自然災害', '自然災害.html', '津波・大雨・地震・雪山・宇宙。5つの災害のゾーンを順番に生きのびる。最後まで残れるのはたった1人。', '49人', '5ゾーン', true],
+  ['ラビリンス', 'ラビリンス.html', '真っ暗な巨大迷路で5分間生きのびる。30秒に1回、だれかが怪物になる。残り1分でゴールが開示される。', '12人', '5分', true],
+  ['サバイバル', 'サバイバル.html', '高層ビルが立ちならぶ大都会で、97人が1人の鬼から逃げる。鬼は飛行船で移動し、ビルの屋上からねらってくる。', '97人', '4分', true],
+  ['バトルロワイアル', 'バトルロワイアル.html', '茶色のドームに23人。この中に裏切り者が1人。武器を拾って戦い、だれかが裏切り者を倒せば生き残っている全員がクリア。', '23人', '3分', true],
+  ['ロープ', 'ロープ.html', '奈落の上の橋からロープにとびつく。つかんでいる間は1秒1ポイント。赤チームと青チームの点数勝負。', '40人', '3分', true],
+  ['ビル', 'ビル.html', '20階建ての高層ホテルが倒壊し始めた。橋でつながった2つのビルを、エレベーターや階段で下りて地上へ。', '21人', '倒壊まで', true],
+  ['鉄骨渡り', '鉄骨渡り.html', '地上22階、となりのビルまで140メートルの鉄骨を渡る。はばは足1つ分。風がふいたらふんばれ。', '10人', '制限なし', true],
+  ['鉄骨渡り 第一ゾーン', '鉄骨渡り第一ゾーン.html', '鉄骨渡りの続き。60人が12人ずつ、5レースで鉄骨を渡る。下には緑のマット。落ちると地下で働いて、券を買って上を目指す長いゲーム。', '60人', '長い', true],
+  ['実験ゲーム（名前はまだない）', '実験ゲーム.html', '奈落の上に、見えない道が続いている。スマホのARカメラを構えると道が見える。迷路になっていて、行き止まりもある。', '29人', '制限なし', true],
+  ['ミニゲームホール', 'ミニゲームホール.html', '巨大なホールに50人。仮面のゲームマスターが用意した20種類のミニゲームが次々に始まる。最後の1人になればクリア。', '50人', '20種類', true],
+  ['空中ケンパ', '空中ケンパ.html', '東京スカイツリーの上空で、ケンケンパ。Kのパネルは片足、Pのパネルは両足。一度踏んだパネルは消える。', '76人', 'ゾーン制', true],
+];
+document.getElementById('games').innerHTML = GAMES.map(([nm, f, d, ppl, tm, sc], i) =>
+  `<a class="game" href="${encodeURI(f)}"><span class="no">No.${i + 1}</span><b>${nm}</b><p>${d}</p><div class="meta"><i class="tag ppl">${ppl}</i><i class="tag time">${tm}</i>${sc ? '<i class="tag scary">こわい表現 切替あり</i>' : ''}</div></a>`).join('');
+</script>
+</body>
+</html>
