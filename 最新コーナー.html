@@ -24,7 +24,7 @@ section.on{display:block}
 .item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
 .item:last-child{border-bottom:none}
 .tag{flex:none;font-size:12px;font-weight:800;border-radius:6px;padding:3px 7px;color:#0d1226;margin-top:2px}
-.tag.game{background:var(--game)}.tag.chg{background:#ff8a65}.tag.fix{background:var(--fix)}.tag.look{background:var(--look)}.tag.move{background:var(--move)}.tag.town{background:var(--accent)}
+.tag.game{background:var(--game)}.tag.new{background:#80deea}.tag.chg{background:#ff8a65}.tag.fix{background:var(--fix)}.tag.look{background:var(--look)}.tag.move{background:var(--move)}.tag.town{background:var(--accent)}
 .newb{flex:none;font-size:11px;font-weight:900;color:#fff;background:var(--new);border-radius:6px;padding:2px 6px;margin-top:3px}
 .txt b{color:#fff}
 .timeline .row{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -56,7 +56,7 @@ section.on{display:block}
   </div>
 
   <section id="news" class="on">
-    <div class="legend"><span><i class="tag game">新しいゲーム</i></span><span><i class="tag chg">変わった</i></span><span><i class="tag move">新しい動き</i></span><span><i class="tag look">見た目</i></span><span><i class="tag fix">直した</i></span><span><i class="tag town">街</i></span><span><i class="newb">NEW</i>前に来たときより後のお知らせ</span></div>
+    <div class="legend"><span><i class="tag game">新しいゲーム</i></span><span><i class="tag new">新しい</i></span><span><i class="tag chg">変わった</i></span><span><i class="tag move">新しい動き</i></span><span><i class="tag look">見た目</i></span><span><i class="tag fix">直した</i></span><span><i class="tag town">街</i></span><span><i class="newb">NEW</i>前に来たときより後のお知らせ</span></div>
     <div id="newsList"></div>
   </section>
 
@@ -294,7 +294,7 @@ const fmt = d => { const [y, m, dd] = d.split('-'); return `${+m}月${+dd}日`; 
 /* NEW: 前にこのコーナーに来たときより後にふえたお知らせ (古いほうから番号をつけて比べる) */
 let seen = -1; try { seen = +(localStorage.getItem('news_seen_n') ?? -1); } catch (e) {}
 const TOTAL_N = NEWS.reduce((s, n) => s + n.items.length, 0); let idn = TOTAL_N;
-const TAGS = { chg: '変わった', game: '新しいゲーム', move: '新しい動き', look: '見た目', fix: '直した', town: '街' };
+const TAGS = { new: '新しい', chg: '変わった', game: '新しいゲーム', move: '新しい動き', look: '見た目', fix: '直した', town: '街' };
 document.getElementById('newsList').innerHTML = NEWS.map(n => `<div class="day">${fmt(n.d)}</div><div class="card">${n.items.map(([k, t]) =>
   `<div class="item">${(() => { const id = --idn; return (seen < 0 ? n === NEWS[0] : id >= seen) ? '<i class="newb">NEW</i>' : ''; })()}<i class="tag ${k}">${TAGS[k]}</i><div class="txt">${t}</div></div>`).join('')}</div>`).join('');
 document.getElementById('orderList').innerHTML = ORDER.map(([d, nm, L, f], i) =>
