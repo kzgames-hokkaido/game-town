@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>セーブの引っこし</title>
+<style>
+body{margin:0;min-height:100vh;background:#141822;color:#fff;font-family:"BIZ UDPGothic","Hiragino Sans",sans-serif;padding:20px 12px;box-sizing:border-box}
+.panel{background:#1e2230;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:20px 22px;max-width:680px;margin:0 auto 16px}
+h1{font-size:22px;margin:0 0 8px}h2{font-size:17px;margin:0 0 8px;color:#ffd23a}
+p{color:#ccc;font-size:14px;line-height:1.75;margin:6px 0}
+button{padding:11px 16px;font-size:16px;font-weight:bold;border:0;border-radius:12px;cursor:pointer;color:#fff;font-family:inherit;margin:4px 4px 4px 0}
+.g{background:#2ea44f}.b{background:#2e7cf6}.r{background:#c0392b}.k{background:#555c6e}
+textarea{width:100%;box-sizing:border-box;height:90px;font-size:12px;background:#0f1118;color:#9fe;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px;font-family:monospace}
+input[type=number]{font-size:16px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:#0f1118;color:#fff;width:150px;font-family:inherit}
+#now{font-size:15px;line-height:1.9;color:#ffe9a0}
+#msg{color:#7fffa0;min-height:1.6em;font-weight:bold}
+.where{display:inline-block;background:#2a3250;padding:2px 10px;border-radius:8px;color:#9fd0ff;font-size:13px}
+a{color:#9fd0ff}
+</style>
+</head>
+<body>
+<div class="panel">
+  <h1>セーブの引っこし</h1>
+  <p>ゲームの保存（所持金・地下のイソ・スマホの写真・実績）は、<b>遊んでいる場所ごとに別々</b>に保存されます。<br>
+  たとえば「パソコンの中の 街.html」と「インターネットの kzgames-hokkaido.github.io」は、別の場所です。<br>
+  片方で <b>①セーブを出す</b> → もう片方で <b>②セーブを入れる</b> と、保存を引っこしできます。</p>
+  <p>いま開いている場所：<span class="where" id="where"></span></p>
+  <div id="now"></div>
+</div>
+
+<div class="panel">
+  <h2>① セーブを出す（この場所の保存を、文字にする）</h2>
+  <p>「文字にする」を押して、出てきた文字を<b>ぜんぶコピー</b>して、もう片方の場所の「② セーブを入れる」にはりつけます。<br>ファイルにして持っていくこともできます。</p>
+  <button class="g" id="exportBtn">文字にする</button>
+  <button class="b" id="copyBtn">コピーする</button>
+  <button class="k" id="fileBtn">ファイルに保存する</button>
+  <textarea id="out" placeholder="ここに、セーブの文字が出ます"></textarea>
+</div>
+
+<div class="panel">
+  <h2>② セーブを入れる（文字から、この場所に保存をもどす）</h2>
+  <p>もう片方の場所で出した文字を、ここにはりつけて「入れる」を押します。<b>いまこの場所にある保存は、上書きされます。</b></p>
+  <textarea id="inp" placeholder="ここに、セーブの文字をはりつける"></textarea>
+  <button class="r" id="importBtn">入れる</button>
+  <button class="k" id="fileInBtn">ファイルから入れる</button>
+  <input type="file" id="fileIn" accept=".json,.txt" style="display:none">
+</div>
+
+<div class="panel">
+  <h2>数を直す（テスト用）</h2>
+  <p>所持金（円）：<input type="number" id="yenIn" min="0" step="10"> <button class="b" id="yenBtn">この数にする</button></p>
+  <p>地下の所持イソ：<input type="number" id="isoIn" min="0" step="10"> <button class="b" id="isoBtn">この数にする</button>
+  <button class="k" id="iso0">0イソ</button><button class="k" id="iso65">650,000イソ</button></p>
+  <div id="msg"></div>
+  <p><a href="街.html">街へ</a>　<a href="最新コーナー.html">最新コーナーへ</a></p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const rd = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e){ return null; } };
+const say = m => { $('msg').textContent = m; };
+$('where').textContent = location.protocol === 'file:' ? 'パソコンの中（file）' : location.host;
+function show(){
+  const w = rd('mirai_wallet_v1'), ug = rd('steel1_ug'), ph = rd('mirai_photos_v1'), ac = rd('deathgame_achievements_v1');
+  const clears = ac && ac.clears ? Object.values(ac.clears).reduce((a, b) => a + b, 0) : 0;
+  $('now').innerHTML = '💰 所持金：' + (w ? w.yen.toLocaleString() + '円（持ち物 ' + (w.items || []).length + 'こ）' : 'まだない') + '<br>'
+    + '⛏ 地下：' + (ug ? ug.day + '日目・' + (ug.iso || 0).toLocaleString() + 'イソ（持ち物 ' + (ug.items || []).length + 'こ）' : 'まだない（落ちたことがない）') + '<br>'
+    + '📷 スマホの写真：' + (Array.isArray(ph) ? ph.length + 'まい' : 'まだない') + '　🏆 実績のクリア数：' + clears + '　（保存の数：' + localStorage.length + '）';
+  if (w) $('yenIn').value = w.yen; if (ug) $('isoIn').value = ug.iso || 0;
+}
+function pack(){ const data = {}; for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); data[k] = localStorage.getItem(k); } return 'GAMESAVE1.' + btoa(unescape(encodeURIComponent(JSON.stringify({ at: new Date().toISOString(), data })))); }
+function unpack(txt){ txt = (txt || '').trim(); if (!txt) throw new Error('文字が入っていない'); if (txt.startsWith('{')) { const o = JSON.parse(txt); return o.data || o; } if (!txt.startsWith('GAMESAVE1.')) throw new Error('この文字は、セーブの文字ではない'); return JSON.parse(decodeURIComponent(escape(atob(txt.slice(10))))).data; }
+$('exportBtn').onclick = () => { $('out').value = pack(); say('文字にした（' + $('out').value.length.toLocaleString() + '文字）。コピーして、もう片方の場所ではりつける'); };
+$('copyBtn').onclick = async () => { if (!$('out').value) $('out').value = pack(); try { await navigator.clipboard.writeText($('out').value); say('コピーした'); } catch (e){ $('out').select(); document.execCommand('copy'); say('コピーした（えらんだ文字をコピー）'); } };
+$('fileBtn').onclick = () => { const blob = new Blob([pack()], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ゲームのセーブ_' + new Date().toISOString().slice(0, 10) + '.txt'; a.click(); say('ファイルに保存した（ダウンロード）'); };
+function doImport(txt){ let data; try { data = unpack(txt); } catch (e){ say('入れられなかった：' + e.message); return; } const keys = Object.keys(data); if (!keys.length){ say('中身が空だった'); return; } for (const k of keys) localStorage.setItem(k, data[k]); show(); say('入れた！（' + keys.length + 'こ）。街にもどって たしかめてみよう'); }
+$('importBtn').onclick = () => doImport($('inp').value);
+$('fileInBtn').onclick = () => $('fileIn').click();
+$('fileIn').onchange = () => { const f = $('fileIn').files[0]; if (!f) return; const r = new FileReader(); r.onload = () => doImport(r.result); r.readAsText(f); };
+$('yenBtn').onclick = () => { const w = rd('mirai_wallet_v1') || { yen: 0, items: [], log: [] }; w.yen = Math.max(0, Math.round(+$('yenIn').value || 0)); localStorage.setItem('mirai_wallet_v1', JSON.stringify(w)); show(); say('所持金を ' + w.yen.toLocaleString() + '円 にした'); };
+const setIso = n => { const s = rd('steel1_ug') || { day: 1, t: 0, iso: 0, work: 0, weekWork: 0, tickets: { room: 0, out: 0 }, items: [], squad: 1 + ((Math.random() * 6) | 0), roomDay: 0, outDay: 0, genki: 70, wear: [], payLog: [], total: 0, pay50: 1 }; s.iso = n; s.pay50 = 1; const j = JSON.stringify(s); localStorage.setItem('steel1_ug', j); localStorage.setItem('steel1_ug_bak', j); show(); say('所持イソを ' + n.toLocaleString() + 'イソ にした'); };
+$('isoBtn').onclick = () => setIso(Math.max(0, Math.round(+$('isoIn').value || 0)));
+$('iso0').onclick = () => setIso(0); $('iso65').onclick = () => setIso(650000);
+show();
+</script>
+</body>
+</html>
