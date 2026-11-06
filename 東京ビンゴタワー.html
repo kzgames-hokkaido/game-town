@@ -449,6 +449,56 @@ function los(ax, az, bx, bz, yLo, yHi, m = 0){
 const losEye = (a, b) => { const y = Math.max(a.pos.y, b.pos.y); return los(a.pos.x, a.pos.z, b.pos.x, b.pos.z, y + 1.3, y + 1.55, 0); };
 const losBody = (p, q, m = .2) => { const y = Math.max(p.y, q.y); return los(p.x, p.z, q.x, q.z, y + .45, y + 1.2, m); };
 
+// ===================== 盛大な音楽 (ボタンが10個押されたら、ゲームが終わるまで。弟君の注文 2026-10-29) =====================
+// 譜面は 02_作業スクリプト/tower_score.js (スマホの音楽アプリの「東京ビンゴタワーの曲」と同じ)
+const music = { on: false, timer: 0, next: 0, step: 0, gain: null };
+const T_BPM = 144, T_STEP = 60 / T_BPM / 4;
+const T_CH = [[60, 64, 67], [59, 62, 67], [57, 60, 64], [57, 60, 65], [60, 64, 67], [59, 62, 67], [57, 60, 65], [55, 59, 62]], T_ROOT = [36, 43, 45, 41, 36, 43, 41, 43];
+const T_MEL = [[72, 0, 0, 72, 0, 0, 76, 0, 79, 0, 0, 0, 0, 0, 0, 0], [79, 0, 0, 0, 77, 0, 76, 0, 74, 0, 0, 0, 0, 0, 0, 0], [76, 0, 0, 76, 0, 0, 79, 0, 81, 0, 0, 0, 0, 0, 84, 0], [84, 0, 0, 0, 0, 0, 81, 0, 77, 0, 0, 0, 72, 0, 0, 0],
+  [72, 0, 0, 0, 76, 0, 79, 0, 84, 0, 0, 0, 0, 0, 83, 0], [83, 0, 0, 0, 79, 0, 0, 0, 74, 0, 0, 0, 76, 0, 79, 0], [81, 0, 0, 0, 0, 0, 77, 0, 81, 0, 0, 0, 84, 0, 0, 0], [83, 0, 0, 0, 79, 0, 0, 0, 74, 0, 0, 0, 0, 0, 0, 0]];
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function mNote(type, m, at, dur, vol, cut = 2400, att = .01, det = 0){
+  const o = AC.createOscillator(), g = AC.createGain(), f = AC.createBiquadFilter(); o.type = type; o.frequency.value = hz(m); if (det) o.detune.value = det; f.type = 'lowpass'; f.frequency.value = cut;
+  g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol, at + att); g.gain.setValueAtTime(vol, at + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, at + dur);
+  o.connect(f).connect(g).connect(music.gain); o.start(at); o.stop(at + dur + .05); return o;
+}
+function mDrum(at, freq, vol, dur){ const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(freq, at); o.frequency.exponentialRampToValueAtTime(freq * .45, at + dur); g.gain.setValueAtTime(vol, at); g.gain.exponentialRampToValueAtTime(.0001, at + dur); o.connect(g).connect(music.gain); o.start(at); o.stop(at + dur + .05); }
+function mNoise(at, vol, dur, cut, type = 'highpass'){ const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); s.buffer = noiseBuf; f.type = type; f.frequency.value = cut; g.gain.setValueAtTime(vol, at); g.gain.exponentialRampToValueAtTime(.0001, at + dur); s.connect(f).connect(g).connect(music.gain); s.start(at, Math.random()); s.stop(at + dur + .05); }
+function scheduleStep(i, at){
+    const bar = Math.floor(i / 16) % 8, s = i % 16, phrase = Math.floor(i / 128), tr = phrase >= 2 ? 2 : 0, big = phrase >= 1;
+    const CH = T_CH[bar].map(m => m + tr), root = T_ROOT[bar] + tr;
+    /* たいこ: ティンパニ・大だいこ・スネアの行進・ハイハット・シンバル。4小節ごとのおわりに連打 */
+    if (s === 0 || s === 8) mDrum(at, 65, 1.0, .55); if (s % 4 === 0) mDrum(at, 48, .7, .3);
+    if (s === 4 || s === 12) mNoise(at, .5, .18, 1800, 'bandpass'); mNoise(at, s % 2 ? .04 : .09, .04, 8000);
+    if (bar % 4 === 3 && s >= 8){ mNoise(at, .25 + (s - 8) * .04, .1, 1800, 'bandpass'); mDrum(at, 60 + (s - 8) * 6, .5, .12); }
+    if (bar % 4 === 0 && s === 0) mNoise(at, .35, 2.2, 5000); if (bar === 0 && s === 0) mNoise(at, .3, 2.5, 3000, 'lowpass');
+    /* ベース: ノコギリ波 + 1オクターブ下のサイン波 (6拍目は5度) */
+    if (s % 2 === 0){ const b = root + (s % 8 === 6 ? 7 : 0); mNote('sawtooth', b, at, T_STEP * 1.8, .18, 600); mNote('sine', b - 12, at, T_STEP * 1.8, .22, 300); }
+    /* 弦のパッド: 小節ぜんぶのばす。少しずらした声を重ねて、オクターブ上も */
+    if (s === 0) for (const m of CH) for (const [d, o] of [[-9, 0], [8, 0], [-5, 12], [6, 12]]) mNote('sawtooth', m + o, at, T_STEP * 16.5, o ? .028 : .04, 1400, .25, d);
+    /* 金管: 「タ・タ・ターン」。3声を少しずらして太く、オクターブ上も */
+    for (const [q, len] of [[0, 5], [6, 2], [8, 7]]) if (s === q) for (const m of CH){ for (const d of [-7, 0, 7]) mNote('sawtooth', m, at, T_STEP * len * .9, .06, 2200, .03, d); mNote('sawtooth', m + 12, at, T_STEP * len * .9, .035, 2600, .03); }
+    /* 高い弦のトレモロ (2回目から) */
+    if (big && s % 2 === 1) mNote('triangle', CH[(s >> 1) % 3] + 24, at, T_STEP * .9, .05, 5000, .005);
+    /* メロディー: 2声ずらし + オクターブ下 (四角波とノコギリ波)。2回目からオクターブ上の四角波、3回目からさらに高い三角波 */
+    const m0 = T_MEL[bar][s]; if (m0){ const m = m0 + tr; let len = 1; while (s + len < 16 && !T_MEL[bar][s + len]) len++; const L = T_STEP * len * .92;
+      for (const d of [-6, 6]) mNote('sawtooth', m, at, L, .09, 3800, .015, d); mNote('square', m - 12, at, L, .05, 2200, .02); mNote('sawtooth', m - 12, at, L, .05, 2400, .02);
+      if (big) mNote('square', m + 12, at, L, .03, 5000, .02); if (phrase >= 2) mNote('triangle', m + 12, at, L, .05, 6000, .01); }
+}
+function mBus(A, out){ const g = A.createGain(); g.gain.value = 0; const comp = A.createDynamicsCompressor(); comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 5; comp.attack.value = .004; comp.release.value = .25; g.connect(comp);
+    const len = Math.floor(A.sampleRate * 2.2), b = A.createBuffer(2, len, A.sampleRate); for (let c = 0; c < 2; c++){ const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2); }
+    const verb = A.createConvolver(); verb.buffer = b; const wet = A.createGain(); wet.gain.value = .4; g.connect(verb); verb.connect(wet); wet.connect(comp); comp.connect(out); return { gain: g, bus: comp }; }
+function startMusic(){
+  if (!AC || music.on) return; music.on = true;
+  const B = mBus(AC, master); music.gain = B.gain; music.bus = B.bus; music.gain.gain.linearRampToValueAtTime(.6, AC.currentTime + 1.2);
+  music.step = 0; music.next = AC.currentTime + .1;
+  music.timer = setInterval(() => { if (!AC) return; while (music.next < AC.currentTime + .35){ scheduleStep(music.step++, music.next); music.next += T_STEP; } }, 80);
+}
+function stopMusic(fade = 1.2){
+  if (!music.on) return; music.on = false; clearInterval(music.timer); const g = music.gain;
+  if (g && AC){ g.gain.cancelScheduledValues(AC.currentTime); g.gain.setValueAtTime(g.gain.value, AC.currentTime); g.gain.linearRampToValueAtTime(0, AC.currentTime + fade); const bus = music.bus; setTimeout(() => { g.disconnect(); if (bus) bus.disconnect(); }, fade * 1000 + 2600); }
+}
+function musicPause(p){ if (!music.on || !music.gain || !AC) return; music.gain.gain.cancelScheduledValues(AC.currentTime); music.gain.gain.setValueAtTime(p ? 0 : .6, AC.currentTime); }
 
 // ===================== 人物 =====================
 const GEO = {
@@ -807,7 +857,7 @@ function addToken(r, c, p){
 function takeToken(t, p){
   if (t.taken) return; if (p.isPlayer) playerPressed = true; t.taken = true; marked[t.r][t.c] = true;
   t.cap.position.y = t.under ? -.6 : .98; t.cap.material.color.setHex(0x2ecc71); t.cap.material.emissive.setHex(0x0a3010); const ns = numSprite(card[t.r][t.c]); ns.position.y = t.under ? .9 : 1.4; t.g.add(ns); // 押されたボタンだけ、数字が出る
-  const lab = card[t.r][t.c]; beep(880, .1, .15);
+  const lab = card[t.r][t.c]; beep(880, .1, .15); if (tokens.filter(x => x.taken).length >= 10) startMusic();   /* 10個ボタンが押されたら (NPCもふくめて) 盛大な音楽 (弟君の注文 2026-10-29) */
   feed(`${who(p)}がボタンを押した → 「${lab}」`);
   if (p.isPlayer) showMsg(`ボタンを押した！ 「${lab}」だった`, 1.8);
   drawCard();
@@ -895,7 +945,7 @@ function makeRunner(name, isPlayer, opts){
   return r;
 }
 function newGame(){
-  removePlayerBody();
+  stopMusic(.2); removePlayerBody();
   for (const n of npcs){ scene.remove(n.m.group); scene.remove(n.tag); }
   for (const b of bloods){ scene.remove(b); b.material.dispose(); } bloods = [];
   for (const d of drops){ scene.remove(d.m); scene.remove(d.sh); } drops = [];
@@ -1175,13 +1225,13 @@ function endGame(quit = false){
 
 // ---------- 操作 ----------
 function startGame(){ initAudio(); newGame(); state = 'play'; paused = false; for (const id of ['title', 'result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); }
-function toTitle(){ state = 'title'; paused = false; ghost = false; $('ghostTint').style.display = 'none'; for (const n of npcs) n.tag.visible = false; for (const id of ['result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'none'; for (const id of ['red', 'bloodScreen', 'hitFlash']) $(id).style.opacity = 0; $('title').classList.add('on'); }
+function toTitle(){ stopMusic(.6); state = 'title'; paused = false; ghost = false; $('ghostTint').style.display = 'none'; for (const n of npcs) n.tag.visible = false; for (const id of ['result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'none'; for (const id of ['red', 'bloodScreen', 'hitFlash']) $(id).style.opacity = 0; $('title').classList.add('on'); }
 document.querySelectorAll('[data-gore]').forEach(b => b.onclick = () => { settings.gore = Number(b.dataset.gore); document.querySelectorAll('[data-gore]').forEach(x => x.classList.toggle('sel', x === b)); });
 $('startBtn').onclick = startGame; $('retryBtn').onclick = startGame;
 let lockFailed = false;
 function tryLock(){ try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => { lockFailed = true; showLookHint(); }); } catch (e){ lockFailed = true; showLookHint(); } }
 function showLookHint(){ if (state === 'play') showMsg('マウスをドラッグして見回してね', 3); }
-function setPaused(p){ paused = p; $('pause').classList.toggle('on', p); if (p){ for (const k in keys) keys[k] = false; } else clock.getDelta(); }
+function setPaused(p){ musicPause(p); paused = p; $('pause').classList.toggle('on', p); if (p){ for (const k in keys) keys[k] = false; } else clock.getDelta(); }
 document.addEventListener('pointerlockerror', () => { lockFailed = true; showLookHint(); });
 $('resumeBtn').onclick = () => { setPaused(false); tryLock(); };
 $('pause').onclick = e => { if (e.target === $('pause')){ setPaused(false); tryLock(); } };
@@ -1260,7 +1310,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
@@ -1343,15 +1393,6 @@ loop();
   };
 })();
 </script>
-
-
-
-
-
-
-
-
-
 <!-- ===== コントローラー (プロコンなど) でも操作できる。キーボードとマウスの操作はそのまま ===== -->
 <style>
 .gp-focus{outline:4px solid #ffd400!important;outline-offset:3px!important;box-shadow:0 0 0 8px rgba(255,212,0,.35)!important}

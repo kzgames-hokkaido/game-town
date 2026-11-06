@@ -84,13 +84,13 @@ a.sub{text-align:center;text-decoration:none}
   <p>夕方6時の街。街のあちこちに、いろいろなゲームの<b>会場</b>がある。</p>
   <ul>
     <li>会場の前に置いてある<b>スマホ</b>に向かって <kbd>E</kbd> を押すと、そのゲームに参加できる</li>
-    <li>会場には<b>A〜Z・AA〜AD</b>の地点の名前がついている。左上の地図で場所がわかる</li>
+    <li>会場には<b>A〜Z・AA〜AH</b>の地点の名前がついている。左上の地図で場所がわかる</li>
     <li><kbd>I</kbd> で<b>持ち物</b>と<b>スキン</b>（自分の見た目）。ゲームを<b>クリアすると 5000円チケット</b>がもらえる。<b>AD地点の「みらいモール」</b>で、そのお金で買い物や食事ができる</li>
     <li><b>Z地点の「何でも豆知識屋」</b>に入ると、NPCの名前と顔や、ゲームの攻略、豆知識がわかる</li>
     <li><b>Y地点の「最新コーナー」</b>に入ると、新しいゲームや変わったところ、ゲームができた順番がわかる</li>
     <li>ゲームのタイトル画面の「街へもどる」で、この街に帰ってこられる（さっきの会場の前にもどる）</li>
   </ul>
-  <p class="keys"><b>A</b> 熱湯スタジアム脱出　<b>B</b> L字マンション鬼ごっこ　<b>C</b> 首輪マーク当てゲーム　<b>D</b> 地下ブラックジャック　<b>E</b> トンネル逃亡ゲーム　<b>F</b> ぶら下がり耐久　<b>G</b> おみくじデスゲーム　<b>H</b> 巨大草園かくれんぼ　<b>I</b> 猛獣ハンター　<b>J</b> 缶蹴り　<b>K</b> ドローンレーザー　<b>L</b> 二択問題　<b>M</b> 雪合戦（魔女狩り）　<b>N</b> アンケート　<b>O</b> 東京ビンゴタワー　<b>P</b> 足跡かくれんぼ　<b>Q</b> 買い物競争　<b>R</b> てんびん　<b>S</b> 自然災害　<b>T</b> ラビリンス　<b>U</b> バトルロワイアル　<b>V</b> ロープ　<b>W</b> ビル　<b>X</b> 鉄骨渡り　<b>Y</b> 最新コーナー　<b>Z</b> 何でも豆知識屋　<b>AA</b> 実験ゲーム　<b>AB</b> ミニゲームホール　<b>AC</b> 空中ケンパ　<b>AD</b> みらいモール</p>
+  <p class="keys"><b>A</b> 熱湯スタジアム脱出　<b>B</b> L字マンション鬼ごっこ　<b>C</b> 首輪マーク当てゲーム　<b>D</b> 地下ブラックジャック　<b>E</b> トンネル逃亡ゲーム　<b>F</b> ぶら下がり耐久　<b>G</b> おみくじデスゲーム　<b>H</b> 巨大草園かくれんぼ　<b>I</b> 猛獣ハンター　<b>J</b> 缶蹴り　<b>K</b> ドローンレーザー　<b>L</b> 二択問題　<b>M</b> 雪合戦（魔女狩り）　<b>N</b> アンケート　<b>O</b> 東京ビンゴタワー　<b>P</b> 足跡かくれんぼ　<b>Q</b> 買い物競争　<b>R</b> てんびん　<b>S</b> 自然災害　<b>T</b> ラビリンス　<b>U</b> バトルロワイアル　<b>V</b> ロープ　<b>W</b> ビル　<b>X</b> 鉄骨渡り　<b>Y</b> 最新コーナー　<b>Z</b> 何でも豆知識屋　<b>AA</b> 実験ゲーム　<b>AB</b> ミニゲームホール　<b>AC</b> 空中ケンパ　<b>AD</b> みらいモール　<b>AE</b> 豪華客船　<b>AF</b> 人生のレール　<b>AG</b> 多数派ゲーム　<b>AH</b> 裏カジノ</p>
   <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：移動　マウス：見回す（動かないときはドラッグ）　<kbd>シフト</kbd>：走る　<kbd>E</kbd>：スマホで参加　<kbd>M</kbd>：ワープ（会場の前へ）　<kbd>エスケープ</kbd>／<kbd>P</kbd>：一時停止</div>
   <button class="big" id="startBtn">街を歩く</button>
   <a class="sub" href="サバイバル.html">サバイバルを始める（この街で鬼から逃げる）</a>
@@ -295,6 +295,11 @@ const VENUES = [
   { id: 'hall',     L: 'AB', name: 'ミニゲームホール',      file: 'ミニゲームホール.html',   bi: 1, bj: 0, kind: 'mghall' },
   { id: 'kenpa',    L: 'AC', name: '空中ケンパ',            file: '空中ケンパ.html',         bi: 0, bj: 2, kind: 'skytree' },
   { id: 'mall',     L: 'AD', name: 'みらいモール',          file: 'みらいモール.html',       bi: 2, bj: 5, kind: 'mall', verb: '入る', sub: 'ショッピングモール' },
+  { id: 'ship',     L: 'AE', name: '豪華客船',              file: '豪華客船.html',           bi: 5, bj: 4, kind: 'ship', sub: 'カードじゃんけん' },
+  { id: 'rail',     L: 'AF', name: '人生のレール',          file: '人生のレール.html',       bi: 0, bj: 5, kind: 'rail', sub: '990人・細くなる橋' },
+  { id: 'majority', L: 'AG', name: '多数派ゲーム',          file: '多数派ゲーム.html',       bi: 4, bj: 5, kind: 'majority', sub: '700人・二択' },
+  { id: 'casino2',  L: 'AH', name: '裏カジノ',              file: '裏カジノ.html',           bi: 5, bj: 5, kind: 'casino2', sub: 'パチンコ・沼・スロット', verb: '入る' },
+  { id: 'tank',     L: 'AI', name: 'ドリル戦車',            file: 'ドリル戦車.html',         bi: 3, bj: 5, kind: 'tank', sub: '広いスーパーで吹っ飛ばす', verb: '乗る' },
 ];
 const VMATS = (() => {
   const S = (c, o = {}) => std({ color: c, roughness: .8, ...o });
@@ -539,6 +544,42 @@ function buildVenue(V, x0, z0){
       signMesh(signCanvas([['ショッピングモール　みらいモール', 46, '#c02040']], 512, 72, '#e8f0f8'), 26, 3.4, cx, 10.4, f + 3.8);
       signMesh(signCanvas([['1F 食品・2F 服・3F フードコート・4F 本・おもちゃ・映画館', 26, '#ffffff']], 512, 48, '#1e3a6a'), 14, 1.3, cx, 7.0, f + 3.8);
       for (const x of [x0 + 4, x0 + 36]) vtree(x, f + 2, .9);
+    } break;
+    case 'ship': { // 豪華客船: 白い船体と、青い水。デッキが3だん、ガラスのブリッジ、赤いえんとつ。横に「豪華客船」の看板
+      addBox('vBlue', x0 + .5, .02, f + 2.5, x0 + 39.5, .25, z0 + 39.8);
+      wall('vWhite', cx - 16, .3, f + 4, cx + 16, 6.5, f + 18); vcyl('vWhite', cx, .3, f + 4, 6, 6.2, 24); vcyl('vWhite', cx, .3, f + 18, 6, 6.2, 24);
+      addBox('vDark', cx - 16, .3, f + 4, cx + 16, 1.6, f + 18); vcyl('vDark', cx, .3, f + 4, 6.02, 1.3, 24); vcyl('vDark', cx, .3, f + 18, 6.02, 1.3, 24);
+      for (let x = cx - 14; x <= cx + 14; x += 2.5) for (const zz of [f + 3.9, f + 18.0]) addBox('vWinLit', x - .35, 4, zz - .1, x + .35, 4.7, zz + .1);
+      addBox('vWhite', cx - 14, 6.5, f + 5, cx + 14, 9.5, f + 17); addBox('vWhite', cx - 11, 9.5, f + 6, cx + 11, 12.5, f + 16); addBox('vWhite', cx - 8, 12.5, f + 7, cx + 8, 15.3, f + 15);
+      for (const y of [6.5, 9.5, 12.5]) for (let x = cx - 13; x <= cx + 13; x += 2) for (const zz of [f + 5 + (y - 6.5) / 3 * 1 - .1, f + 17 - (y - 6.5) / 3 * 1 + .1]) addBox('vWinLit', x - .5, y + 1.0, zz - .08, x + .5, y + 1.9, zz + .08);
+      addBox('vGlassB', cx - 7, 15.3, f + 8, cx + 7, 17.3, f + 14); addBox('vWhite', cx - 7.4, 17.3, f + 7.6, cx + 7.4, 17.8, f + 14.4);
+      vcyl('vRed', cx + 3, 15.3, f + 11, 1.6, 4.5, 16); vcyl('vDark', cx + 3, 19.8, f + 11, 1.65, .6, 16); vcyl('vMetal', cx - 5, 17.8, f + 11, .12, 6, 8);
+      addBox('vDark', cx - 2.5, .3, f + 3.9, cx + 2.5, 3.2, f + 4.1); for (const s of [-1, 1]) addBox('vMetal', cx + s * 2.7 - .08, .3, f + 3.6, cx + s * 2.7 + .08, 3.2, f + 3.9);
+      signMesh(signCanvas([['豪華客船', 60, '#1e3a6a'], ['星をかけた カードじゃんけん', 30, '#c02040']], 512, 150, '#f4f4f0'), 12, 3.5, cx, 8.0, f + 3.85);
+    } break;
+    case 'rail': { // 人生のレール: 谷 (黒い穴) にかかる 細い橋。両はしに塔
+      addBox('vBlack', x0 + 1, .02, f + 2, x0 + 39, .05, z0 + 39.5); for (const xx of [cx - 14, cx + 14]){ wall('vMetal', xx - 1.5, 0, f + 6, xx + 1.5, 16, f + 9); addBox('vYellow', xx - 1.7, 16, f + 5.8, xx + 1.7, 16.6, f + 9.2); }
+      addBox('vWood', cx - 13, 6, f + 7.2, cx + 13, 6.4, f + 7.8); addBox('vWood', cx - 13, 10, f + 7.3, cx + 13, 10.3, f + 7.7); for (let xx = cx - 12; xx <= cx + 12; xx += 4) addBox('vMetal', xx - .08, 6.4, f + 7.3, xx + .08, 10, f + 7.7);
+      for (let xx = cx - 10; xx <= cx + 10; xx += 5){ addBox('vMetal', xx - .3, 0, f + 24, xx + .3, 30, f + 24.6); } addBox('vWood', cx - 11, 30, f + 23.5, cx + 11, 30.5, f + 25.1); addBox('vWood', cx - 11, 32, f + 23.8, cx + 11, 32.2, f + 24.8);
+      signMesh(signCanvas([['人生のレール', 60, '#ffe14d'], ['990人・落ちたら脱落', 32, '#ffffff']], 512, 150, '#202030'), 12, 3.5, cx, 13, f + 5.9);
+    } break;
+    case 'majority': { // 多数派ゲーム: 青と赤の道と、大きな画面
+      addBox('vBlue', x0 + 1, .02, f + 2, cx - 1, .05, z0 + 36); addBox('vRed', cx + 1, .02, f + 2, x0 + 39, .05, z0 + 36); addBox('vWhite', cx - 1, .02, f + 2, cx + 1, .05, z0 + 36);
+      wall('vDark', cx - 14, 0, z0 + 36, cx + 14, 12, z0 + 39); addBox('vScreen', cx - 12, 3, z0 + 35.9, cx + 12, 11, z0 + 36); for (const s of [-1, 1]){ vcyl('vMetal', cx + s * 16, 0, f + 10, .15, 7, 8); vball('vLantern', cx + s * 16, 7.3, f + 10, .4); }
+      signMesh(signCanvas([['多数派ゲーム', 60, '#ffe14d'], ['700人・二択で多数派だけ進む', 30, '#ffffff']], 512, 150, '#202030'), 12, 3.5, cx, 7.2, z0 + 35.8);
+    } break;
+    case 'tank': { // ドリル戦車: 大きな白いスーパー。青い帯と 赤い看板、ガラスの入口、駐車場の白線
+      addBox('vAsph', x0 + .5, .02, z0 + .5, x0 + 39.5, .05, f + 10); for (let i = 0; i < 7; i++) addBox('vWhite', x0 + 3 + i * 5, .06, f + 2, x0 + 3.2 + i * 5, .08, f + 9);
+      wall('vSuper', x0 + 1, 0, f + 10, x0 + 39, 7, z0 + 39.5); addBox('vBlue', x0 + 1, 5.2, f + 9.95, x0 + 39, 6.4, f + 10.05); addBox('vDarkRoof', x0 + .8, 7, f + 9.8, x0 + 39.2, 7.4, z0 + 39.7);
+      addBox('vGlassB', cx - 4, .1, f + 9.9, cx + 4, 3.2, f + 10); addBox('vGlassB', x0 + 3, 1.0, f + 9.9, cx - 6, 3.0, f + 10); addBox('vGlassB', cx + 6, 1.0, f + 9.9, x0 + 37, 3.0, f + 10);
+      signMesh(signCanvas([['スーパー', 90, '#ffffff']], 512, 150, '#c0392b'), 12, 3.5, cx, 9.2, f + 9.8); for (const xx of [x0 + 6, x0 + 34]) vcyl('vMetal', xx, 0, f + 4, .12, 6, 8);
+    } break;
+    case 'casino2': { // 裏カジノ: 古いビルのあいだの 細い裏路地。奥に 看板のない店 (小さく「裏」)
+      wall('vBldC', x0 + 1, 0, f + 2, cx - 2.2, 22, z0 + 39.5); wall('vBldC', cx + 2.2, 0, f + 2, x0 + 39, 22, z0 + 39.5);
+      for (let y = 3; y < 20; y += 4) for (const xx of [cx - 6, cx + 6, cx - 12, cx + 12]) addBox('vWinLit', xx - .6, y, f + 1.95, xx + .6, y + 1.2, f + 2.05);
+      addBox('vAsph', cx - 2.2, .02, f + 2, cx + 2.2, .05, z0 + 36); for (const zz of [f + 8, f + 18, f + 28]){ vcyl('vMetal', cx - 1.9, 0, zz, .08, 4, 6); vball('vLantern', cx - 1.9, 4.2, zz, .25); }
+      addBox('vDark', cx - 2.2, 0, z0 + 36, cx + 2.2, 4, z0 + 39.5); addBox('vNeon', cx - .5, 2.4, z0 + 35.9, cx + .5, 3.4, z0 + 36);
+      signMesh(signCanvas([['裏', 90, '#ff60c0']], 128, 128, '#000'), 1.0, 1.0, cx, 2.9, z0 + 35.85);
     } break;
     case 'maze': { // 巨大な壁にかこまれた巨大迷路
       const X0 = x0 + 2, X1 = x0 + 38, Z0 = f + 2, Z1 = z0 + 39, H = 13;
@@ -1424,10 +1465,62 @@ const PHONE = (() => {
     page2('🗺️ モールの地図', F ? ['1階 食品', '2階 服', '3階 フードコート', '4階 本・おもちゃ・ゲーム・映画館'].map((t, k) => '<div style="font-weight:bold;margin:8px 0 4px">' + t + '</div><div style="font-size:12px;line-height:1.7;background:#fff;border-radius:10px;padding:6px 8px">' + F[k].join('・') + '</div>').join('') + '<div style="font-size:12px;margin-top:8px">4階の西の通路に<b>カードテーブル</b>があるよ</div>'
       : '<p>みらいモールの地図。<br>くわしいお店の場所は、みらいモールの中で見られる。</p><p>1階 食品／2階 服／3階 フードコート／4階 本・おもちゃ・ゲーム・映画館</p>'); }
   function news(){ page2('📰 ニュース', ['みらいモールに無料Wi-Fiができました', '4階の映画館で「ポコと流れ星」「星の姫と大要塞」上映中', 'フードコートのラーメンが人気', 'カードテーブルで、カードバトルがもりあがる', 'ゲームをクリアすると5000円チケット'].map((t, i) => '<div class="phRow"><div class="ic" style="background:#ddd">' + ['📶', '🎬', '🍜', '🃏', '🎫'][i] + '</div><div class="tx"><b>' + t + '</b></div></div>').join('')); }
-  const SONGS = [['きらきら星', [523, 523, 784, 784, 880, 880, 784, 0, 698, 698, 659, 659, 587, 587, 523, 0]], ['ポコのテーマ', [523, 659, 784, 659, 698, 659, 587, 0, 523, 587, 659, 523, 587, 494, 523, 0]], ['げんきマーチ', [392, 523, 523, 587, 659, 659, 587, 523, 587, 659, 784, 659, 587, 523, 587, 0]]];
+  const SONGS = [['きらきら星', [523, 523, 784, 784, 880, 880, 784, 0, 698, 698, 659, 659, 587, 587, 523, 0]], ['ポコのテーマ', [523, 659, 784, 659, 698, 659, 587, 0, 523, 587, 659, 523, 587, 494, 523, 0]], ['げんきマーチ', [392, 523, 523, 587, 659, 659, 587, 523, 587, 659, 784, 659, 587, 523, 587, 0]], ['自然災害 第4ゾーンの曲', 'disaster'], ['東京ビンゴタワーの曲', 'tower']];
   let songT = 0;
+  /* ---- 曲のエンジン: 「自然災害 第4ゾーンの曲」(disaster) と 「東京ビンゴタワーの曲」(tower)。ゲームの中と同じ譜面 (タワーの譜面は 02_作業スクリプト/tower_score.js) */
+  const DM = { on: false, key: '', timer: 0, next: 0, step: 0, gain: null, ac: null, out: null, noise: null };
+  const DM_BPM = 132, DM_STEP = 60 / DM_BPM / 4, DM_CH = [[50, 53, 57], [46, 50, 53], [53, 57, 60], [48, 52, 55]], DM_ROOT = [38, 34, 41, 36];
+  const DM_MEL = [[74, 0, 0, 0, 74, 0, 76, 0, 77, 0, 0, 0, 76, 0, 74, 0], [74, 0, 0, 0, 70, 0, 0, 0, 72, 0, 74, 0, 72, 0, 70, 0], [69, 0, 0, 0, 72, 0, 0, 0, 77, 0, 0, 0, 76, 0, 77, 0], [79, 0, 0, 0, 0, 0, 0, 0, 76, 0, 0, 0, 72, 0, 0, 0]];
+  const T_BPM = 144, T_STEP = 60 / T_BPM / 4;
+  const T_CH = [[60, 64, 67], [59, 62, 67], [57, 60, 64], [57, 60, 65], [60, 64, 67], [59, 62, 67], [57, 60, 65], [55, 59, 62]], T_ROOT = [36, 43, 45, 41, 36, 43, 41, 43];
+  const T_MEL = [[72, 0, 0, 72, 0, 0, 76, 0, 79, 0, 0, 0, 0, 0, 0, 0], [79, 0, 0, 0, 77, 0, 76, 0, 74, 0, 0, 0, 0, 0, 0, 0], [76, 0, 0, 76, 0, 0, 79, 0, 81, 0, 0, 0, 0, 0, 84, 0], [84, 0, 0, 0, 0, 0, 81, 0, 77, 0, 0, 0, 72, 0, 0, 0],
+    [72, 0, 0, 0, 76, 0, 79, 0, 84, 0, 0, 0, 0, 0, 83, 0], [83, 0, 0, 0, 79, 0, 0, 0, 74, 0, 0, 0, 76, 0, 79, 0], [81, 0, 0, 0, 0, 0, 77, 0, 81, 0, 0, 0, 84, 0, 0, 0], [83, 0, 0, 0, 79, 0, 0, 0, 74, 0, 0, 0, 0, 0, 0, 0]];
+  const dmHz = m => 440 * Math.pow(2, (m - 69) / 12);
+  function dmCtx(){ try { if (typeof initAudio === 'function') initAudio(); } catch (e){}
+    let A = null; try { A = (typeof AC !== 'undefined' && AC) ? AC : null; } catch (e){}
+    if (A){ DM.ac = A; let m = null; try { m = (typeof master !== 'undefined' && master) ? master : null; } catch (e){} DM.out = m || A.destination; try { DM.noise = (typeof noiseBuf !== 'undefined' && noiseBuf) ? noiseBuf : DM.noise; } catch (e){} }
+    else { if (!DM.ac) DM.ac = new (window.AudioContext || window.webkitAudioContext)(); if (DM.ac.state === 'suspended') DM.ac.resume(); DM.out = DM.ac.destination; }
+    if (!DM.noise || DM.noise.sampleRate !== DM.ac.sampleRate){ const b = DM.ac.createBuffer(1, DM.ac.sampleRate * 2, DM.ac.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; DM.noise = b; }
+    return DM.ac; }
+  function dmNote(type, m, at, dur, vol, cut = 2400, att = .01, det = 0){ const A = DM.ac, o = A.createOscillator(), g = A.createGain(), f = A.createBiquadFilter(); o.type = type; o.frequency.value = dmHz(m); if (det) o.detune.value = det; f.type = 'lowpass'; f.frequency.value = cut;
+    g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol, at + att); g.gain.setValueAtTime(vol, at + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, at + dur); o.connect(f).connect(g).connect(DM.gain); o.start(at); o.stop(at + dur + .05); }
+  function dmDrum(at, freq, vol, dur){ const A = DM.ac, o = A.createOscillator(), g = A.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(freq, at); o.frequency.exponentialRampToValueAtTime(freq * .45, at + dur); g.gain.setValueAtTime(vol, at); g.gain.exponentialRampToValueAtTime(.0001, at + dur); o.connect(g).connect(DM.gain); o.start(at); o.stop(at + dur + .05); }
+  function dmNoise(at, vol, dur, cut, type = 'highpass'){ const A = DM.ac, s = A.createBufferSource(), f = A.createBiquadFilter(), g = A.createGain(); s.buffer = DM.noise; f.type = type; f.frequency.value = cut; g.gain.setValueAtTime(vol, at); g.gain.exponentialRampToValueAtTime(.0001, at + dur); s.connect(f).connect(g).connect(DM.gain); s.start(at, Math.random()); s.stop(at + dur + .05); }
+  function dmStepDisaster(i, at){ const bar = Math.floor(i / 16) % 4, s = i % 16, phrase = Math.floor(i / 64);
+    if (s === 0 || s === 8) dmDrum(at, 70, .9, .5); if (s === 4 || s === 12) dmNoise(at, .35, .18, 1500, 'bandpass'); if (s % 2 === 0) dmNoise(at, .06, .05, 7000);
+    if (bar === 3 && s >= 12) dmDrum(at, 110 + (s - 12) * 15, .5, .15); if (bar === 0 && s === 0) dmNoise(at, .25, 1.6, 4000);
+    if (s % 2 === 0) dmNote('sawtooth', DM_ROOT[bar] + (s % 4 === 2 ? 12 : 0), at, DM_STEP * 1.8, .16, 500);
+    if (s === 0) for (const m of DM_CH[bar]) dmNote('sawtooth', m + 12, at, DM_STEP * 15, .07, 1800, .08);
+    if (s === 8 && phrase % 2 === 1) for (const m of DM_CH[bar]) dmNote('square', m + 24, at, DM_STEP * 7, .025, 2600, .05);
+    if (phrase >= 1){ const m = DM_MEL[bar][s]; if (m){ let len = 1; while (s + len < 16 && !DM_MEL[bar][s + len]) len++; dmNote('sawtooth', m, at, DM_STEP * len * .95, .09, 3200, .02); dmNote('square', m - 12, at, DM_STEP * len * .95, .03, 1600, .02); } } }
+  function dmStepTower(i, at){ const bar = Math.floor(i / 16) % 8, s = i % 16, phrase = Math.floor(i / 128), tr = phrase >= 2 ? 2 : 0, big = phrase >= 1;
+    const CH = T_CH[bar].map(m => m + tr), root = T_ROOT[bar] + tr;
+    /* たいこ: ティンパニ・大だいこ・スネアの行進・ハイハット・シンバル。4小節ごとのおわりに連打 */
+    if (s === 0 || s === 8) dmDrum(at, 65, 1.0, .55); if (s % 4 === 0) dmDrum(at, 48, .7, .3);
+    if (s === 4 || s === 12) dmNoise(at, .5, .18, 1800, 'bandpass'); dmNoise(at, s % 2 ? .04 : .09, .04, 8000);
+    if (bar % 4 === 3 && s >= 8){ dmNoise(at, .25 + (s - 8) * .04, .1, 1800, 'bandpass'); dmDrum(at, 60 + (s - 8) * 6, .5, .12); }
+    if (bar % 4 === 0 && s === 0) dmNoise(at, .35, 2.2, 5000); if (bar === 0 && s === 0) dmNoise(at, .3, 2.5, 3000, 'lowpass');
+    /* ベース: ノコギリ波 + 1オクターブ下のサイン波 (6拍目は5度) */
+    if (s % 2 === 0){ const b = root + (s % 8 === 6 ? 7 : 0); dmNote('sawtooth', b, at, T_STEP * 1.8, .18, 600); dmNote('sine', b - 12, at, T_STEP * 1.8, .22, 300); }
+    /* 弦のパッド: 小節ぜんぶのばす。少しずらした声を重ねて、オクターブ上も */
+    if (s === 0) for (const m of CH) for (const [d, o] of [[-9, 0], [8, 0], [-5, 12], [6, 12]]) dmNote('sawtooth', m + o, at, T_STEP * 16.5, o ? .028 : .04, 1400, .25, d);
+    /* 金管: 「タ・タ・ターン」。3声を少しずらして太く、オクターブ上も */
+    for (const [q, len] of [[0, 5], [6, 2], [8, 7]]) if (s === q) for (const m of CH){ for (const d of [-7, 0, 7]) dmNote('sawtooth', m, at, T_STEP * len * .9, .06, 2200, .03, d); dmNote('sawtooth', m + 12, at, T_STEP * len * .9, .035, 2600, .03); }
+    /* 高い弦のトレモロ (2回目から) */
+    if (big && s % 2 === 1) dmNote('triangle', CH[(s >> 1) % 3] + 24, at, T_STEP * .9, .05, 5000, .005);
+    /* メロディー: 2声ずらし + オクターブ下 (四角波とノコギリ波)。2回目からオクターブ上の四角波、3回目からさらに高い三角波 */
+    const m0 = T_MEL[bar][s]; if (m0){ const m = m0 + tr; let len = 1; while (s + len < 16 && !T_MEL[bar][s + len]) len++; const L = T_STEP * len * .92;
+      for (const d of [-6, 6]) dmNote('sawtooth', m, at, L, .09, 3800, .015, d); dmNote('square', m - 12, at, L, .05, 2200, .02); dmNote('sawtooth', m - 12, at, L, .05, 2400, .02);
+      if (big) dmNote('square', m + 12, at, L, .03, 5000, .02); if (phrase >= 2) dmNote('triangle', m + 12, at, L, .05, 6000, .01); } }
+  function dmBus(A, out){ const g = A.createGain(); g.gain.value = 0; const comp = A.createDynamicsCompressor(); comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 5; comp.attack.value = .004; comp.release.value = .25; g.connect(comp);
+    const len = Math.floor(A.sampleRate * 2.2), b = A.createBuffer(2, len, A.sampleRate); for (let c = 0; c < 2; c++){ const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2); }
+    const verb = A.createConvolver(); verb.buffer = b; const wet = A.createGain(); wet.gain.value = .4; g.connect(verb); verb.connect(wet); wet.connect(comp); comp.connect(out); return { gain: g, bus: comp }; }
+  function dmStart(key){ if (DM.on) return; const A = dmCtx(); DM.on = true; DM.key = key; const stepLen = key === 'tower' ? T_STEP : DM_STEP, stepFn = key === 'tower' ? dmStepTower : dmStepDisaster;
+    if (key === 'tower'){ const B = dmBus(A, DM.out); DM.gain = B.gain; DM.bus = B.bus; } else { DM.gain = A.createGain(); DM.gain.gain.value = 0; DM.gain.connect(DM.out); DM.bus = null; } DM.gain.gain.linearRampToValueAtTime(key === 'tower' ? .55 : .45, A.currentTime + 1.0); DM.step = 0; DM.next = A.currentTime + .1;
+    DM.timer = setInterval(() => { if (!DM.on) return; while (DM.next < A.currentTime + .35){ stepFn(DM.step++, DM.next); DM.next += stepLen; } if (DM.step >= 64 * 8){ dmStop(); PHONE._song = null; if (page === 'music') music(); } }, 80); }   /* 8回くり返し (約1分) で止まる */
+  function dmStop(fade = .8){ if (!DM.on) return; DM.on = false; clearInterval(DM.timer); const g = DM.gain, A = DM.ac; if (g && A){ g.gain.cancelScheduledValues(A.currentTime); g.gain.setValueAtTime(g.gain.value, A.currentTime); g.gain.linearRampToValueAtTime(0, A.currentTime + fade); const bus = DM.bus; setTimeout(() => { try { g.disconnect(); if (bus) bus.disconnect(); } catch (e){} }, fade * 1000 + 2600); } }
   function music(now){ page2('🎵 音楽', SONGS.map(([n], i) => '<div class="phRow"><div class="ic" style="background:#e84a8a">🎵</div><div class="tx"><b>' + n + '</b>' + (now === i ? '<br><small>♪ さいせい中</small>' : '') + '</div><button class="phBtn" data-song="' + i + '">' + (now === i ? 'とめる' : 'きく') + '</button></div>').join('')); }
-  function playSong(i){ clearInterval(songT); if (PHONE._song === i){ PHONE._song = null; music(); return; } PHONE._song = i; let k = 0; const M = SONGS[i][1]; songT = setInterval(() => { const f = M[k++ % M.length]; if (f) snd(f, .28, .05); if (k > M.length * 3){ clearInterval(songT); PHONE._song = null; if (page === 'music') music(); } }, 330); music(i); }
+  function playSong(i){ clearInterval(songT); dmStop(); if (PHONE._song === i){ PHONE._song = null; music(); return; } PHONE._song = i; const M = SONGS[i][1]; if (typeof M === 'string'){ dmStart(M); music(i); return; } let k = 0; songT = setInterval(() => { const f = M[k++ % M.length]; if (f) snd(f, .28, .05); if (k > M.length * 3){ clearInterval(songT); PHONE._song = null; if (page === 'music') music(); } }, 330); music(i); }
   /* ---- トーク: 番号を交換した人が友だち。1対1とグループ (3つまで)。送ると だいたい10秒で返事。相手から話しかけてくることも */
   const talkData = () => { const w = ph(); const T = w.phone.talk = w.phone.talk || {}; T.rooms = T.rooms || {}; T.groups = T.groups || []; T.unread = T.unread || {}; T.pend = T.pend || []; return T; };
   const tw = w => { const T = w.phone.talk = w.phone.talk || {}; T.rooms = T.rooms || {}; T.groups = T.groups || []; T.unread = T.unread || {}; T.pend = T.pend || []; return T; };   /* w の中のトークの記録 (なければ作る) */
@@ -3899,7 +3992,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
