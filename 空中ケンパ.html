@@ -729,7 +729,8 @@ function fallMsg(p, why){ p.fallWhy = why; if (p.isPlayer) showMsg('パネルが
 function kill(p, why){
   if (!p.alive || p.goal) return; if (p.isPlayer && window.__godMode) return;
   p.alive = false; p.deathT = 0;
-  if (p.isPlayer){ deathBy = why; state = 'caught'; caughtT = 0; if (document.pointerLockElement) document.exitPointerLock(); feed('あなたが' + why); }
+  if (p.isPlayer){ deathBy = why; state = 'caught'; caughtT = 0; if (document.pointerLockElement) document.exitPointerLock(); feed('あなたが' + why);
+    p.m = makePerson(PLAYER_LOOK); p.heading = yaw + Math.PI; p.speedNow = 0; animModel(p, 0); p.m.group.rotation.order = 'YXZ'; p.m.group.visible = false; }   /* ghost_body: 落ちていく自分の体 (幽霊になったら見える) */
   if (p.m){ for (const e of p.m.eyes) e.visible = false; for (const x of p.m.xEyes) x.visible = true; }
   if (p.tag) p.tag.visible = false;
 }
@@ -930,19 +931,30 @@ function hud(dt){
 }
 function updateCaught(dt){
   caughtT += dt; update(dt); if (state !== 'caught') return;
-  player.vy -= 22 * dt; player.pos.y += player.vy * dt; if (player.hop){ player.pos.x += player.hop.vx * dt * .3; player.pos.z += player.hop.vz * dt * .3; }
+  playerBodyFall(dt);   /* ghost_body */
   pitch += (-1.35 - pitch) * Math.min(1, dt * 1.5); camera.position.set(player.pos.x, player.pos.y + 1.2, player.pos.z); camera.rotation.set(pitch, yaw, Math.min(.5, caughtT * .3));
   $('red').style.opacity = Math.min(.6, caughtT * .3);
   if (caughtT > 3) startGhost(false);
 }
-function startGhost(win){ ghostWin = win; state = 'play'; ghost = true;
+function ghostLie(p, y){ /* ghost_body */ const m = p.m; if (!m) return; m.group.rotation.set(-Math.PI / 2, p.heading, 0, 'YXZ'); m.group.position.set(p.pos.x, y + .14 * m.scale, p.pos.z);
+  m.armL.rotation.set(.19, 0, -.45); m.armR.rotation.set(.19, 0, .45); m.legL.rotation.set(.067, 0, -.1); m.legR.rotation.set(.067, 0, .1);
+  for (const e of m.eyes) e.visible = false; for (const x of m.xEyes) x.visible = true; }
+/* ghost_body (2026-11-08): クリアして観戦になったとき、その場に立ったままの自分を残す。やられたときは倒れた体がその場に残る */
+function ghostStandBody(look){ if (player.m) scene.remove(player.m.group);
+  player.m = makePerson(look); player.heading = yaw + Math.PI; player.speedNow = 0; player.phase = player.phase || 0; player.standBody = true;
+  animModel(player, 0); player.m.group.position.copy(player.pos); player.m.group.rotation.set(0, player.heading, 0, 'YXZ'); player.m.group.visible = true; }
+function playerBodyFall(dt){ /* ghost_body */ /* 落ちた自分の体は、地面まで落ちて横たわる */
+  if (player.pos.y > GROUND){ player.vy -= 22 * dt; player.pos.y = Math.max(GROUND, player.pos.y + player.vy * dt); if (player.hop){ player.pos.x += player.hop.vx * dt * .3; player.pos.z += player.hop.vz * dt * .3; } }
+  const m = player.m; if (!m) return; m.group.position.copy(player.pos); if (player.pos.y > GROUND) m.group.rotation.x -= dt * 2.4; else ghostLie(player, GROUND); }
+function startGhost(win){ ghostWin = win; state = 'play'; ghost = true; if (win) ghostStandBody(PLAYER_LOOK); else if (player.m) player.m.group.visible = true;   /* ghost_body */
   if (player.z2){ const a = Math.atan2(player.pos.x - TC.x, player.pos.z - TC.z), r = Math.min(Math.hypot(player.pos.x - TC.x, player.pos.z - TC.z) + 20, 240); gpos.set(TC.x + Math.sin(a) * r, 30, TC.z + Math.cos(a) * r); yaw = a; }
   else { gpos.set(0, 18, 10); yaw = 0; }
   pitch = -.5; $('red').style.opacity = 0; $('ghostTint').style.display = 'block'; showMsg(win ? 'クリア！ 観戦モードで見ていよう（Q で終了）' : '落ちてしまった… 幽霊モードで観戦できる（Q で終了）', 3.5); }
 function updateGhost(dt){
   const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), s = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  if (!player.alive) playerBodyFall(dt);   /* ghost_body: 幽霊のあいだも体は落ちて、地面で止まる */
   const sp = (keys.ShiftLeft || keys.ShiftRight) ? 40 : 12, cp = Math.cos(pitch);
-  gpos.x += (-Math.sin(yaw) * cp * f + Math.cos(yaw) * s) * sp * dt; gpos.z += (-Math.cos(yaw) * cp * f - Math.sin(yaw) * s) * sp * dt; gpos.y = clamp(gpos.y + (Math.sin(pitch) * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, -80, 160);
+  gpos.x += (-Math.sin(yaw) * cp * f + Math.cos(yaw) * s) * sp * dt; gpos.z += (-Math.cos(yaw) * cp * f - Math.sin(yaw) * s) * sp * dt; gpos.y = clamp(gpos.y + (Math.sin(pitch) * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, GROUND + 1, 160);   /* ghost_body: 地面の体のところまで降りられる */
   camera.position.copy(gpos); camera.rotation.set(pitch, yaw, 0);
   $('prompt').style.display = 'block'; $('prompt').textContent = (ghostWin ? '観戦モード' : '幽霊モード') + '　W・A・S・D：移動　スペース／C：上下　シフト：速く　Q：観戦を終了';
 }

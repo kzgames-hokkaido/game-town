@@ -598,7 +598,10 @@ function updatePlayer(dt){
   const f = can ? (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) : 0, s = can ? (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) : 0;
   const running = keys.ShiftLeft || keys.ShiftRight; let dx = -Math.sin(yaw) * f + Math.cos(yaw) * s, dz = -Math.cos(yaw) * f - Math.sin(yaw) * s; const len = Math.hypot(dx, dz); if (len > 0){ dx /= len; dz /= len; }
   const speed = running ? 6.0 : 3.6; const ox = player.pos.x, oz = player.pos.z; moveBody(player, dx * speed * dt, dz * speed * dt, dt); const moved = Math.hypot(player.pos.x - ox, player.pos.z - oz); if (f || s) player.heading = Math.atan2(dx, dz); player.speedNow = moved / Math.max(dt, 1e-4); if (player.m) animModel(player, dt);
-  if (!player.alive){ player.pos.y -= 4 * dt; }
+  if (!player.alive && player.m){ /* ghost_body */ player.lieT = (player.lieT || 0) + dt; const k = Math.min(1, player.lieT / .7), e = k * k, m = player.m;   /* 脱落した自分は、その場に倒れたまま残る */
+    m.group.rotation.set(-e * Math.PI / 2, player.heading, 0, 'YXZ'); m.group.position.set(player.pos.x, player.pos.y + .14 * m.scale * e, player.pos.z);
+    m.armL.rotation.set(e * .19, 0, -e * .45); m.armR.rotation.set(e * .19, 0, e * .45); m.legL.rotation.set(e * .067, 0, -e * .1); m.legR.rotation.set(e * .067, 0, e * .1);
+    for (const q of m.eyes) q.visible = false; for (const x of m.xEyes) x.visible = true; }
   thirdCam();
   const sd = sideOf(player); $('sideNow').textContent = sd === 'A' ? '左（青）：' + (q ? q[0] : 'A') : sd === 'B' ? '右（赤）：' + (q ? q[1] : 'B') : 'まん中（どちらでもない）'; $('sideNote').textContent = phase === 'q' ? 'みんなの動きを見て、多数派へ。時間が来たときの場所で決まる' : '';
 }

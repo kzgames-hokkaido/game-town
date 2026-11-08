@@ -613,6 +613,7 @@ function ledgeSpot(){ for (let k = 0; k < 200; k++){ const side = (Math.random()
     const x = side === 0 ? t : side === 1 ? t : side === 2 ? d : -d, z = side === 0 ? d : side === 1 ? -d : t;
     if (inPit(x, z)) continue; if (people.some(p => Math.hypot(p.pos.x - x, p.pos.z - z) < 2.2)) continue; return { x, z }; } return { x: 0, z: PIT + 5 }; }
 function newGame(){
+  if (player && player.m) scene.remove(player.m.group); if (player && player.bodyLight) scene.remove(player.bodyLight);   /* ghost_body */
   for (const n of npcs){ scene.remove(n.m.group); scene.remove(n.tag); }
   for (const l of lasers) scene.remove(l.m); lasers = [];
   npcs = []; people = []; score.red = score.blue = 0; breakDone = {}; warnDone = {};
@@ -666,13 +667,23 @@ function letGo(r, why, imp = { vx: 0, vy: 0, vz: 0 }){ // ロープをはなし�
   zapSound(vol(r));
   die(r, why);
 }
+const PLAYER_LOOK = Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {});   /* ghost_body: 自分の見た目 (着せかえがあればそれ) */
+const ROPE_BOTTOM = -30;   /* ghost_body: 奈落に落ちた自分の体は、この深さで止まって横たわる */
+function ghostLie(p, y){ /* ghost_body */ const m = p.m; if (!m) return; m.group.rotation.set(-Math.PI / 2, p.heading, 0, 'YXZ'); m.group.position.set(p.pos.x, y + .14 * m.scale, p.pos.z);
+  m.armL.rotation.set(.19, 0, -.45); m.armR.rotation.set(.19, 0, .45); m.legL.rotation.set(.067, 0, -.1); m.legR.rotation.set(.067, 0, .1);
+  for (const e of m.eyes) e.visible = false; for (const x of m.xEyes) x.visible = true; }
+function playerBodyFall(dt){ /* ghost_body */ player.vy -= 22 * dt; player.pos.y = Math.max(ROPE_BOTTOM, player.pos.y + player.vy * dt);
+  const m = player.m; if (!m) return; m.group.position.copy(player.pos);
+  if (player.pos.y > ROPE_BOTTOM){ m.group.rotation.x += dt * 2.5; m.armL.rotation.x = m.armR.rotation.x = -2.6; }
+  else { ghostLie(player, ROPE_BOTTOM); if (!player.bodyLight){ player.bodyLight = new THREE.PointLight(0xfff2d0, 90, 18, 2); player.bodyLight.position.set(player.pos.x, ROPE_BOTTOM + 2.6, player.pos.z); scene.add(player.bodyLight); } } }   /* 奈落はまっ暗なので、体のそばに小さな明かり */
 function die(r, why){
   if (!r.alive) return;
   if (r.isPlayer && window.__godMode){ r.mode = 'ledge'; return; }
   r.alive = false; r.deathT = 0;
   if (r.rope){ r.rope.hangers = r.rope.hangers.filter(h => h !== r); r.rope = null; }
   if (r.mode !== 'fall'){ r.mode = 'fall'; r.vy = 0; }
-  if (r.isPlayer){ deathBy = why; state = 'caught'; caughtT = 0; if (document.pointerLockElement) document.exitPointerLock(); feed(`あなたが${why}`); }
+  if (r.isPlayer){ deathBy = why; state = 'caught'; caughtT = 0; if (document.pointerLockElement) document.exitPointerLock(); feed(`あなたが${why}`);
+    r.m = makePerson(PLAYER_LOOK); r.heading = yaw + Math.PI; r.speedNow = 0; r.phase = 0; animModel(r, 0); r.m.group.rotation.order = 'YXZ'; for (const e of r.m.eyes) e.visible = false; for (const x of r.m.xEyes) x.visible = true; r.m.group.visible = false; }   /* ghost_body: 倒れる自分の体 (幽霊になったら見える) */
   else { r.tag.visible = false; for (const e of r.m.eyes) e.visible = false; for (const x of r.m.xEyes) x.visible = true; feed(`${r.name}（${TEAM[r.team].name}）が${why}`); }
 }
 function tryPush(r){ // 同じロープの近くにいる敵を押す
@@ -792,7 +803,7 @@ function updatePlayer(dt){
     const moved = Math.hypot(player.pos.x - ox, player.pos.z - oz); bob += moved * (running ? 2.4 : 2.9);
     if (player.pos.y < -6 && player.alive) die(player, '橋から奈落に落ちた');
   } else if (player.mode === 'drop'){ updateDrop(player, dt); }
-  else if (player.mode === 'fall'){ player.vy -= 22 * dt; player.pos.y += player.vy * dt; }
+  else if (player.mode === 'fall'){ playerBodyFall(dt); }   /* ghost_body */
   const hang = player.mode === 'rope';
   camera.position.set(player.pos.x, player.pos.y + (hang ? 1.55 : camY) + (player.mode === 'ledge' ? Math.sin(bob) * .03 : Math.sin(elapsed * 1.3) * .03), player.pos.z);
   if (shakeT > 0){ shakeT -= dt; camera.position.x += R(-.08, .08); camera.position.y += R(-.08, .08); }
@@ -855,16 +866,17 @@ function updateCaught(dt){
   if (caughtT > 2.6) startGhost();
 }
 function startGhost(){
-  state = 'play'; ghost = true; gpos.set(clamp(player.pos.x, -BOX + 3, BOX - 3), 8, clamp(player.pos.z, -BOX + 3, BOX - 3) ); pitch = -.3;
+  state = 'play'; ghost = true; if (player.m) player.m.group.visible = true;   /* ghost_body */ gpos.set(clamp(player.pos.x, -BOX + 3, BOX - 3), 8, clamp(player.pos.z, -BOX + 3, BOX - 3) ); pitch = -.3;
   $('zap').style.opacity = 0; $('ghostTint').style.display = 'block'; $('mine').style.display = 'none';
   showMsg('幽霊になった… チームの勝ち負けを見守ろう。Q で観戦をやめる', 3.5);
 }
 function updateGhost(dt){
   const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), s = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  if (!player.alive && player.mode === 'fall') playerBodyFall(dt);   /* ghost_body: 幽霊のあいだも体は落ちて、底で止まる */
   const sp = (keys.ShiftLeft || keys.ShiftRight) ? 18 : 7;
   gpos.x = clamp(gpos.x + (-Math.sin(yaw) * f + Math.cos(yaw) * s) * sp * dt, -BOX + 1, BOX - 1);
   gpos.z = clamp(gpos.z + (-Math.cos(yaw) * f - Math.sin(yaw) * s) * sp * dt, -BOX + 1, BOX - 1);
-  gpos.y = clamp(gpos.y + ((keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, -20, CEIL - 2);
+  gpos.y = clamp(gpos.y + ((keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, ROPE_BOTTOM - 2, CEIL - 2);   /* ghost_body: 体のところまで降りられる */
   camera.position.copy(gpos); camera.rotation.set(pitch, yaw, 0);
   $('prompt').style.display = 'block'; $('prompt').textContent = '幽霊モード（観戦中）　W・A・S・D：移動　スペース／C：上下　シフト：はやく　Q：観戦をやめる';
 }

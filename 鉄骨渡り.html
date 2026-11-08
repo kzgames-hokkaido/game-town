@@ -714,7 +714,7 @@ function updateFall(p, dt){ // 鉄骨から落ちていく
   if (p.pos.y > .02){ p.m.group.position.set(p.pos.x, p.pos.y, p.pos.z); p.m.group.rotation.set(-p.fallT * p.spin, p.heading, p.fallDir * p.fallT * 1.5, 'YXZ'); }
   else { p.m.group.position.set(p.pos.x, .14 * p.m.scale, p.pos.z); p.m.group.rotation.set(-Math.PI / 2, p.heading, 0, 'YXZ');
     for (const e of p.m.eyes) e.visible = false; for (const x of p.m.xEyes) x.visible = true;
-    if (!settings.gore && p.landT > .3){ const op = 1 - (p.landT - .3) / 1; for (const m of p.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0) p.m.group.visible = false; } }
+    if (!settings.gore && !p.isPlayer && p.landT > .3){ /* ghost_body */ const op = 1 - (p.landT - .3) / 1; for (const m of p.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0) p.m.group.visible = false; } }
 }
 function reachGoal(p){
   if (p.goal || !p.alive || p.falling) return; p.goal = true;
@@ -884,9 +884,14 @@ function updateCaught(dt){
   $('red').style.opacity = Math.min(.8, caughtT * .3);
   if (caughtT > 3.4) startGhost(false);
 }
+/* ghost_body (2026-11-08): クリアして観戦になったとき、その場に立ったままの自分を残す。やられたときは倒れた体がその場に残る */
+function ghostStandBody(look){ if (player.m) scene.remove(player.m.group);
+  player.m = makePerson(look); player.heading = yaw + Math.PI; player.speedNow = 0; player.phase = player.phase || 0; player.standBody = true;
+  animModel(player, 0); player.m.group.position.copy(player.pos); player.m.group.rotation.set(0, player.heading, 0, 'YXZ'); player.m.group.visible = true; }
 function startGhost(win){
   ghostWin = win; state = 'play'; ghost = true;
   gpos.set(win ? player.pos.x : 0, H + 6, win ? player.pos.z - 4 : -8); yaw = Math.PI; pitch = -.25;
+  if (win) ghostStandBody(Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {}));   /* ghost_body */
   if (!win){ player.m = makePerson(Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {})); player.heading = 0; while (player.pos.y > 0) updateFall(player, 1 / 30); updateFall(player, 2); }
   $('red').style.opacity = 0; $('ghostTint').style.display = 'block';
   showMsg(win ? 'ゴール！ 観戦モードで見ていよう（Q でやめる）' : '落ちてしまった… 幽霊モードで観戦できる（Q でやめる）', 3.5);

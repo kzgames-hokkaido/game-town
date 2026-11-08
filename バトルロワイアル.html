@@ -753,7 +753,7 @@ function updateDeath(n, dt){
   n.m.group.position.set(n.pos.x, .14 * n.m.scale * e, n.pos.z);
   n.m.armL.rotation.set(e * fl * .19, 0, -e * .45); n.m.armR.rotation.set(e * fl * .19, 0, e * .45);
   n.m.legL.rotation.set(e * (n.prone ? .04 : .067), 0, -e * .1); n.m.legR.rotation.set(e * (n.prone ? .04 : .067), 0, e * .1);
-  if (!settings.gore && n.deathT > 1.4){ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
+  if (!settings.gore && !n.isPlayer && n.deathT > 1.4){ /* ghost_body */ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
 }
 
 // ---------- 攻撃 ----------

@@ -1002,6 +1002,7 @@ function makePerson(o){
   const capHair = () => { const h = add(g, GEO.hair, mHair, 0, 1.745, -.01); h.rotation.x = -.45; return h; };
   switch (L.hair || 'short'){
     case 'short': capHair(); break;
+    case 'bald': break;   /* mansion_b13: はげ (かみなし) */
     case 'buzz': capHair(); break; /* 坊主は頭にうまってハゲに見えたので、短い髪と同じにする */
     case 'long': capHair(); add(g, GEO.hairBack, mHair, 0, 1.58, -.085).scale.set(1.15, 1, .45); break;
     case 'twin': capHair();
@@ -1026,7 +1027,8 @@ function makePerson(o){
   // 帽子・頭の小物
   // 帽子はひとまとまりにしておく (やられたときに頭から落とすため)。hatBase = 帽子のいちばん下の高さ
   let hat = null, hatBase = 0;
-  if (['cap', 'beanie', 'straw', 'tophat', 'party', 'helmet'].includes(L.hat)){ hat = new THREE.Group(); g.add(hat); }
+  if (['cap', 'beanie', 'straw', 'tophat', 'party', 'helmet', 'fedora'].includes(L.hat)){ hat = new THREE.Group(); g.add(hat); }
+  if (L.hat === 'fedora'){ const mt = M(L.hatColor ?? 0x1c1c22, { roughness: .6 }); add(hat, xg('fedBrim', () => new THREE.CylinderGeometry(.2, .2, .015, 20)), mt, 0, 1.835, 0); add(hat, xg('fedCrown', () => new THREE.CylinderGeometry(.105, .135, .15, 18)), mt, 0, 1.915, 0); add(hat, xg('fedBand', () => new THREE.CylinderGeometry(.137, .137, .03, 18)), M(0xf4f4f4), 0, 1.86, 0); }   /* mansion_b13: 中折れ帽 (白いリボン) */
   if (L.hat === 'cap'){ const mc = M(L.hatColor); add(hat, GEO.capTop, mc, 0, 1.765, -.01).rotation.x = -.35; const b = add(hat, GEO.brim, mc, 0, 1.815, .13); b.scale.set(1, 1, 1.25); b.rotation.x = .12; hatBase = 1.745; }
   if (L.hat === 'beanie'){ const mc = M(L.hatColor); const b = add(hat, GEO.beanie, mc, 0, 1.75, -.01); b.scale.set(1, 1.15, 1); b.rotation.x = -.5; add(hat, GEO.pom, M(0xf4f4f4), 0, 1.93, -.07); hatBase = 1.72; }
   if (L.hat === 'straw'){ const mc = M(0xd9b56a); add(hat, GEO.strawBrim, mc, 0, 1.83, 0); add(hat, GEO.strawTop, mc, 0, 1.89, 0); add(hat, GEO.strawBand, M(0xc0392b), 0, 1.86, 0); hatBase = 1.822; }
@@ -1042,6 +1044,17 @@ function makePerson(o){
   if (L.hat === 'ribbon'){ const mr = M(L.hatColor); for (const s of [-1, 1]){ const b = add(g, GEO.bow, mr, s * .045 + .1, 1.88, -.02); b.rotation.z = s * Math.PI / 2; } }
   if (L.glasses){ const mg2 = M(0x222222); add(g, GEO.lens, mg2, -.05, 1.755, .13); add(g, GEO.lens, mg2, .05, 1.755, .13); add(g, GEO.bridge, mg2, 0, 1.755, .135); }
   // 服・体の小物
+  if (L.vest){ const mv = M(L.vest, { roughness: .8 }); add(g, xg('vest', () => new THREE.BoxGeometry(.33, .36, .25)), mv, 0, 1.18, 0); }   /* mansion_b13: ベスト (そでは服の色のまま) */
+  if (L.necklace){ const c = add(g, xg('neckChain', () => new THREE.TorusGeometry(.085, .008, 6, 20)), M(L.necklace, { metalness: .8, roughness: .3 }), 0, 1.5, .02); c.rotation.x = Math.PI / 2 + .3; }   /* mansion_b13: くさりのネックレス */
+  if (L.undershirt) add(g, xg('undershirt', () => new THREE.BoxGeometry(.19, .36, .05)), M(L.undershirt), 0, 1.2, .125);   /* mansion_b13: 前の開いたコートから見える白いタンクトップ */
+  if (L.horse){   /* mansion_b13: 馬のかぶりもの (こげ茶。長い鼻づら・耳・たてがみ) */
+    const mm = M(0x2a1c14, { roughness: .9 }), md = M(0x1a1008);
+    add(g, xg('horseHead', () => new THREE.BoxGeometry(.3, .32, .3)), mm, 0, 1.78, -.02);
+    add(g, xg('horseSnout', () => new THREE.BoxGeometry(.2, .2, .3)), mm, 0, 1.68, .24);
+    add(g, xg('horseNose', () => new THREE.BoxGeometry(.21, .09, .06)), md, 0, 1.63, .37);
+    for (const sd of [-1, 1]){ const e = add(g, xg('horseEar', () => new THREE.ConeGeometry(.045, .16, 8)), mm, sd * .1, 2.0, -.05); e.rotation.z = -sd * .2; add(g, xg('horseEye', () => new THREE.SphereGeometry(.03, 8, 6)), M(0xf4f4f4), sd * .12, 1.82, .13); }
+    add(g, xg('horseMane', () => new THREE.BoxGeometry(.06, .12, .3)), md, 0, 1.98, -.08);
+  }
   if (L.hood){ const h = add(g, GEO.hood, mShirt, 0, 1.56, -.13); h.rotation.x = 1.1; add(g, GEO.pocket, mShirt, 0, 1.07, .135); }
   if (L.catEars){ for (const s of [-1, 1]) add(g, GEO.ear, mShirt, s * .08, 1.9, -.01).rotation.z = -s * .35; }
   if (L.blazer){ add(g, GEO.collar, M(0xf4f4f4), 0, 1.36, .128); add(g, GEO.tie, M(L.tieColor ?? 0xb03030), 0, 1.33, .14); }
@@ -1081,8 +1094,7 @@ function makePerson(o){
   let light = null;
   if (o.oni){
     const mh = M(0xe9e1c9);
-    add(g, GEO.horn, mh, -.07, 1.9, .02).rotation.z = .3;
-    add(g, GEO.horn, mh, .07, 1.9, .02).rotation.z = -.3;
+    if (!L.horse){ add(g, GEO.horn, mh, -.07, 1.9, .02).rotation.z = .3; add(g, GEO.horn, mh, .07, 1.9, .02).rotation.z = -.3; }   /* mansion_b13: 馬のかぶりもののときは角なし */
     light = new THREE.PointLight(0xff3a1a, 0, 8, 1.6); light.position.set(0, 1.7, .5); g.add(light);
     // 右手のピストル (腕を上げると前を向く)
     const mgun = M(0x2b2b2e, { metalness: .5, roughness: .4 });
@@ -1244,6 +1256,7 @@ function newGame(){
   for (const tr of tracers) scene.remove(tr.line); tracers = [];
   for (const p of sprays) scene.remove(p.m); sprays = [];
   for (const o of onis) if (o.laser) scene.remove(o.laser);
+  if (ghostCorpse){ scene.remove(ghostCorpse.m.group); ghostCorpse = null; }   /* ghost_body */
   for (const a of [...npcs, ...onis]){ scene.remove(a.m.group); if (a.m.hat && a.m.hat.parent) a.m.hat.parent.remove(a.m.hat); if (a.tag){ scene.remove(a.tag); a.tag.material.map.dispose(); a.tag.material.dispose(); } }
   for (const b of bloods){ if (b.parent) b.parent.remove(b); b.userData.mat.dispose(); }
   bloods = []; npcs = []; onis = [];
@@ -1264,9 +1277,20 @@ function newGame(){
   const key = new Map(cands.map(n => [n, Math.random() + Math.abs(n.k - 1) * SPAWN_SPREAD]));
   cands.sort((p, q) => key.get(p) - key.get(q));
   /* Bパターンで見た目を決めている人: けい = 鉄骨渡り第一ゾーンの4番、けんた = ほかのゲーム (雪合戦など) のいぶきと同じ見た目 */
-  const FIXB = { 'けい': { shirt: 0x3f51b5, pants: 0x37474f, hair: 0x1a1210, skin: 0xd9a47f, scale: 1.01, look: { hair: 'short', glasses: true, shirt: 0x3f51b5, pants: 0x37474f, hairColor: 0x1a1210 } },
-    'けんた': { shirt: 0x8d6e63, pants: 0x263238, hair: 0x0f0f0f, skin: 0xf1c7a5, scale: 1.08, look: { hair: 'short', shirt: 0x8d6e63, pants: 0x263238, hairColor: 0x0f0f0f, scale: 1.08 } } };   /* けんたの見た目は、ほかのゲームのいぶきと同じ */
-  (PB ? ['ゆうと', 'はると', 'そうた', 'みなと', 'こうき', 'けい', 'けんた', 'かいと', 'いつき', 'そら'] : NAMES).forEach((name, i) => {
+  /* mansion_b14 (2026-11-08): Bパターン専用の新しい10人 (ほかのゲームの人の着せかえではない。原作「おにごっこ」の参加者と同じような見た目。名前は出ない = 「○番の人」) */
+  const B_CAST = [
+    { name: 'B参加者01', shirt: 0xc0392b, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.02, look: { hair: 'spiky' } },                       /* 1番: 若い男 (赤い服・ツンツンのかみ) */
+    { name: 'B参加者02', shirt: 0x4a7c59, pants: 0x5d5d5d, hair: 0x111111, skin: 0xe8b894, scale: 1.0, look: { hair: 'short' } },                     /* 2番: 若い男 (緑の服) mansion_b17: 5番と入れかえ */
+    { name: 'B参加者03', shirt: 0xf4f4f4, pants: 0x1c1c1f, hair: 0x111111, skin: 0xd9a47f, scale: 1.0, look: { hair: 'bald', hat: 'fedora', hatColor: 0x1c1c22, vest: 0x1c1c22 } },   /* 3番: はげた年配の男 (黒い中折れ帽・白いシャツに黒いベスト) */
+    { name: 'B参加者04', shirt: 0x9b59b6, pants: 0xd7c4a0, hair: 0x3a2418, skin: 0xf1c7a5, scale: .98, look: { hair: 'long', stripe: true, scarf: 0xe67e22 } },   /* 4番: ゆったりした柄の服の女の人 (長いかみ) */
+    { name: 'B参加者05', shirt: 0xf0c040, pants: 0x1c1c1c, hair: 0x6b4a2b, skin: 0xe8b894, scale: 1.0, look: { hair: 'short', hat: 'cap', hatColor: 0x222222 } },   /* 5番: 地元の男 (黄色い服・黒いキャップ・茶色のかみ) mansion_b17: 2番と入れかえ */
+    { name: 'B参加者06', shirt: 0x8a7a3a, pants: 0x5a4632, hair: 0x4a4a4a, skin: 0xb07a4f, scale: .97, look: { hair: 'slick', stripe: true } },          /* 6番: やせた日焼けの中年 (柄のセーター・白髪まじり) */
+    { name: 'B参加者07', shirt: 0x1f3a5f, pants: 0x1f3a5f, hair: 0x222222, skin: 0xd9a47f, scale: 1.14, look: { hair: 'buzz', track: true } },         /* 7番: 元レスラーのコーチ (大きい・ジャージ) */
+    { name: 'B参加者08', shirt: 0x2f3640, pants: 0x1c1c1c, hair: 0xd8c080, skin: 0xe8b894, scale: 1.1, look: { hair: 'buzz', necklace: 0xd8b04a } },   /* 8番 (はじめからいっしょの仲間): 金色の坊主・くさりのネックレス mansion_b19: 10番と入れかえ */
+    { name: 'B参加者09', shirt: 0xf2f2f2, pants: 0x3b4a6b, hair: 0xe8d8a0, skin: 0xf1c7a5, scale: .97, look: { hair: 'bob', hood: true } },            /* 9番: 明るいかみ・白いパーカー */
+    { name: 'B参加者10', shirt: 0x263238, pants: 0x1a1a24, hair: 0x5a2a4a, skin: 0xf1c7a5, scale: .97, look: { hair: 'bob', shorts: true } } ];          /* 10番 (最後にボタンを押す人): 短いかみ・走る格好 (半ズボン) mansion_b19: 8番と入れかえ */
+  const FIXB = {}; for (const c of B_CAST) FIXB[c.name] = c;
+  (PB ? B_CAST.map(c => c.name) : NAMES).forEach((name, i) => {
     const lk = LOOKS[name] || {};
     const a = makeAgent('npc', name, PB && FIXB[name] ? Object.assign({}, FIXB[name], { look: Object.assign({}, FIXB[name].look) }) : { shirt: lk.shirt ?? SHIRTS[i % SHIRTS.length], pants: lk.pants ?? PANTS[(Math.random()*PANTS.length)|0], hair: lk.hairColor ?? HAIRS[(Math.random()*HAIRS.length)|0], skin: [0xf1c7a5, 0xe8b894, 0xd9a47f][i % 3], scale: lk.scale ?? R(1.0, 1.12), look: lk }); // みんな大人の背の高さ
     placeAt(a, cands[i % cands.length]);
@@ -1276,7 +1300,7 @@ function newGame(){
     npcs.push(a);
   });
   for (let i = 0; i < 2; i++){
-    const o = makeAgent('oni', '鬼', { shirt: 0x1b1b1f, pants: 0x121214, hair: 0x0a0a0a, skin: 0x9b1c1c, scale: 1.15, oni: true });
+    const o = makeAgent('oni', '鬼', PB ? { shirt: 0x3a3a40, pants: 0x111214, hair: 0x0a0a0a, skin: 0xb07a4f, scale: 1.15, oni: true, look: { horse: true, undershirt: 0xf4f4f4 } } : { shirt: 0x1b1b1f, pants: 0x121214, hair: 0x0a0a0a, skin: 0x9b1c1c, scale: 1.15, oni: true });   /* mansion_b13: Bパターンの鬼は馬のかぶりもの */
     const laser = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: 0xff2020, transparent: true, opacity: .6 }));
     laser.visible = false; laser.frustumCulled = false; scene.add(laser);
     Object.assign(o, { laser, ammo: GUN.ammo, reloadT: 0, cool: 0, flashT: 0, aimTarget: null, aimT: 0, aim: false });
@@ -2253,7 +2277,7 @@ function updateDeath(n, dt){
     hat.position.lerpVectors(u.from, u.to, u.t); hat.position.y += Math.sin(Math.PI * u.t) * .35;
     hat.rotation.y = u.rot0 + u.spin * u.t;
   }
-  if (!settings.gore && n.deathT > 1.2){
+  if (!settings.gore && !n.isPlayer && n.deathT > 1.2){ /* ghost_body */
     const op = 1 - (n.deathT - 1.2) / 1.2;
     for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); }
     if (op <= 0){ n.m.group.visible = false; n.gone = true; if (n.hatDrop) n.hatDrop.visible = false; }
@@ -2476,12 +2500,39 @@ function setupStoryB(){
   r[3].post = corrB(3, 30); r[4].post = corrA(2, 30); r[5].post = corrA(2, 4.6); r[6].post = corrA(1, 36);
   for (const n of r){ n.evading = false; n.evT = 0; n.lastFP = null; }
   if (SB.fires) for (const f of SB.fires) scene.remove(f.m); SB.fires = []; SB.boomT = null; SB.warn = {};
+  for (const p of extB.puffs) scene.remove(p.m); extB.puffs = []; extB.on = false; if (SB.sweater){ scene.remove(SB.sweater); SB.sweater = null; } SB.sweaterFly = null;   /* mansion_b22 */
   if ($('ghostTint')) $('ghostTint').style.opacity = 0;
   r[7].safe = r[8].safe = r[9].safe = true;   /* 仲間・9階の人・手伝いの人は、鬼にねらわれない */
   viaB(r[0], [corrB(0, 40.5), corrB(4, 26)]); viaB(r[1], [corrB(0, 39.5), corrB(4, 28)]);   /* 1番・2番は、さいしょに5階 南通路へ */
   if (SB.btnA){ SB.btnA.mesh.material.color.set(0xd03030); SB.btnB.mesh.material.color.set(0xd03030); }
   if (fakeObj.mine) fakeObj.mine.visible = false;   /* 地雷は茂みの中にかくれている */
 }
+/* mansion_b22 (2026-11-08 弟君): 6番・7番・8番の作戦の部品。消火器のけむり・服をぬぐ・セーターを投げる・鬼が弾を打ちつくす */
+const extB = { on: false, t: 0, emit: 0, puffs: [], from: null, to: null };
+function addExtinguisherB(n){ if (n.m.ext) return; const g = new THREE.Group();   /* 赤い消火器を右手に */
+  g.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, .4, 10), std({ color: 0xc8202a, roughness: .5, metalness: .2 })), {}));
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .08, 8), std({ color: 0x222222 })); top.position.y = .24; g.add(top);
+  const hose = new THREE.Mesh(new THREE.CylinderGeometry(.015, .015, .3, 6), std({ color: 0x111111 })); hose.position.set(0, .2, .14); hose.rotation.x = Math.PI / 2 - .3; g.add(hose);
+  g.position.set(0, -.55, .16); n.m.armR.add(g); n.m.ext = g; }
+function updateExtB(dt){ const E = extB;
+  if (E.on){ E.t += dt; const f = E.from, o = E.to;
+    if (f && f.alive && o && E.t < 2.6){ E.emit -= dt; if (E.emit <= 0){ E.emit = .06; const h = Math.atan2(o.pos.x - f.pos.x, o.pos.z - f.pos.z); f.heading = h;
+      const m = new THREE.Mesh(new THREE.SphereGeometry(.35, 10, 8), new THREE.MeshBasicMaterial({ color: 0xf2f2f2, transparent: true, opacity: .85, depthWrite: false }));
+      m.position.set(f.pos.x + Math.sin(h) * .6 + R(-.1, .1), f.pos.y + 1.1 + R(-.1, .1), f.pos.z + Math.cos(h) * .6 + R(-.1, .1)); scene.add(m);
+      E.puffs.push({ m, t: 0, vx: Math.sin(h) * 3.4 + R(-.7, .7), vy: R(-.2, .6), vz: Math.cos(h) * 3.4 + R(-.7, .7) }); } }
+    else if (E.t >= 2.6) E.on = false; }
+  for (const p of E.puffs){ p.t += dt; p.m.position.x += p.vx * dt; p.m.position.y += p.vy * dt; p.m.position.z += p.vz * dt; const k = Math.pow(.35, dt); p.vx *= k; p.vz *= k;
+    p.m.scale.setScalar(.35 + p.t * 1.1); p.m.material.opacity = Math.max(0, .85 * (1 - p.t / 3.4)); if (p.t > 3.4){ scene.remove(p.m); p.m.geometry.dispose(); p.m.material.dispose(); p.gone = true; } }
+  if (E.puffs.some(p => p.gone)) E.puffs = E.puffs.filter(p => !p.gone); }
+function stripB(n){ const sm = n.m.mats.find(m => m.map); if (!sm || n.stripped) return; n.stripped = true; n.sweaterTex = sm.map; sm.map = null; sm.color.set(0xf4f4f4); sm.needsUpdate = true;   /* 柄のセーターをぬぐ → 下は白い長そでのボタンつきシャツ (そでも白) */
+  const mb = std({ color: 0x333333 }); for (let i = 0; i < 4; i++){ const b = new THREE.Mesh(new THREE.SphereGeometry(.016, 6, 6), mb); b.position.set(0, 1.03 + i * .1, .138); n.m.group.add(b); }
+  const col = new THREE.Mesh(new THREE.BoxGeometry(.2, .05, .04), std({ color: 0xffffff })); col.position.set(0, 1.5, .11); col.rotation.x = -.4; n.m.group.add(col); }
+function throwSweaterB(n, o){ const tex = n.sweaterTex || stripeTex('#8a7a3a', '#f4f4f4'); const m = new THREE.Mesh(new THREE.BoxGeometry(.5, .1, .4), std({ map: tex, roughness: .9 }));
+  const from = new THREE.Vector3(n.pos.x, n.pos.y + 1.3, n.pos.z), to = new THREE.Vector3((n.pos.x + o.pos.x) / 2, n.pos.y + .05, (n.pos.z + o.pos.z) / 2); m.position.copy(from); scene.add(m); SB.sweater = m; SB.sweaterFly = { from, to, t: 0 }; }
+function updateSweaterB(dt){ const f = SB.sweaterFly; if (!f || !SB.sweater) return; f.t = Math.min(1, f.t + dt / .7); const m = SB.sweater; m.position.lerpVectors(f.from, f.to, f.t); m.position.y += Math.sin(Math.PI * f.t) * .9; m.rotation.x += dt * 6; m.rotation.y += dt * 3; if (f.t >= 1){ m.rotation.set(0, R(0, 6.28), 0); SB.sweaterFly = null; } }
+function shotAtB(o, p){ const from = muzzlePos(o), to = new THREE.Vector3(p.x + R(-.3, .3), p.y + R(0, .4), p.z + R(-.3, .3)); o.heading = Math.atan2(p.x - o.pos.x, p.z - o.pos.z); o.aim = true;   /* セーターに向けてうつ (だれにも当たらない) */
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([from, to]), new THREE.LineBasicMaterial({ color: 0xffe08a, transparent: true, opacity: .9 })); scene.add(line); tracers.push({ line, t: .08 }); o.flashT = .05;
+  gunSound(Math.max(0, 1 - Math.hypot(o.pos.x - player.pos.x, o.pos.z - player.pos.z, (o.pos.y - player.pos.y) * 1.5) / 45) * .8); }
 /* 鬼のマシンガンの連射 (決まった流れでやられる人) */
 function burstB(o, v, text, back){ if (!v || !v.alive) return; o.heading = Math.atan2(v.pos.x - o.pos.x, v.pos.z - o.pos.z); o.aim = true;
   const vol = () => Math.max(0, 1 - Math.hypot(o.pos.x - player.pos.x, o.pos.z - player.pos.z, (o.pos.y - player.pos.y) * 1.5) / 45);
@@ -2526,6 +2577,7 @@ function updateStoryB(dt){
   const sameF = (a, b) => Math.abs(a.pos.y - b.pos.y) < 1.5, dist = (a, b) => Math.hypot(a.pos.x - b.pos.x, a.pos.z - b.pos.z);
   SB.btnMsgT -= dt;
   if (SB.q && SB.q.length){ const due = SB.q.filter(q => q.at <= elapsed); SB.q = SB.q.filter(q => q.at > elapsed); for (const q of due) q.fn(); }
+  updateExtB(dt); updateSweaterB(dt);   /* mansion_b22 */
   /* 3番と仲間は、あなたについてくる */
   SB.fT -= dt; if (SB.fT <= 0){ SB.fT = .4; for (const n of [n3, pt]) if (n.alive && n.follow && player.alive){ const d = Math.hypot(n.pos.x - player.pos.x, n.pos.z - player.pos.z, (n.pos.y - player.pos.y) * 2), lp = n.lastFP, moved = !lp || Math.hypot(player.pos.x - lp.x, player.pos.z - lp.z, (player.pos.y - lp.y) * 2) > 2;
     if (d < 1.9){ n.path = []; n.lastFP = null; } else if (d > 2.8 && (moved || !n.path.length)){ n.lastFP = player.pos.clone(); planPath(n, { x: player.pos.x, y: player.pos.y, z: player.pos.z }); } } }
@@ -2537,12 +2589,13 @@ function updateStoryB(dt){
   if (F.o12 && !F.meet12 && ((sameF(o, n1) && dist(o, n1) < 10) || T >= 23)){ F.meet12 = true; feed(n1.name + '「うわっ、鬼だ！ にげろ！」'); viaB(n1, [corrB(4, 41), corrB(3, 40.5), corrA(3, 41.5)]); viaB(n2, [corrB(4, 40), corrB(3, 39.5), corrA(3, 38.8)]); o.scr = { follow: n1, sp: D.chase * .95, stop: 6 }; }
   if (F.meet12 && !F.k12 && ((sameF(o, n1) && dist(o, n1) < 12 && n1.pos.y < 10.5 && n1.pos.z < 9.3 && n1.pos.x > 40.5 && (!n2.alive || n2.pos.x > 38)) || T >= 62)){ F.k12 = true; SB.t.k12 = T; o.scr = { pt: o.pos.clone(), sp: D.walk, face: n1 }; burstB(o, n1, n1.name + 'が、4階の西階段の前で、後ろからうたれた', true); laterB(.65, () => burstB(o, n2, n2.name + 'も、後ろからうたれた…', true)); }
   /* 3番: 「4階を見てくる」→ 1番と2番の死体を見て、1階へにげる → 55秒ごろ、1階でやられる */
-  if (F.k12 && T - SB.t.k12 > 1 && once('n3go')){ n3.follow = false; goB(n3, corrA(3, 38.6)); feed(n3.name + '「上で銃の音がした… 4階のようすを見てくる。ここで待ってて！」'); showMsg('3番の人が4階へ見に行った', 2.5); }
+  if (F.k12 && T - SB.t.k12 > 1 && once('n3go')){ n3.follow = false; viaB(n3, [corrA(floorOf(n3.pos.y), 36), corrA(3, 38.6)]);   /* mansion_b18: まず今いる階の西通路へ → 西階段で4階へ */ feed(n3.name + '「上で銃の音がした… 4階のようすを見てくる。ここで待ってて！」'); showMsg('3番の人が4階へ見に行った', 2.5); }
   if (F.k12 && T - SB.t.k12 > 1.5 && once('n3look')){ o.scr = { pt: corrA(3, 12), sp: D.walk * 1.3 }; }
-  if (F.n3look && F.n3go && !F.n3flee && (dist(n3, n1) < 7 && sameF(n3, n1) || T - SB.t.k12 > 24)){ F.n3flee = true; feed(n3.name + '「うわっ… 1番の人と2番の人が…！ にげなきゃ！」'); goB(n3, corrA(0, 25)); o.scr = { pt: corrA(3, 40.5), sp: D.chase * 1.08, stop: 1.5 };   /* 鬼は、まず4階の西階段の前へ (中央階段からは下りない) */ showMsg('鬼が3番の人を追っている！ 3階のどこかにかくれて、やりすごそう', 3.5); SB.obj = '3階にかくれて、やりすごそう'; }
-  if (F.n3flee && !F.k3 && !F.oWest && ((Math.abs(o.pos.y - 3 * FH) < 1 && o.pos.x > 38) || (n3.pos.y < 1 && T - SB.t.k12 > 40))){ F.oWest = true; o.scr = { follow: n3, sp: D.chase * 1.08, stop: 6 }; }   /* 西階段の前に着いたら、西階段を下りて3番を追う */
-  if (F.n3flee && !F.k3 && n3.alive && ((n3.pos.y < 1 && Math.abs(n3.pos.x - 25) < 4 && n3.pos.z > 6 && n3.pos.z < 9.5 && sameF(o, n3) && dist(o, n3) < 12) || T - SB.t.k12 > 45)){ F.k3 = true; SB.t.k3 = T; o.scr = { pt: corrA(0, 6), sp: D.walk }; burstB(o, n3, n3.name + 'が、1階の西通路で、後ろからうたれた', true); }   /* 1階 西通路のまん中あたり */
+  if (F.n3look && F.n3go && !F.n3flee && (dist(n3, n1) < 7 && sameF(n3, n1) || T - SB.t.k12 > 24)){ F.n3flee = true; feed(n3.name + '「うわっ… 1番の人と2番の人が…！ にげなきゃ！」'); viaB(n3, [corrA(floorOf(n3.pos.y), 36), corrA(0, 36), corrA(0, 25), corrA(0, 12)]);   /* mansion_b18/b19: 西階段で1階へ下りて、西通路を進む。鬼が来なければ中央階段のほうまで */ o.scr = { pt: corrA(3, 40.5), sp: D.chase * 1.08, stop: 1.5 };   /* 鬼は、まず4階の西階段の前へ (中央階段からは下りない) */ showMsg('鬼が3番の人を追っている！ 3階のどこかにかくれて、やりすごそう', 3.5); SB.obj = '3階にかくれて、やりすごそう'; }
+  if (F.n3flee && !F.k3 && !F.oWest && ((Math.abs(o.pos.y - 3 * FH) < 1 && o.pos.x > 38) || (n3.pos.y < 1 && T - SB.t.k12 > 40))){ F.oWest = true; o.scr = { follow: n3, sp: D.chase * 1.25, stop: 3 }; }   /* mansion_b19/b20: 速く・3m 後ろまでついて行く (うつのは1階の西通路で) */   /* 西階段の前に着いたら、西階段を下りて3番を追う */
+  if (F.n3flee && !F.k3 && n3.alive && ((n3.pos.y < 1 && n3.pos.x > 9 && n3.pos.x < 30 && n3.pos.z > 6 && n3.pos.z < 9.5 && sameF(o, n3) && dist(o, n3) < 11) || T - SB.t.k12 > 150)){   /* mansion_b19/b20: 1階の西通路のまん中より西で、鬼が近くに来てからうたれる (階段や上の階ではうたない) */ F.k3 = true; SB.t.k3 = T; o.scr = { pt: corrA(0, 6), sp: D.walk }; const fl = floorOf(n3.pos.y) + 1, pl = (n3.pos.z < 9.5 && n3.pos.x > 9) ? '西通路' : (n3.pos.x < 9.5 && n3.pos.z > 9) ? '南通路' : '中央階段のそば'; burstB(o, n3, n3.name + 'が、' + fl + '階の' + pl + 'で、後ろからうたれた', true); }   /* mansion_b18: 1階の西通路に来てからやられる。時間切れのときは いる場所を出す */   /* 1階 西通路のまん中あたり */
   /* 4番: 4階 南通路で、前からうたれる */
+  /* mansion_b16: 4番は3番のあと (b13 で地雷のあとにしたのは弟君の指摘でもどした) */
   if (F.k3 && T - SB.t.k3 > 2 && F.n4 !== true){ n4.post = null; n4.evading = false; }
   if (F.k3 && T - SB.t.k3 > 2 && once('n4')){ SB.t.n4 = T; o.scr = { pt: corrB(3, 20), sp: D.walk * 1.25, stop: 2 }; SB.obj = '鬼から生きのびろ（ゴールの場所は、まだわからない）'; }
   if (F.n4 && T - SB.t.n4 > 7 && once('n4walk')) goB(n4, corrB(3, 18));
@@ -2550,25 +2603,47 @@ function updateStoryB(dt){
   /* 5番: 1階の西階段から外へ出ようとして、茂みの地雷をふむ */
   if (F.k4 && T - SB.t.k4 > 3 && once('f7join')){ f7.post = corrA(2, 6.9); f7.evading = false; goB(f7, corrA(2, 6.9)); }
   if (F.f7join && !F.f7met && f7.alive && f6.alive && Math.abs(f7.pos.y - 2 * FH) < 1 && Math.hypot(f7.pos.x - 6.9, f7.pos.z - 7.75) < 2.5){ F.f7met = true; feed(f7.name + '「おれも鬼をたおしたい。いっしょにやろう」'); laterB(1.5, () => feed(f6.name + '「よし。でも、2人じゃむりだ。もう1人いれば…」')); }   /* 6番と7番が合流 */   /* 7番は3階の中央階段へ。6番と合流して待つ */
-  if (F.k4 && T - SB.t.k4 > 4 && once('n5')){ n5.post = null; n5.evading = false; SB.fakeGo = true; o.scr = null; }
+  if (F.k4 && T - SB.t.k4 > 4 && once('n5')){ n5.post = null; n5.evading = false; SB.fakeGo = true; o.scr = null; }   /* mansion_b16: 5番の地雷は4番のあと */
   if (F.n5 && !SB.t.boom && (fe.stage === 'boom' || fe.stage === 'done')) SB.t.boom = T;
   /* 仲間とはぐれる → 3階の中央階段へ */
-  if (SB.t.boom && T - SB.t.boom > 6 && once('sep')){ SB.t.sep = T; o.scr = { pt: corrB(6, 34), sp: D.walk }; pt.follow = false; goB(pt, corrA(2, 36)); feed(pt.name + 'とはぐれてしまった…'); showMsg('ヒント：3階の中央階段に行ってみよう', 3.5); SB.obj = '3階の中央階段に行ってみよう'; }
+  if (SB.t.boom && T - SB.t.boom > 6 && once('sep')){   /* mansion_b16: はぐれるのは地雷のあと */ SB.t.sep = T; o.scr = { pt: corrB(3, 20), sp: D.walk };   /* mansion_b22: 4階の南通路へ (8番がさそいに行く時間を短く) */ pt.follow = false; goB(pt, corrA(2, 36)); feed(pt.name + 'とはぐれてしまった…'); showMsg('ヒント：3階の中央階段に行ってみよう', 3.5); SB.obj = '3階の中央階段に行ってみよう'; }
   /* 3階の中央階段: 鬼をたおそうとする2人。仲間も協力する。でも失敗して2人はやられる */
-  if (F.sep && !F.meet){ const near = player.alive && floorOf(player.pos.y) === 2 && Math.hypot(player.pos.x - 5.75, player.pos.z - 7.75) < 8; if (near || T - SB.t.sep > 40){ F.meet = true; SB.t.meet = T; feed(f6.name + '「なあ、鬼をたおそうぜ。2人じゃむりなんだ」'); f7.post = null; f7.evading = false; goB(f7, corrA(2, 6.9)); goB(pt, corrA(2, 8.5)); } }
-  if (F.meet && !F.f7in && (Math.hypot(f7.pos.x - 6.9, f7.pos.z - 7.75) < 2.5 && Math.abs(f7.pos.y - 6) < 1 || T - SB.t.meet > 18)){ F.f7in = true; SB.t.f7in = T; feed(f7.name + '「この3階でまちぶせして、3人でいっせいにとびかかるんだ」'); }
+  if (F.sep && !F.meet){ const near = player.alive && floorOf(player.pos.y) === 2 && Math.hypot(player.pos.x - 5.75, player.pos.z - 7.75) < 8; if (near || T - SB.t.sep > 28 || (!player.alive && T - SB.t.sep > 12)){ F.meet = true;   /* mansion_b22: 40秒 → 28秒 */   /* mansion_b15: あなたが死んでいたら 待たずに始める */ SB.t.meet = T; feed(f6.name + '「なあ、鬼をたおそうぜ。2人じゃむりなんだ」'); f7.post = null; f7.evading = false; goB(f7, corrA(2, 6.9)); goB(pt, corrA(2, 8.5)); } }
+  if (F.meet && !F.f7in && (Math.hypot(f7.pos.x - 6.9, f7.pos.z - 7.75) < 2.5 && Math.abs(f7.pos.y - 6) < 1 || T - SB.t.meet > 18)){ F.f7in = true; SB.t.f7in = T; feed(f7.name + '「3人いれば、鬼をはめられる。作戦を聞いてくれ」'); }
   if (F.meet && !F.ptin && (Math.hypot(pt.pos.x - 8.5, pt.pos.z - 7.75) < 2.5 && Math.abs(pt.pos.y - 6) < 1 || T - SB.t.meet > 18)){ F.ptin = true; SB.t.ptin = T; feed(pt.name + '「…わかった。ぼくも協力する」'); }
-  if (F.f7in && F.ptin && T - Math.max(SB.t.f7in, SB.t.ptin) > 3 && once('charge')){ SB.t.ch = T; f6.post = null; f6.evading = false; feed(f6.name + '「いいか、かくれて待つぞ。鬼が下りてきたら、いっせいにとびかかる」'); goB(f7, corrA(2, 10.2)); goB(f6, corrA(2, 11.6)); goB(pt, corrA(2, 13)); o.scr = { pt: corrA(2, 5.6), sp: D.walk * 1.5, stop: 1.5 }; }   /* 3階でまちぶせ。鬼は3階の中央階段へ下りてくる */
-  /* 鬼が3階に下りてきた → 7番 (けんた) がとびかかって、うたれる。6番 (けい) は西通路へ、仲間は南通路へにげる */
-  if (F.charge && !F.k7b && ((sameF(o, f7) && (dist(o, f7) < 9 || Math.hypot(o.pos.x - 5.6, o.pos.z - 7.75) < 2.5)) || T - SB.t.ch > 45)){   /* 鬼が3階の中央階段に下りてきたら */ F.k7b = true; SB.t.k7 = T; feed(f7.name + '「今だ！」'); goB(f7, { x: o.pos.x, y: o.pos.y, z: o.pos.z }); o.scr = { pt: o.pos.clone(), sp: D.walk, face: f7 };
-    laterB(.55, () => { burstB(o, f7, f7.name + 'が、鬼にとびかかって、うたれた'); feed(f6.name + '「むりだ… にげろ！」'); viaB(f6, [corrA(2, 40.3), corrA(4, 40.3), corrA(4, 18)]); feed(pt.name + '「だめだ、にげろ！」'); goB(pt, corrB(2, 34)); });
-    laterB(1.2, () => { o.scr = { follow: f6, sp: D.chase * 1.1, stop: 6 }; }); }
+  /* mansion_b22: 作戦 → 6番は3階の西通路のかげにかくれる。7番は2階の中央階段で待つ。8番 (金髪) は鬼をさそいに行く */
+  if (F.f7in && F.ptin && T - Math.max(SB.t.f7in, SB.t.ptin) > 3 && once('charge')){ SB.t.ch = T; f6.post = null; f6.evading = false; f7.post = null; f7.evading = false;
+    feed(f6.name + '「作戦だ。おれはこの先にかくれて、消火器で鬼の目をくらます」');
+    laterB(1.5, () => feed(f6.name + '「' + pt.name + 'は鬼をこの階段まで連れてこい。' + f7.name + 'は2階の階段で待って、合図でエレベーターで上がってきて、とびかかれ」'));
+    laterB(3.0, () => { feed(pt.name + '「わかった… やってみる」'); feed(f7.name + '「まかせろ」'); goB(f6, corrA(2, 13)); goB(f7, corrA(1, 6.9)); SB.lureT = 0; const nn = nearestNode(o.pos); goB(pt, nn ? { x: nn.x, y: nn.y, z: nn.z } : { x: o.pos.x, y: o.pos.y, z: o.pos.z }); F.lureGo = true; showMsg('6番の人はかくれ、7番の人は2階へ。' + pt.name + 'が鬼をさそいに行った', 3.5); }); }
+  /* mansion_b22: 8番 (金髪) が鬼に近づいて、さそう → 3階の中央階段 (corrA(2, 7.5)) へ走る。鬼は8番の行き先を追う */
+  if (F.lureGo && !F.lured){ SB.lureT += dt; if ((sameF(pt, o) && dist(pt, o) < 14) || SB.lureT > 30){ F.lured = true; SB.t.lured = T; feed(pt.name + '「おい、鬼！ こっちだ！ つかまえてみろ！」'); viaB(pt, [corrA(2, 7.5), corrA(2, 16)]); o.scr = { follow: pt, sp: D.walk * 1.15, stop: 2 }; showMsg(pt.name + 'が鬼をさそい出した！ 3階の中央階段へ連れてくる', 3); }
+    else if (!pt.path.length){ const nn = nearestNode(o.pos); if (nn) goB(pt, { x: nn.x, y: nn.y, z: nn.z }); } }
+  /* mansion_b22: 鬼が3階の中央階段に下りてきた → 6番が消火器 → 服をぬいで投げる → 鬼が弾を打ちつくす → 7番はエレベーターへ */
+  if (F.lured && !F.spray && ((Math.abs(o.pos.y - 2 * FH) < 1 && o.pos.x < 9.8 && o.pos.z < 9.8 && o.pos.z > 3.5) || T - SB.t.lured > 55)){ F.spray = true; SB.t.spray = T;
+    o.scr = { pt: { x: 6.4, y: 2 * FH, z: 7.75 }, sp: D.walk, face: f6, stop: .8 }; goB(f6, corrA(2, 10.3)); feed(f6.name + '「今だ！」'); showMsg('6番の人が消火器をふき出した！ 鬼は前が見えない', 3);
+    extB.on = true; extB.t = 0; extB.emit = 0; extB.from = f6; extB.to = o; addExtinguisherB(f6); f6.reach = true;
+    f7.post = null; f7.evading = false; f7.path = []; f7.ev = { stage: 'toHall', from: 1, to: 2, t: 0, reqT: 0 }; f7.evB = { t: 0 }; planPath(f7, { x: 1.25, y: FH, z: 7.6 });   /* 合図: 7番は2階のエレベーターへ (ふつうの人と同じ乗り方) */
+    laterB(1.8, () => { stripB(f6); throwSweaterB(f6, o); feed(f6.name + '「これでもくらえ！」'); });
+    laterB(2.6, () => { for (let i = 0; i < 10; i++) laterB(i * .08, () => shotAtB(o, SB.sweater ? SB.sweater.position : f6.pos)); laterB(.95, () => { o.ammo = 0; o.reloadT = 12; feed('鬼はセーターをうちまくって、弾を打ちつくした！ 弾を入れかえている…'); showMsg('鬼の銃が打ち止め！ リロード中', 3); }); });
+    laterB(3.0, () => { f6.reach = false; if (f6.m.ext){ f6.m.armR.remove(f6.m.ext); f6.m.ext = null; } }); }
+  /* mansion_b22: 7番のエレベーター (2階 → 3階)。script の人は updateNPC で updateEvTrip が呼ばれないので、ここで動かす。だめなら階段で */
+  if (f7.evB && f7.alive){ const e = f7.evB; e.t += dt;
+    if (f7.ev){ if (f7.ev.stage === 'ride') f7.pos.y = EV.y; const went = updateEvTrip(f7, dt); if (!f7.ev){ if (went && Math.abs(f7.pos.y - 2 * FH) < .8){ f7.evB = null; F.f7up = true; f7.script = true; f7.mode = 'script'; f7.wait = 0; } else e.fail = true; } }
+    if (e.fail || e.t > 40 || EV.broken){ f7.ev = null; f7.evB = null; F.f7stairs = true; f7.script = true; f7.mode = 'script'; goB(f7, corrA(2, 6.9)); feed(f7.name + '「エレベーターがだめだ… 階段で行く！」'); } }
+  if (F.f7stairs && !F.f7up && Math.abs(f7.pos.y - 2 * FH) < 1 && Math.hypot(f7.pos.x - 6.9, f7.pos.z - 7.75) < 2.2) F.f7up = true;
+  if (F.f7up && !f7.alive && !F.k7b){ F.k7b = true; SB.t.k7 = T; }   /* 念のため: 7番が先にやられていたら、そのまま先へ */
+  /* mansion_b22: 7番が3階に着いた → 鬼にとびかかるが、はらいのけられて、うたれる。6番は西通路へ、8番は南通路へにげる (ここからは今までどおり) */
+  if (F.f7up && f7.alive && once('k7b')){ SB.t.k7 = T; feed(f7.name + '「今だ！ くらえ！」'); goB(f7, { x: o.pos.x, y: o.pos.y, z: o.pos.z }); o.scr = { pt: o.pos.clone(), sp: D.walk, face: f7 }; o.ammo = GUN.ammo; o.reloadT = 0; feed('鬼が弾を入れおわった…！');
+    laterB(.7, () => { burstB(o, f7, f7.name + 'が、鬼にとびかかったが、はらいのけられて、うたれた'); feed(f6.name + '「むりだ… にげろ！」'); viaB(f6, [corrA(2, 40.3), corrA(4, 40.3), corrA(4, 18)]); feed(pt.name + '「だめだ、にげろ！」'); goB(pt, corrB(2, 34)); });
+    laterB(1.4, () => { o.scr = { follow: f6, sp: D.chase * 1.1, stop: 6 }; }); }
   /* 6番 (けい) は、5階の西通路で追いつかれる */
   if (F.k7b && !F.k67 && T - SB.t.k7 > 2 && ((f6.alive && Math.abs(f6.pos.y - 4 * FH) < 1 && f6.pos.x < 39.5 && f6.pos.z > 6 && f6.pos.z < 9.5 && sameF(o, f6) && dist(o, f6) < 11) || T - SB.t.k7 > 50 || !f6.alive)){ F.k67 = true; SB.t.k67 = T; o.scr = { pt: o.pos.clone(), sp: D.walk, face: f6 }; burstB(o, f6, f6.name + 'が、5階の西通路でうたれた'); }
   /* ヒント → 4階 西通路の3号室 (ボタン2つ) */
   if (F.k67 && T - SB.t.k67 > 3 && once('hint')){ o.scr = null; SB.hint = true; showMsg('ヒント：4階の西階段のほうに行ってみよう', 4); feed('ヒント：4階の西階段のほうに行ってみよう'); SB.obj = '4階の西階段のほうに行ってみよう'; }
   if (SB.hint && !F.help && player.alive && Math.abs(player.pos.y - GOAL.y) < 1.2 && Math.hypot(player.pos.x - GOAL.doorPos.x, player.pos.z - GOAL.doorPos.z) < 15){ F.help = true; feed(hp.name + '「ボタンが2つある… いっしょに押そう！」'); }
   if (F.help && hp.alive){ SB.hT = (SB.hT || 0) - dt; if (SB.hT <= 0){ SB.hT = .5; const onA = Math.hypot(player.pos.x - SB.btnA.stand.x, player.pos.z - SB.btnA.stand.z) < 1.2, tgt = onA ? SB.btnB.stand : SB.btnA.stand; if (hp.goalB !== tgt || (!hp.path.length && Math.hypot(hp.pos.x - tgt.x, hp.pos.z - tgt.z) > .5)) helperToB(hp, tgt); else if (Math.hypot(hp.pos.x - tgt.x, hp.pos.z - tgt.z) < .4) hp.path = []; } }
+  /* mansion_b21: あなたが死んだら ゴールはできない (残った人は流れどおりに動くだけ。時間切れで爆破) */
 
 }
 /* アパートごと爆破 */
@@ -2583,10 +2658,15 @@ function startBoomB(){ deathReason = 'explosion'; feed('アパートが、まる
   for (let i = 0; i < 22; i++){ const W = i % 2 ? WA : WB, a = 2 + Math.random() * 40, k = (Math.random() * L) | 0, [x, z] = W.map(a, 1 + Math.random() * 7);
     const m = new THREE.Mesh(new THREE.SphereGeometry(1.5, 14, 10), new THREE.MeshBasicMaterial({ color: i % 3 ? 0xff7a1a : 0xffd040, transparent: true, opacity: 1, depthWrite: false })); m.position.set(x, k * FH + 1.5, z); m.visible = false; scene.add(m); SB.fires.push({ m, d: Math.random() * .9, s: 2 + Math.random() * 3.5 }); } }
 /* 幽霊モード: やられたあとも、空中を自由に動いて、みんなのようすを見ていられる (Q で結果へ) */
-function enterGhost(){ state = 'play'; player.ghost = true; player.hidden = null; $('red').style.opacity = 0; $('bloodScreen').style.opacity = 0; $('locker').style.display = 'none';
+const PLAYER_LOOK = Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {});   /* ghost_body: 自分の見た目 (着せかえがあればそれ) */
+let ghostCorpse = null;   /* ghost_body: やられた場所に残る自分の体 */
+function enterGhost(){ state = 'play'; player.ghost = true; player.hidden = null;
+  if (ghostCorpse) scene.remove(ghostCorpse.m.group);
+  ghostCorpse = { isPlayer: true, alive: false, m: makePerson(PLAYER_LOOK), pos: player.pos.clone(), heading: yaw + Math.PI, deathT: 0, prone: Math.random() < .4 };
+  ghostCorpse.m.group.position.copy(ghostCorpse.pos); ghostCorpse.m.group.rotation.set(0, ghostCorpse.heading, 0, 'YXZ'); for (const e of ghostCorpse.m.eyes) e.visible = false; for (const x of ghostCorpse.m.xEyes) x.visible = true;   /* ghost_body */ $('red').style.opacity = 0; $('bloodScreen').style.opacity = 0; $('locker').style.display = 'none';
   let gt = $('ghostTint'); if (!gt){ gt = document.createElement('div'); gt.id = 'ghostTint'; gt.style.cssText = 'position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center, rgba(150,190,255,.08), rgba(80,120,220,.38));transition:opacity .6s'; document.body.appendChild(gt); }
   gt.style.opacity = 1; showMsg('幽霊モード：みんなのようすを見ていられる（Q で結果へ）', 4); }
-function ghostMove(dt){ const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), sd = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), sp = keys.ShiftLeft || keys.ShiftRight ? 12 : 6;
+function ghostMove(dt){ if (ghostCorpse) updateDeath(ghostCorpse, dt);   /* ghost_body: 自分の倒れた体 */ const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), sd = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), sp = keys.ShiftLeft || keys.ShiftRight ? 12 : 6;
   const cp = Math.cos(pitch); player.pos.x += (-Math.sin(yaw) * cp * f + Math.cos(yaw) * sd) * sp * dt; player.pos.z += (-Math.cos(yaw) * cp * f - Math.sin(yaw) * sd) * sp * dt; player.pos.y = clamp(player.pos.y + Math.sin(pitch) * f * sp * dt, -1, L * FH + 8);
   player.speedNow = 0; player.noise = 0; camY = player.pos.y + 1.6; camera.position.set(player.pos.x, camY, player.pos.z);
   if (shakeT > 0){ shakeT = Math.max(0, shakeT - dt); const q = shakeT * .25; camera.position.x += R(-q, q); camera.position.y += R(-q, q); }
@@ -2682,7 +2762,7 @@ function endGame(win, goal = false){
   state = 'over'; if ((win || goal) && window.ACH) ACH.clear('mansion'); // 実績: クリア回数
   if (document.pointerLockElement) document.exitPointerLock();
   const aliveN = npcs.filter(n => n.alive).length;
-  $('resTitle').textContent = goal ? 'ゴール！' : win ? 'にげきった！' : deathReason === 'elevator' ? 'エレベーターが落ちた…' : deathReason === 'explosion' ? 'アパートごと爆破された…' : 'やられた…';
+  $('resTitle').textContent = goal ? 'ゴール！' : win ? 'にげきった！' : deathReason === 'elevator' ? 'エレベーターが落ちた…' : deathReason === 'explosion' ? 'アパートごと爆破された…' : 'やられた…';   /* mansion_b15 */
   if ($('ghostTint')) $('ghostTint').style.opacity = 0;
   $('resText').innerHTML = goal
     ? `ゴールの部屋にたどりついた！<br>かかった時間：${fmt(Math.max(0, elapsed - COUNTDOWN))}<br>いっしょに生きのこった仲間：${aliveN}人／${npcs.length}人`
@@ -2717,7 +2797,7 @@ document.querySelectorAll('[data-ghost]').forEach(b => b.onclick = () => { setti
 if (PB){ /* Bパターンの説明 */
   $('ghostRow').style.display = '';
   document.querySelectorAll('#title li').forEach(li => { li.innerHTML = li.innerHTML.replace('<kbd>7</kbd>', '<kbd>9</kbd>').replace('<b>ピストル</b>', '<b>マシンガン</b>').replace('6発撃つと', '30発うつと').replace(/鬼は最初から2人。.*/, '鬼は1人。ふだんは<b>中央階段</b>のまわりにいる').replace(/鬼が動き出す前に <kbd>R<\/kbd>.*/, 'Bパターンでは、グループは作れない'); });
-  const ul = document.querySelector('#title ul'); if (ul){ const li = document.createElement('li'); li.innerHTML = '<b>Bパターン</b>：9階建て・あなたを入れて11人。階段は<b>中央階段（エレベーターつき）・西階段・南階段</b>。全員<b>1階の中央階段</b>からスタート。中央階段は1つの部屋になっていて、中に<b>西通路へつながる部屋・南通路へつながる部屋・エレベーター</b>がある。ゴールは<b>ヒント</b>が出るまでわからない。ゴール以外の部屋は、ぜんぶしまっている。ゴールの部屋の中の<b>ボタン2つを同時に</b>押さないとクリアにならない。<b>4分たつとアパートごと爆破される</b>（ゴールに入るしか助からない）。<b>幽霊モード</b>ありなら、やられたあとも、みんなのようすを見ていられる'; ul.appendChild(li); } }
+  const ul = document.querySelector('#title ul'); if (ul){ const li = document.createElement('li'); li.innerHTML = '<b>Bパターン</b>（参加者はBパターン専用の10人。見た目は原作風。6番・7番・8番は消火器とエレベーターを使った作戦で鬼にいどむ。あなたがやられても幽霊モードで残りの人は流れどおりに動くが、ゴールはできない）：9階建て・あなたを入れて11人。階段は<b>中央階段（エレベーターつき）・西階段・南階段</b>。全員<b>1階の中央階段</b>からスタート。中央階段は1つの部屋になっていて、中に<b>西通路へつながる部屋・南通路へつながる部屋・エレベーター</b>がある。ゴールは<b>ヒント</b>が出るまでわからない。ゴール以外の部屋は、ぜんぶしまっている。ゴールの部屋の中の<b>ボタン2つを同時に</b>押さないとクリアにならない。<b>4分たつとアパートごと爆破される</b>（ゴールに入るしか助からない）。<b>幽霊モード</b>ありなら、やられたあとも、みんなのようすを見ていられる'; ul.appendChild(li); } }
 $('startBtn').onclick = startGame;
 $('retryBtn').onclick = startGame;
 // マウス固定 (ポインターロック) が使えない環境でも遊べるようにする

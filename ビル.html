@@ -704,6 +704,7 @@ function resetWorld(){
   towerSink = 0; sinkB = 0; for (const o of towerObjs) o.position.y = o.userData.y0;
 }
 function newGame(){
+  if (player && player.m) scene.remove(player.m.group);   /* ghost_body */
   for (const n of npcs){ scene.remove(n.m.group); scene.remove(n.tag); }
   npcs = []; people = [];
   resetWorld();
@@ -849,7 +850,7 @@ function updateBody(n, dt){ // たおれた体
   if (n.gone) return; n.deathT += dt;
   if (n.pos.y > groundHeight(n.pos.x, n.pos.z, n.pos.y + .3) + .02){ n.vy -= 22 * dt; n.pos.y = Math.max(groundHeight(n.pos.x, n.pos.z, n.pos.y + .3), n.pos.y + n.vy * dt); }
   const k = Math.min(1, n.deathT / .7), e = k * k; n.m.group.rotation.set(-e * Math.PI / 2, n.lie, 0, 'YXZ'); n.m.group.position.set(n.pos.x, n.pos.y + .14 * n.m.scale * e - towerSink * (insideTowerXZ(n.pos.x, n.pos.z) ? 1 : 0), n.pos.z);
-  if (!settings.gore && n.deathT > 1.4){ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
+  if (!settings.gore && !n.isPlayer && n.deathT > 1.4){ /* ghost_body */ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
 }
 
 // ---------- ビルがこわれていく ----------
@@ -970,8 +971,13 @@ function updateCaught(dt){
   if (caughtT > 2.6) startGhost(false);
 }
 let ghostWin = false;
+/* ghost_body (2026-11-08): クリアして観戦になったとき、その場に立ったままの自分を残す。やられたときは倒れた体がその場に残る */
+function ghostStandBody(look){ if (player.m) scene.remove(player.m.group);
+  player.m = makePerson(look); player.heading = yaw + Math.PI; player.speedNow = 0; player.phase = player.phase || 0; player.standBody = true;
+  animModel(player, 0); player.m.group.position.copy(player.pos); player.m.group.rotation.set(0, player.heading, 0, 'YXZ'); player.m.group.visible = true; }
 function startGhost(win){
   ghostWin = win; state = 'play'; ghost = true; gpos.set(player.pos.x, Math.max(player.pos.y, 0) + 6, player.pos.z + (win ? 14 : 4)); pitch = -.2;
+  if (win) ghostStandBody(Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {}));   /* ghost_body */
   if (!win){ player.m = makePerson(Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {})); player.lie = yaw; player.deathT = 0; for (const e of player.m.eyes) e.visible = false; for (const x of player.m.xEyes) x.visible = true; }
   $('dust').style.opacity = 0; $('ghostTint').style.display = 'block';
   showMsg(win ? '脱出成功！ 観戦モードで見ていよう（Q でやめる）' : 'やられてしまった… 幽霊モードで観戦できる（Q でやめる）', 3.5);

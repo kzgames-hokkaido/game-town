@@ -1627,7 +1627,7 @@ function updateDeath(n, dt){
     if (n.steamT <= 0){ n.steamT = .25 + n.deathT * .06; const lx = -Math.sin(n.lieHeading), lz = -Math.cos(n.lieHeading), f = Math.random() * 1.6;
       puff(n.pos.x + lx * f, .3, n.pos.z + lz * f, .6, 1.8, .7, .5 * (1 - n.deathT / 9)); }
   }
-  if (!settings.gore && n.deathT > 1.2){
+  if (!settings.gore && !n.isPlayer && n.deathT > 1.2){ /* ghost_body */
     const op = 1 - (n.deathT - 1.2) / 1.2;
     for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); }
     if (op <= 0){ n.m.group.visible = false; n.gone = true; if (n.hatDrop) n.hatDrop.visible = false; }
@@ -1653,7 +1653,7 @@ function updatePlayer(dt){
   if (Math.hypot(player.pos.x - C.x, player.pos.z - C.z) > R_OUT + 1.5){ // こわれた出口から外へ出たら脱出 → 観戦モード
     player.escaped = true; endTime = elapsed; if (window.ACH) ACH.clear('stadium'); feed('あなたが外へ脱出した！');
     beep(523, .12, .15); setTimeout(() => beep(659, .12, .15), 160); setTimeout(() => beep(784, .12, .3), 320);
-    startGhost('escape'); return;
+    ghostStandBody(PLAYER_LOOK); startGhost('escape'); return;   /* ghost_body: 脱出した自分はその場に立ったまま */
   }
   const moved = Math.hypot(player.pos.x - ox, player.pos.z - oz);
   player.speedNow = moved / Math.max(dt, 1e-4);
@@ -1783,6 +1783,7 @@ function feed(t){
 let warned = {};
 function newGame(){
   for (const p of puddles){ scene.remove(p); p.material.dispose(); } puddles = [];
+  if (player && player.m){ scene.remove(player.m.group); player.m = null; }   /* ghost_body */
   for (const a of npcs){ scene.remove(a.m.group); if (a.m.hat && a.m.hat.parent) a.m.hat.parent.remove(a.m.hat); if (a.tag){ scene.remove(a.tag); a.tag.material.map.dispose(); a.tag.material.dispose(); } }
   npcs = []; clearParticles();
   // こわれた物を元にもどす (ページを開きなおしたときと同じ形に)
@@ -1827,7 +1828,7 @@ function newGame(){
 // ---------- 幽霊モード・観戦モード ----------
 let ghost = null, ghostReason = null, endTime = 0;
 function startGhost(reason){
-  ghostReason = reason; state = 'ghost';
+  ghostReason = reason; state = 'ghost'; if (player.m) player.m.group.visible = true;   /* ghost_body */
   ghost = { pos: camera.position.clone() }; ghost.pos.y = Math.max(ghost.pos.y, 2.6);
   $('steam').style.opacity = 0; $('red').style.opacity = 0; $('duct').style.opacity = 0; $('warn').style.opacity = 0;
   $('prompt').style.display = 'block';
@@ -1873,6 +1874,7 @@ function update(dt){
   updateWorld(dt, playT); updateDebris(dt); updateSections(dt);
   if (state !== 'play' && state !== 'ghost') return;
   for (const n of npcs) updateNPC(n, dt, playT);
+  if (player.m && !player.alive) updateDeath(player, dt);   /* ghost_body: 自分の倒れた体 */
   // 押し合い
   const live = npcs.filter(n => n.alive);
   for (let i = 0; i < live.length; i++){
@@ -1898,9 +1900,15 @@ function update(dt){
   $('alive').innerHTML = `生存 ${runners.filter(r => r.alive).length}/${runners.length}`;
   sbT -= dt; if (sbT <= 0){ sbT = .5; drawScoreboard(); }
 }
+const PLAYER_LOOK = Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {});   /* ghost_body */
+/* ghost_body (2026-11-08): クリアして観戦になったとき、その場に立ったままの自分を残す。やられたときは倒れた体がその場に残る */
+function ghostStandBody(look){ if (player.m) scene.remove(player.m.group);
+  player.m = makePerson(look); player.heading = yaw + Math.PI; player.speedNow = 0; player.phase = player.phase || 0; player.standBody = true;
+  animModel(player, 0); player.m.group.position.copy(player.pos); player.m.group.rotation.set(0, player.heading, 0, 'YXZ'); player.m.group.visible = true; }
 function playerDie(g){
   if (!player.alive) return;
   player.alive = false; deathBy = g; state = 'caught'; caughtT = 0; endTime = elapsed; player.duct = null;
+  if (player.m) scene.remove(player.m.group); player.m = makePerson(PLAYER_LOOK); player.heading = yaw + Math.PI; player.lieHeading = player.heading; player.speedNow = 0; player.phase = 0; player.deathT = 0; animModel(player, 0); for (const e of player.m.eyes) e.visible = false; for (const x of player.m.xEyes) x.visible = true; player.m.group.visible = false;   /* ghost_body: 倒れる自分の体 (幽霊になったら見える) */
   $('steam').style.background = g.crush ? 'radial-gradient(ellipse at center,rgba(150,140,125,.55) 20%,rgba(105,96,86,.97) 100%)' : '';
   if (document.pointerLockElement) document.exitPointerLock();
   hiss(1.2); noiseHit(.8, 1.5, 2500);
@@ -1921,6 +1929,7 @@ function updateCaught(dt){
   updateWorld(dt, elapsed - COUNTDOWN); updateDebris(dt); updateSections(dt);
   updatePuffs(dt); updateDrops(dt);
   for (const n of npcs) if (!n.alive) updateDeath(n, dt);
+  if (player.m && !player.alive) updateDeath(player, dt);   /* ghost_body */
   elapsed += dt; sbT -= dt; if (sbT <= 0){ sbT = .5; drawScoreboard(); }
   if (caughtT > 2.2) startGhost('scald');
 }

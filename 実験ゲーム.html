@@ -709,11 +709,21 @@ function newGame(){
   $('ghostTint').style.display = 'none'; $('red').style.opacity = 0; $('fade').style.opacity = 0; $('feed').innerHTML = ''; $('carWarn').style.opacity = 0;
 }
 // ---------- 落ちる・はねられる・ゴール ----------
+const PLAYER_LOOK = Object.assign({ shirt: 0x3a7bd5, pants: 0x2c3e50, hair: 0x1a1210, skin: 0xf1c7a5, scale: 1.05, look: {} }, window.WALLET && WALLET.skinLook ? WALLET.skinLook() : {});   /* ghost_body */
+const AR_BOTTOM = -119.8;   /* ghost_body: 落ちた自分の体は、下のもやの上で止まって横たわる */
+function ghostLie(p, y){ /* ghost_body */ const m = p.m; if (!m) return; m.group.rotation.set(-Math.PI / 2, p.heading, 0, 'YXZ'); m.group.position.set(p.pos.x, y + .14 * m.scale, p.pos.z);
+  m.armL.rotation.set(.19, 0, -.45); m.armR.rotation.set(.19, 0, .45); m.legL.rotation.set(.067, 0, -.1); m.legR.rotation.set(.067, 0, .1);
+  for (const e of m.eyes) e.visible = false; for (const x of m.xEyes) x.visible = true; }
+/* ghost_body (2026-11-08): クリアして観戦になったとき、その場に立ったままの自分を残す。やられたときは倒れた体がその場に残る */
+function ghostStandBody(look){ if (player.m) scene.remove(player.m.group);
+  player.m = makePerson(look); player.heading = yaw + Math.PI; player.speedNow = 0; player.phase = player.phase || 0; player.standBody = true;
+  animModel(player, 0); player.m.group.position.copy(player.pos); player.m.group.rotation.set(0, player.heading, 0, 'YXZ'); player.m.group.visible = true; }
 function startFall(p, why, vel){
   if (p.falling || !p.alive || p.goal) return;
   if (p.isPlayer && window.__godMode) return;
   p.falling = true; p.fallWhy = why; p.fallT = 0; p.spin = R(1.5, 4); if (vel) p.vel.copy(vel); else p.vel.set(0, p.vy || 0, 0);
-  if (p.isPlayer){ deathBy = why; state = 'caught'; caughtT = 0; if (document.pointerLockElement) document.exitPointerLock(); setPhone(false); feed('あなたが' + why); }
+  if (p.isPlayer){ deathBy = why; state = 'caught'; caughtT = 0; if (document.pointerLockElement) document.exitPointerLock(); setPhone(false); feed('あなたが' + why);
+    p.m = makePerson(PLAYER_LOOK); p.heading = yaw + Math.PI; p.speedNow = 0; animModel(p, 0); for (const e of p.m.eyes) e.visible = false; for (const x of p.m.xEyes) x.visible = true; p.m.group.visible = false; }   /* ghost_body: 落ちていく自分の体 (幽霊になったら見える) */
   else { feed(`${p.name}が${why}`); if (p.tag) p.tag.visible = false; }
 }
 function updateFall(p, dt){
@@ -721,8 +731,8 @@ function updateFall(p, dt){
   if (p.pos.y < DEATH_Y && p.alive){ p.alive = false; }
   if (!p.m) return;
   p.m.group.position.copy(p.pos); p.m.group.rotation.set(-p.fallT * p.spin, p.heading, p.fallT * 1.3, 'YXZ');
-  if (p.pos.y < -60) p.m.group.visible = false;
-  if (!settings.gore && p.pos.y < -20) p.m.group.visible = false;
+  if (p.isPlayer){ if (p.pos.y <= AR_BOTTOM){ p.pos.y = AR_BOTTOM; p.vel.set(0, 0, 0); ghostLie(p, AR_BOTTOM); } }   /* ghost_body: 自分の体はもやの上で止まる */
+  else { if (p.pos.y < -60) p.m.group.visible = false; if (!settings.gore && p.pos.y < -20) p.m.group.visible = false; }
 }
 function reachGoal(p){
   if (p.goal || !p.alive || p.falling) return; p.goal = true;
@@ -872,7 +882,7 @@ function updateCaught(dt){
   if (caughtT > 3.2) startGhost(false);
 }
 function startGhost(win){
-  ghostWin = win; state = 'play'; ghost = true; setPhone(false);
+  ghostWin = win; state = 'play'; ghost = true; setPhone(false); if (win) ghostStandBody(PLAYER_LOOK); else if (player.m) player.m.group.visible = true;   /* ghost_body */
   if (win) gpos.set(player.pos.x, player.pos.y + 6, player.pos.z - 4); else { const p = pointAt(clamp(projectS(player.pos.x, player.pos.z).s, 0, LEN)); gpos.set(p.x, p.y + 8, p.z - 6); }
   yaw = Math.PI; pitch = -.35;
   $('fade').style.opacity = 0; $('red').style.opacity = 0; $('ghostTint').style.display = 'block';
@@ -880,9 +890,10 @@ function startGhost(win){
 }
 function updateGhost(dt){
   const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), s = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  if (player.falling) updateFall(player, dt);   /* ghost_body: 幽霊のあいだも体は落ちて、もやの上で止まる */
   const sp = (keys.ShiftLeft || keys.ShiftRight) ? 24 : 9, cp = Math.cos(pitch);
   gpos.x += (-Math.sin(yaw) * cp * f + Math.cos(yaw) * s) * sp * dt; gpos.z += (-Math.cos(yaw) * cp * f - Math.sin(yaw) * s) * sp * dt;
-  gpos.y = clamp(gpos.y + (Math.sin(pitch) * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, -20, 120);
+  gpos.y = clamp(gpos.y + (Math.sin(pitch) * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, AR_BOTTOM + .6, 120);   /* ghost_body: 体のところまで降りられる */
   camera.position.copy(gpos); camera.rotation.set(pitch, yaw, 0);
   $('carWarn').style.opacity = 0;
   $('prompt').style.display = 'block'; $('prompt').textContent = (ghostWin ? '観戦モード' : '幽霊モード') + '（見えない道も見える）　W・A・S・D：移動　スペース／C：上下　シフト：はやく　Q：観戦をやめる';

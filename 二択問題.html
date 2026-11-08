@@ -855,7 +855,7 @@ function updateDeath(n, dt){
   n.m.armL.rotation.set(e * fl * .19, 0, -e * .45); n.m.armR.rotation.set(e * fl * .19, 0, e * .45);
   n.m.legL.rotation.set(e * (n.prone ? .04 : .067), 0, -e * .1); n.m.legR.rotation.set(e * (n.prone ? .04 : .067), 0, e * .1);
   const t = Math.min(1, n.deathT / 1.2); n.m.mats.forEach((m, i) => { if (n.tint[i]) m.color.copy(n.tint[i]).lerp(new THREE.Color(0x2a1a14), .5 * t); }); // レーザーで焦げる
-  if (!settings.gore && n.deathT > 1.4){ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
+  if (!settings.gore && !n.isPlayer && n.deathT > 1.4){ /* ghost_body */ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
 }
 // ---------- ちょいグロ: 体が切れる (ドローンレーザーと同じしくみ) ----------
 // 切り口の面で体を2つに分けて、それぞれ別のかけらとして倒れる。切り口には服の色ではなく、赤い断面をかぶせる

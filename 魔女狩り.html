@@ -828,7 +828,7 @@ function updateDeath(n, dt){
     const b = n.burning; b.t += dt; const g = n.m.group;
     g.position.set(b.x, .5 + Math.min(.3, b.t * .2), b.z); g.rotation.set(Math.PI / 2 * (n.prone ? -1 : 1), b.h, 0, 'YXZ');
     const k = Math.min(1, b.t / 3); if (!n.tint) n.tint = n.m.mats.map(m => m.color.clone()); n.m.mats.forEach((m, i) => m.color.copy(n.tint[i]).lerp(new THREE.Color(0x0a0604), k));
-    if (b.t > 6){ const s = Math.max(0, 1 - (b.t - 6) / 2); g.scale.setScalar(s * n.m.scale); if (s <= 0){ g.visible = false; n.gone = true; } }
+    if (b.t > 6 && !n.isPlayer){ /* ghost_body */ const s = Math.max(0, 1 - (b.t - 6) / 2); g.scale.setScalar(s * n.m.scale); if (s <= 0){ g.visible = false; n.gone = true; } }
     return;
   }
   if (n.carried) return; // 担がれているあいだは、運んでいる人が位置を決める

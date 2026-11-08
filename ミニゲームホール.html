@@ -684,7 +684,7 @@ function updateBody(p, dt){
   const h = groundHeight(p.pos.x, p.pos.z, p.pos.y + .3); if (h < p.pos.y - .02){ p.vy -= 22 * dt; p.pos.y = Math.max(h, p.pos.y + p.vy * dt); if (h === -Infinity) p.how = 'fall'; } else p.vy = 0;
   if (!p.m) return; const k = Math.min(1, p.deathT / .6), e = k * k;
   p.m.group.rotation.set(-e * Math.PI / 2, p.lie, 0, 'YXZ'); p.m.group.position.set(p.pos.x, p.pos.y + .14 * p.m.scale * e, p.pos.z);
-  if (!settings.gore && p.deathT > 1.2){ const op = 1 - (p.deathT - 1.2) / 1; for (const m of p.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0) p.m.group.visible = false; }
+  if (!settings.gore && !p.isPlayer && p.deathT > 1.2){ /* ghost_body */ const op = 1 - (p.deathT - 1.2) / 1; for (const m of p.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0) p.m.group.visible = false; }
 }
 function clearBodies(){ for (const p of people) if (!p.alive && p.m && !p.isPlayer){ p.m.group.visible = false; } for (const b of bloods) scene.remove(b); bloods = []; }
 

@@ -863,7 +863,7 @@ function updateDeath(n, dt){
   n.m.group.rotation.set(fl * Math.PI / 2 * (.6 + .4 * e), n.lieHeading + (n.prone ? Math.PI : 0), 0, 'YXZ');
   n.m.group.position.set(n.pos.x, n.pos.y + .14 * n.m.scale * e, n.pos.z);
   n.m.armL.rotation.set(e * fl * .19, 0, -e * .45); n.m.armR.rotation.set(e * fl * .19, 0, e * .45);
-  if (!settings.gore && n.deathT > 1.4){ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
+  if (!settings.gore && !n.isPlayer && n.deathT > 1.4){ /* ghost_body */ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
 }
 function updateFall(p, dt){ const f = p.dying; f.vy -= 22 * dt; p.pos.y += f.vy * dt; if (p.m){ p.m.group.position.copy(p.pos); p.m.armL.rotation.x = -2.6; p.m.armR.rotation.x = -2.4; } if (p.tag) p.tag.visible = false; if (p.pos.y <= f.floor){ p.pos.y = f.floor; kill(p, f.why); } }
 

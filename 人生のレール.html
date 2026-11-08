@@ -576,7 +576,7 @@ function neighbors(p, out){ out.length = 0; const cx = Math.floor(p.pos.x / GRID
 const nb = [];
 function pushApart(p, dt, strength){ neighbors(p, nb); p.crowd = nb.length; const rad = p.isPlayer ? .55 : .38; for (const q of nb){ const dx = p.pos.x - q.pos.x, dz = p.pos.z - q.pos.z, d2 = dx * dx + dz * dz; if (d2 > rad * rad || d2 < 1e-6) continue; const d = Math.sqrt(d2), f = (rad - d) * strength; p.vx += dx / d * f * dt; if (p.isPlayer) p.vz += dz / d * f * dt; } }   /* NPC は横にだけ少しよける (前後では止まらない → 入口でつまらない) */
 function onRail(p){ const z = p.pos.z; if (z < 0) return true;   /* スタートの広場 (じょうご) には ふちのかべがあって落ちない */ if (z >= LEN) return Math.abs(p.pos.x) <= 6; return Math.abs(p.pos.x) <= widthAt(z) / 2 + .12; }
-function startFall(p){ p.alive = false; p.vy = 0; p.tilt = R(-.6, .6); fell++; if (p.isPlayer){ $('red').style.opacity = .6; } }
+function startFall(p){ p.alive = false; p.vy = 0; p.tilt = R(-.6, .6); fell++; if (p.isPlayer){ $('red').style.opacity = .6; if (p.m){ for (const e of p.m.eyes) e.visible = false; for (const x of p.m.xEyes) x.visible = true; } }   /* ghost_body */ }
 function updateNPC(n, dt){
   if (!n.alive){ n.vy -= 22 * dt; n.pos.y += n.vy * dt; n.pos.x += n.vx * dt; n.pos.z += n.vz * dt; return; }
   if (n.pos.z >= LEN + 4){ n.vx = 0; n.vz = 0; return; }
@@ -605,15 +605,20 @@ function updatePlayer(dt){
   if (f || s) player.heading = Math.atan2(dx, dz); player.speedNow = (f || s) ? speed : 0; if (player.m){ animModel(player, dt); if (!player.alive) player.m.group.rotation.z = player.tilt || 0; }
   if (player.alive && !onRail(player)){ startFall(player); playerDone = 'fall'; showMsg('レールから落ちた… 脱落', 3); setTimeout(() => { if (state === 'play') startGhost(); }, 2500); }
   if (player.alive && player.pos.z >= LEN && !playerDone){ playerDone = 'goal'; goalN++; showMsg('最期までレールから落ちなかった！ クリア！', 4); beep(990, .2, .3); setTimeout(() => { if (state === 'play') endGame(); }, 4000); }
-  if (!player.alive){ player.vy -= 22 * dt; player.pos.y += player.vy * dt; if (player.pos.y < -70 && !ghost) startGhost(); }
+  if (!player.alive) playerBodyFall(dt);   /* ghost_body */
   const w = player.pos.z >= 0 && player.pos.z < LEN ? widthAt(player.pos.z) : 40; const edge = clamp((Math.abs(player.pos.x) - (w / 2 - .5)) / .5, 0, 1); $('edge').style.opacity = player.alive ? edge * .9 : 0;
   thirdCam();
 }
+const RAIL_BOTTOM = -79.2;   /* ghost_body: 落ちた自分の体は、底で止まって横たわる */
+function ghostLie(p, y){ /* ghost_body */ const m = p.m; if (!m) return; m.group.rotation.set(-Math.PI / 2, p.heading, 0, 'YXZ'); m.group.position.set(p.pos.x, y + .14 * m.scale, p.pos.z);
+  m.armL.rotation.set(.19, 0, -.45); m.armR.rotation.set(.19, 0, .45); m.legL.rotation.set(.067, 0, -.1); m.legR.rotation.set(.067, 0, .1);
+  for (const e of m.eyes) e.visible = false; for (const x of m.xEyes) x.visible = true; }
+function playerBodyFall(dt){ /* ghost_body */ player.vy -= 22 * dt; player.pos.y = Math.max(RAIL_BOTTOM, player.pos.y + player.vy * dt); if (player.pos.y <= RAIL_BOTTOM) ghostLie(player, RAIL_BOTTOM); if (player.pos.y < -70 && !ghost) startGhost(); }
 function startGhost(){ ghost = true; gpos.set(player.pos.x, 6, Math.max(player.pos.z, 0) - 8); pitch = -.35; yaw = Math.PI; showMsg('観戦モード：空を飛んで見ていられる（Q でやめる）', 4); }
-function updateGhost(dt){
+function updateGhost(dt){ if (!player.alive) playerBodyFall(dt);   /* ghost_body: 観戦のあいだも体は落ちて、底で止まる */
   const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), sd = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0); const sp = (keys.ShiftLeft || keys.ShiftRight) ? 24 : 9;
   const fx = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch);
-  gpos.x = clamp(gpos.x + (fx * f + Math.cos(yaw) * sd) * sp * dt, -60, 60); gpos.z = clamp(gpos.z + (fz * f - Math.sin(yaw) * sd) * sp * dt, -50, LEN + 30); gpos.y = clamp(gpos.y + (fy * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, -20, 60);
+  gpos.x = clamp(gpos.x + (fx * f + Math.cos(yaw) * sd) * sp * dt, -60, 60); gpos.z = clamp(gpos.z + (fz * f - Math.sin(yaw) * sd) * sp * dt, -50, LEN + 30); gpos.y = clamp(gpos.y + (fy * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, RAIL_BOTTOM + .6, 60);   /* ghost_body: 底の体のところまで降りられる */
   camera.position.copy(gpos); camera.rotation.set(pitch, yaw, 0); $('prompt').style.display = 'block'; $('prompt').textContent = '観戦モード　W・A・S・D：移動　スペース／C：上下　シフト：はやく　F：早送り　Q：やめる';
 }
 let eTap = false;

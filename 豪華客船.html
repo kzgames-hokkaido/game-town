@@ -817,7 +817,11 @@ function duelStep(dt){ if (!duel) return; duel.t += dt; duel.opp.duel.t = duel.t
 }
 
 // ---------- あなた ----------
-function startGhost(){ ghost = true; gpos.set(player.pos.x, 3.2, player.pos.z); pitch = -.3; showMsg('星が0になった… 失格。観戦モード：空を飛んで見て回れる。かべをすりぬけて、船の外や港も見られる（Q でやめる）', 5); $('duel').style.display === 'block' || ($('prompt').style.display = 'none'); }
+/* ghost_body (2026-11-08): クリアして観戦になったとき、その場に立ったままの自分を残す。やられたときは倒れた体がその場に残る */
+function ghostStandBody(look){ if (player.m) scene.remove(player.m.group);
+  player.m = makePerson(look); player.heading = yaw + Math.PI; player.speedNow = 0; player.phase = player.phase || 0; player.standBody = true;
+  animModel(player, 0); player.m.group.position.copy(player.pos); player.m.group.rotation.set(0, player.heading, 0, 'YXZ'); player.m.group.visible = true; }
+function startGhost(){ ghostStandBody(PLAYER_LOOK); ghost = true; gpos.set(player.pos.x, 3.2, player.pos.z);   /* ghost_body */ pitch = -.3; showMsg('星が0になった… 失格。観戦モード：空を飛んで見て回れる。かべをすりぬけて、船の外や港も見られる（Q でやめる）', 5); $('duel').style.display === 'block' || ($('prompt').style.display = 'none'); }
 function updateGhost(dt){
   const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), sd = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
   const sp = (keys.ShiftLeft || keys.ShiftRight) ? 14 : 6;

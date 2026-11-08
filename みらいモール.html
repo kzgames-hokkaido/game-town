@@ -3204,7 +3204,7 @@ const INV = (() => {
     drawBag(); }
   /* スキンのタブ */
   const SKINS = [0xf6d7bc, 0xf1c7a5, 0xe0ac84, 0xc68a5e, 0x8d5a3a, 0x5a3a26], HAIRC = [0x1a1210, 0x4a2e1a, 0x8a5a2a, 0xd8b060, 0xe8e0d0, 0xc0392b, 0x2e86de, 0xff7ab8, 0x2e9a4a],
-    CLOTH = [0x3a7bd5, 0xc62828, 0x2e9a4a, 0xf1c40f, 0xff8a1e, 0x8e44ad, 0xff7ab8, 0xf4f4f4, 0x222428, 0x7f8c8d, 0x6b4a2a, 0x1abc9c, 0x3f51b5],   /* さいごは、鉄骨渡り第一ゾーンの4番の人の服の色 */
+    CLOTH = [0x3a7bd5, 0xc62828, 0x2e9a4a, 0xf1c40f, 0xff8a1e, 0x8e44ad, 0xff7ab8, 0xf4f4f4, 0x222428, 0x7f8c8d, 0x6b4a2a, 0x1abc9c, 0x3f51b5, 0x6a7a5a, 0x7a6a5a, 0x5a6a7a, 0x7a7a5a, 0x8a5a5a, 0x5a7a7a, 0x7a5a7a, 0x3a3e45] /* 2026-11-07 弟君: 地下の借金の人たちの作業服の色 (7色 + ズボンの色) を足した */,   /* さいごは、鉄骨渡り第一ゾーンの4番の人の服の色 */
     STYLES = [['short', 'ふつう'], ['spiky', 'ツンツン'], ['slick', '七三'], ['long', 'ロング'], ['bob', 'ボブ'], ['pony', 'ポニーテール'], ['twin', 'ツインテール'], ['bun', 'おだんご'], ['curly', 'くるくる'], ['afro', 'アフロ'], ['mohawk', 'モヒカン']];
   function drawSkin(){ const sk = W().skin(), b = sk.base, hex = c => '#' + c.toString(16).padStart(6, '0');
     const row = (lab, key, list) => `<div class="mclab">${lab}</div><div class="mcsw">` + list.map(c => `<button data-k="${key}" data-v="${c}" style="background:${hex(c)}" class="${b[key] === c ? 'sel' : ''}"></button>`).join('') + '</div>';
@@ -4034,7 +4034,7 @@ function updateDeath(n, dt){
   n.m.group.rotation.set(fl * Math.PI / 2 * (.6 + .4 * e), n.lieHeading + (n.prone ? Math.PI : 0), 0, 'YXZ');
   n.m.group.position.set(n.pos.x, n.pos.y + .14 * n.m.scale * e, n.pos.z);
   n.m.armL.rotation.set(e * fl * .19, 0, -e * .45); n.m.armR.rotation.set(e * fl * .19, 0, e * .45);
-  if (!settings.gore && n.deathT > 1.4){ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
+  if (!settings.gore && !n.isPlayer && n.deathT > 1.4){ /* ghost_body */ const op = 1 - (n.deathT - 1.4) / 1.2; for (const m of n.m.mats){ m.transparent = true; m.opacity = Math.max(0, op); } if (op <= 0){ n.m.group.visible = false; n.gone = true; } }
 }
 function los3(ax, ay, az, bx, by, bz){ // 線の上を0.25mごとに調べ、その高さでかべ・床にぶつかるか
   const d = Math.hypot(bx - ax, bz - az, by - ay), n = Math.max(1, Math.ceil(d / .25));
