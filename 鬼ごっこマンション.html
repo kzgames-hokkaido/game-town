@@ -513,7 +513,11 @@ function buildAll(){
       partX(9.0, y); partX(11.6, y);                           /* 西通路へつながる部屋 (x 9〜11.6) */
       wallBox(9.1, y + 1.1, 9.0, 11.5, y + FH, 9.2);          /* その部屋の中庭がわのかべ */
       partZ(9.0, y); partZ(11.6, y);                           /* 南通路へつながる部屋 (z 9〜11.6) */
-      wallBox(9.0, y + 1.1, 9.1, 9.2, y + FH, 11.5); } }
+      wallBox(9.0, y + 1.1, 9.1, 9.2, y + FH, 11.5); }
+    /* mansion_b23/b24: 各階のエレベーターの前、南側 (中庭がわ) のかべぞいに、横に長い背もたれのないいす */
+    { const mSeat = std({ color: 0x8a5a2b, roughness: .8 }), mLeg = std({ color: 0x333338, roughness: .5, metalness: .4 });
+      for (let k = 0; k < L; k++){ const y = k * FH; const seat = new THREE.Mesh(new THREE.BoxGeometry(1.9, .06, .78), mSeat); seat.position.set(1.25, y + .45, 8.58);   /* 奥行き .78 (ひざがはみ出さない)。うしろのふちは南側のかべ (z 9) */ seat.castShadow = true; scene.add(seat);
+        for (const [dx, dz] of [[-.8, -.3], [.8, -.3], [-.8, .3], [.8, .3]]){ const lg = new THREE.Mesh(new THREE.BoxGeometry(.04, .42, .04), mLeg); lg.position.set(1.25 + dx, y + .21, 8.58 + dz); scene.add(lg); } } } }
   // 外の地面・中庭・まわりの街
   pushBox('asphalt', -150, -.4, -150, 200, -.04, 200);
   pushBox('grass', 9.2, -.04, 9.2, 60, -.02, 60);
@@ -2451,6 +2455,7 @@ function updateCaught(dt){
 /* ===================== Bパターン: 決まった流れ ===================== */
 const SB = { on: false };
 const corrA = (k, x) => ({ x, y: k * FH, z: 7.75 }), corrB = (k, z) => ({ x: 7.75, y: k * FH, z });   /* 西通路 (A棟) / 南通路 (B棟) の上の点 */
+const STOOL_B = k => ({ x: 1.25, y: k * FH, z: 8.82 }),   /* mansion_b24: エレベーターの前の長いいす */ HIDE_B = { x: 7.4, y: FH + 2.25, z: 4.0 };   /* mansion_b25: 2階の中央階段の踊り場より上 (3階へ上がる階段のとちゅう) */   /* mansion_b23: 中央階段の前のいす / 3階 1号室の仕切り (x 11.6) のかげ */
 if (PB){
   /* 部屋の番号 (1号室〜4号室)。角に近い方から */
   const plateTex = i => { const c = document.createElement('canvas'); c.width = 128; c.height = 48; const g = c.getContext('2d'); g.fillStyle = '#e8e2d0'; g.fillRect(0, 0, 128, 48); g.strokeStyle = '#7a6a4a'; g.lineWidth = 4; g.strokeRect(2, 2, 124, 44); g.fillStyle = '#2a2a2a'; g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText((i + 1) + '号室', 64, 26); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
@@ -2492,12 +2497,12 @@ function setupStoryB(){
   r.forEach((n, i) => { const a = i / r.length * Math.PI * 2; put(n, { x: clamp(P.x + Math.cos(a) * 1.6, .6, 8.6), y: 0, z: clamp(P.z + Math.sin(a) * .9, 6.8, 8.8) }); });
   for (const n of r){ stayB(n); n.safe = false; n.follow = false; }
   /* それぞれの場所へ: 4番は4階南通路・5番はまず3階・6番と7番は3階の中央階段・9番は9階南通路・10番は6階 */
-  goB(r[3], corrB(3, 30)); goB(r[4], corrA(2, 30)); goB(r[5], corrA(2, 4.6)); goB(r[6], corrA(1, 36));   /* 6番は3階の中央階段にずっといる。7番は2階の西通路 (4番がやられたあと、3階の中央階段へ来る) */ goB(r[8], corrB(8, 31)); goB(r[9], corrA(5, 33));
+  goB(r[3], corrB(3, 30)); goB(r[4], corrA(2, 30)); goB(r[5], STOOL_B(2));   /* mansion_b23: 6番はいすへ */ goB(r[6], corrA(1, 36));   /* 6番は3階の中央階段にずっといる。7番は2階の西通路 (4番がやられたあと、3階の中央階段へ来る) */ goB(r[8], corrB(8, 31)); goB(r[9], corrA(5, 33));
   /* あなたと仲間2人 (3番・8番) は、1階の西階段からスタート */
   player.pos.set(40.3, 0, 7.75); camY = 1.6; yaw = Math.PI / 2; pitch = 0;
   put(r[2], { x: 41.4, y: 0, z: 7.3 }); put(r[7], { x: 41.4, y: 0, z: 8.3 });
   /* 待っている人の場所 (鬼が来たら、ここからにげて、いなくなったらもどる) */
-  r[3].post = corrB(3, 30); r[4].post = corrA(2, 30); r[5].post = corrA(2, 4.6); r[6].post = corrA(1, 36);
+  r[3].post = corrB(3, 30); r[4].post = corrA(2, 30); r[5].post = STOOL_B(2); r[6].post = corrA(1, 36);
   for (const n of r){ n.evading = false; n.evT = 0; n.lastFP = null; }
   if (SB.fires) for (const f of SB.fires) scene.remove(f.m); SB.fires = []; SB.boomT = null; SB.warn = {};
   for (const p of extB.puffs) scene.remove(p.m); extB.puffs = []; extB.on = false; if (SB.sweater){ scene.remove(SB.sweater); SB.sweater = null; } SB.sweaterFly = null;   /* mansion_b22 */
@@ -2507,6 +2512,13 @@ function setupStoryB(){
   if (SB.btnA){ SB.btnA.mesh.material.color.set(0xd03030); SB.btnB.mesh.material.color.set(0xd03030); }
   if (fakeObj.mine) fakeObj.mine.visible = false;   /* 地雷は茂みの中にかくれている */
 }
+/* mansion_b23 (2026-11-08 弟君): いすにすわる。脚をかくして、ひざを曲げた脚 (もも・すね・くつ) を付け、体を座面の高さまで下げる */
+function sitB(n, on){ const m = n.m; if (!!n.sitting === on) return; n.sitting = on;
+  if (on){ m.legL.visible = m.legR.visible = false; const g = new THREE.Group(); const mp = m.mats[1], ms = m.mats[3];
+    for (const sx of [-.1, .1]){ const th = new THREE.Mesh(GEO.legUp, mp); th.position.set(sx, .5, .2); th.rotation.x = Math.PI / 2; g.add(th);
+      const sh = new THREE.Mesh(GEO.legLow, mp); sh.position.set(sx, .27, .42); g.add(sh); const sc = new THREE.Mesh(GEO.shoe, ms); sc.position.set(sx, .035, .47); g.add(sc); }
+    m.group.add(g); m.sit = g; m.sitShift = m.group.children.filter(c => c !== m.legL && c !== m.legR && c !== g); for (const c of m.sitShift) c.position.y -= .36; }
+  else { if (m.sit){ m.group.remove(m.sit); m.sit = null; } if (m.sitShift){ for (const c of m.sitShift) c.position.y += .36; m.sitShift = null; } m.legL.visible = m.legR.visible = true; } }
 /* mansion_b22 (2026-11-08 弟君): 6番・7番・8番の作戦の部品。消火器のけむり・服をぬぐ・セーターを投げる・鬼が弾を打ちつくす */
 const extB = { on: false, t: 0, emit: 0, puffs: [], from: null, to: null };
 function addExtinguisherB(n){ if (n.m.ext) return; const g = new THREE.Group();   /* 赤い消火器を右手に */
@@ -2516,21 +2528,26 @@ function addExtinguisherB(n){ if (n.m.ext) return; const g = new THREE.Group(); 
   g.position.set(0, -.55, .16); n.m.armR.add(g); n.m.ext = g; }
 function updateExtB(dt){ const E = extB;
   if (E.on){ E.t += dt; const f = E.from, o = E.to;
-    if (f && f.alive && o && E.t < 2.6){ E.emit -= dt; if (E.emit <= 0){ E.emit = .06; const h = Math.atan2(o.pos.x - f.pos.x, o.pos.z - f.pos.z); f.heading = h;
+    if (f && f.alive && o && E.t < 3.8){ E.emit -= dt; if (E.emit <= 0){ E.emit = .05; const h = Math.atan2(o.pos.x - f.pos.x, o.pos.z - f.pos.z); f.heading = h;
       const m = new THREE.Mesh(new THREE.SphereGeometry(.35, 10, 8), new THREE.MeshBasicMaterial({ color: 0xf2f2f2, transparent: true, opacity: .85, depthWrite: false }));
       m.position.set(f.pos.x + Math.sin(h) * .6 + R(-.1, .1), f.pos.y + 1.1 + R(-.1, .1), f.pos.z + Math.cos(h) * .6 + R(-.1, .1)); scene.add(m);
-      E.puffs.push({ m, t: 0, vx: Math.sin(h) * 3.4 + R(-.7, .7), vy: R(-.2, .6), vz: Math.cos(h) * 3.4 + R(-.7, .7) }); } }
-    else if (E.t >= 2.6) E.on = false; }
-  for (const p of E.puffs){ p.t += dt; p.m.position.x += p.vx * dt; p.m.position.y += p.vy * dt; p.m.position.z += p.vz * dt; const k = Math.pow(.35, dt); p.vx *= k; p.vz *= k;
-    p.m.scale.setScalar(.35 + p.t * 1.1); p.m.material.opacity = Math.max(0, .85 * (1 - p.t / 3.4)); if (p.t > 3.4){ scene.remove(p.m); p.m.geometry.dispose(); p.m.material.dispose(); p.gone = true; } }
+      const tx = R(.4, 8.8), tz = R(.3, 9.0), spd = R(2.2, 4.8), dx = tx - m.position.x, dz = tz - m.position.z, dd = Math.hypot(dx, dz) || 1;   /* mansion_b25: 部屋 (x 0〜9, z 0〜9) のどこかへ向かって、ひろがる */
+      E.puffs.push({ m, t: 0, life: R(7, 10), vx: dx / dd * spd, vy: R(-.1, .45), vz: dz / dd * spd }); } }
+    else if (E.t >= 3.8) E.on = false; }
+  for (const p of E.puffs){ p.t += dt; p.m.position.x += p.vx * dt; p.m.position.y += p.vy * dt; p.m.position.z += p.vz * dt; const k = Math.pow(.5, dt); p.vx *= k; p.vz *= k; const fl = Math.floor(p.m.position.y / FH) * FH; p.m.position.y = clamp(p.m.position.y, fl + .5, fl + 2.7); p.m.position.x = clamp(p.m.position.x, -.2, 9.3); p.m.position.z = clamp(p.m.position.z, -.2, 9.6);
+    const life = p.life || 3.4; p.m.scale.setScalar(Math.min(1.9, .35 + p.t * .9)); p.m.material.opacity = Math.max(0, .8 * Math.min(1, (life - p.t) / 3)); if (p.t > life){ scene.remove(p.m); p.m.geometry.dispose(); p.m.material.dispose(); p.gone = true; } }
   if (E.puffs.some(p => p.gone)) E.puffs = E.puffs.filter(p => !p.gone); }
 function stripB(n){ const sm = n.m.mats.find(m => m.map); if (!sm || n.stripped) return; n.stripped = true; n.sweaterTex = sm.map; sm.map = null; sm.color.set(0xf4f4f4); sm.needsUpdate = true;   /* 柄のセーターをぬぐ → 下は白い長そでのボタンつきシャツ (そでも白) */
   const mb = std({ color: 0x333333 }); for (let i = 0; i < 4; i++){ const b = new THREE.Mesh(new THREE.SphereGeometry(.016, 6, 6), mb); b.position.set(0, 1.03 + i * .1, .138); n.m.group.add(b); }
   const col = new THREE.Mesh(new THREE.BoxGeometry(.2, .05, .04), std({ color: 0xffffff })); col.position.set(0, 1.5, .11); col.rotation.x = -.4; n.m.group.add(col); }
-function throwSweaterB(n, o){ const tex = n.sweaterTex || stripeTex('#8a7a3a', '#f4f4f4'); const m = new THREE.Mesh(new THREE.BoxGeometry(.5, .1, .4), std({ map: tex, roughness: .9 }));
-  const from = new THREE.Vector3(n.pos.x, n.pos.y + 1.3, n.pos.z), to = new THREE.Vector3((n.pos.x + o.pos.x) / 2, n.pos.y + .05, (n.pos.z + o.pos.z) / 2); m.position.copy(from); scene.add(m); SB.sweater = m; SB.sweaterFly = { from, to, t: 0 }; }
-function updateSweaterB(dt){ const f = SB.sweaterFly; if (!f || !SB.sweater) return; f.t = Math.min(1, f.t + dt / .7); const m = SB.sweater; m.position.lerpVectors(f.from, f.to, f.t); m.position.y += Math.sin(Math.PI * f.t) * .9; m.rotation.x += dt * 6; m.rotation.y += dt * 3; if (f.t >= 1){ m.rotation.set(0, R(0, 6.28), 0); SB.sweaterFly = null; } }
-function shotAtB(o, p){ const from = muzzlePos(o), to = new THREE.Vector3(p.x + R(-.3, .3), p.y + R(0, .4), p.z + R(-.3, .3)); o.heading = Math.atan2(p.x - o.pos.x, p.z - o.pos.z); o.aim = true;   /* セーターに向けてうつ (だれにも当たらない) */
+function throwSweaterB(n, o){ const tex = n.sweaterTex || stripeTex('#8a7a3a', '#f4f4f4'); const mt = std({ map: tex, roughness: .9, side: THREE.DoubleSide }); const g = new THREE.Group();   /* mansion_b25: 服の形 (胴とそで2本)。弟君「真四角じゃなくて服っぽく」 */
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(.42, .52, .05), mt));
+  for (const sd of [-1, 1]){ const sl = new THREE.Mesh(new THREE.BoxGeometry(.13, .4, .05), mt); sl.position.set(sd * .29, .07, 0); sl.rotation.z = sd * .6; g.add(sl); }
+  const from = new THREE.Vector3(n.pos.x, n.pos.y + 1.3, n.pos.z), to = new THREE.Vector3(n.pos.x * .45 + o.pos.x * .55, n.pos.y + .04, n.pos.z * .45 + o.pos.z * .55); g.position.copy(from); scene.add(g); SB.sweater = g; SB.sweaterFly = { from, to, t: 0, spin: R(2, 4), yaw: R(0, 6.28) }; }
+function updateSweaterB(dt){ const f = SB.sweaterFly; if (!f || !SB.sweater) return; f.t = Math.min(1, f.t + dt / 1.1); const m = SB.sweater; m.position.lerpVectors(f.from, f.to, f.t); m.position.y += Math.sin(Math.PI * f.t) * 1.0;
+  m.rotation.set(-Math.PI / 2 * f.t + Math.sin(f.t * 6) * .3 * (1 - f.t), f.yaw, Math.sin(f.t * f.spin) * .4 * (1 - f.t), 'YXZ');   /* ひらひらしながら落ちて、床に平らに広がる */
+  if (f.t >= 1){ m.rotation.set(-Math.PI / 2, f.yaw, 0, 'YXZ'); SB.sweaterFly = null; } }
+function shotAtB(o, p, sp = .3){ const from = muzzlePos(o), to = new THREE.Vector3(p.x + R(-sp, sp), p.y + R(0, .4) + R(0, sp), p.z + R(-sp, sp));   /* mansion_b25: sp = ばらつき (大きいほど当たらない) */ o.heading = Math.atan2(p.x - o.pos.x, p.z - o.pos.z); o.aim = true;   /* セーターに向けてうつ (だれにも当たらない) */
   const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([from, to]), new THREE.LineBasicMaterial({ color: 0xffe08a, transparent: true, opacity: .9 })); scene.add(line); tracers.push({ line, t: .08 }); o.flashT = .05;
   gunSound(Math.max(0, 1 - Math.hypot(o.pos.x - player.pos.x, o.pos.z - player.pos.z, (o.pos.y - player.pos.y) * 1.5) / 45) * .8); }
 /* 鬼のマシンガンの連射 (決まった流れでやられる人) */
@@ -2582,6 +2599,10 @@ function updateStoryB(dt){
   SB.fT -= dt; if (SB.fT <= 0){ SB.fT = .4; for (const n of [n3, pt]) if (n.alive && n.follow && player.alive){ const d = Math.hypot(n.pos.x - player.pos.x, n.pos.z - player.pos.z, (n.pos.y - player.pos.y) * 2), lp = n.lastFP, moved = !lp || Math.hypot(player.pos.x - lp.x, player.pos.z - lp.z, (player.pos.y - lp.y) * 2) > 2;
     if (d < 1.9){ n.path = []; n.lastFP = null; } else if (d > 2.8 && (moved || !n.path.length)){ n.lastFP = player.pos.clone(); planPath(n, { x: player.pos.x, y: player.pos.y, z: player.pos.z }); } } }
   evadeB(r, o, dt);
+  /* mansion_b23: 6番は作戦を言うまで、3階のいすにすわっている (鬼が来てにげるときは立つ)。かくれたら仕切りの方を向く */
+  { const sp = STOOL_B(2), want = f6.alive && !F.charge && !f6.evading && Math.hypot(f6.pos.x - sp.x, f6.pos.z - sp.z) < .5 && Math.abs(f6.pos.y - sp.y) < .6;
+    if (want){ f6.pos.x = sp.x; f6.pos.z = sp.z; f6.heading = Math.PI; f6.path = []; f6.speedNow = 0; } sitB(f6, want);   /* mansion_b24: エレベーターの方を向いてすわる */
+    if (F.charge && !F.spray && f6.alive && Math.hypot(f6.pos.x - HIDE_B.x, f6.pos.z - HIDE_B.z) < .6 && Math.abs(f6.pos.y - HIDE_B.y) < 1){ f6.heading = 0; f6.path = []; }   /* mansion_b25: 階段のとちゅうで、上 (3階) を向いて待つ */ }
   if (!player.alive && once('pdead')){ for (const n of [n3, pt]) if (n.alive && n.follow){ n.follow = false; n.lastFP = null; stayB(n); n.post = { x: n.pos.x, y: n.pos.y, z: n.pos.z }; n.evading = false; } }   /* あなたがやられたら、仲間はその場にとどまる (幽霊についてこない) */
   if (once('start')){ n3.follow = pt.follow = true; o.scr = { pt: corrA(4, 6.5), sp: D.walk * 1.2 }; feed(n3.name + '「いっしょににげよう！」'); feed(pt.name + '「ぼくもついていく」'); }
   /* 1番・2番: 4階 西通路で、40秒でやられる */
@@ -2608,27 +2629,33 @@ function updateStoryB(dt){
   /* 仲間とはぐれる → 3階の中央階段へ */
   if (SB.t.boom && T - SB.t.boom > 6 && once('sep')){   /* mansion_b16: はぐれるのは地雷のあと */ SB.t.sep = T; o.scr = { pt: corrB(3, 20), sp: D.walk };   /* mansion_b22: 4階の南通路へ (8番がさそいに行く時間を短く) */ pt.follow = false; goB(pt, corrA(2, 36)); feed(pt.name + 'とはぐれてしまった…'); showMsg('ヒント：3階の中央階段に行ってみよう', 3.5); SB.obj = '3階の中央階段に行ってみよう'; }
   /* 3階の中央階段: 鬼をたおそうとする2人。仲間も協力する。でも失敗して2人はやられる */
-  if (F.sep && !F.meet){ const near = player.alive && floorOf(player.pos.y) === 2 && Math.hypot(player.pos.x - 5.75, player.pos.z - 7.75) < 8; if (near || T - SB.t.sep > 28 || (!player.alive && T - SB.t.sep > 12)){ F.meet = true;   /* mansion_b22: 40秒 → 28秒 */   /* mansion_b15: あなたが死んでいたら 待たずに始める */ SB.t.meet = T; feed(f6.name + '「なあ、鬼をたおそうぜ。2人じゃむりなんだ」'); f7.post = null; f7.evading = false; goB(f7, corrA(2, 6.9)); goB(pt, corrA(2, 8.5)); } }
+  if (F.sep && !F.meet){ const near = player.alive && floorOf(player.pos.y) === 2 && Math.hypot(player.pos.x - 5.75, player.pos.z - 7.75) < 8; if (near || T - SB.t.sep > 20 || (!player.alive && T - SB.t.sep > 12)){ F.meet = true;   /* mansion_b22/b23: 40秒 → 20秒 */   /* mansion_b15: あなたが死んでいたら 待たずに始める */ SB.t.meet = T; feed(f6.name + '「なあ、鬼をたおそうぜ。2人じゃむりなんだ」'); f7.post = null; f7.evading = false; goB(f7, corrA(2, 6.9)); goB(pt, corrA(2, 8.5)); } }
   if (F.meet && !F.f7in && (Math.hypot(f7.pos.x - 6.9, f7.pos.z - 7.75) < 2.5 && Math.abs(f7.pos.y - 6) < 1 || T - SB.t.meet > 18)){ F.f7in = true; SB.t.f7in = T; feed(f7.name + '「3人いれば、鬼をはめられる。作戦を聞いてくれ」'); }
   if (F.meet && !F.ptin && (Math.hypot(pt.pos.x - 8.5, pt.pos.z - 7.75) < 2.5 && Math.abs(pt.pos.y - 6) < 1 || T - SB.t.meet > 18)){ F.ptin = true; SB.t.ptin = T; feed(pt.name + '「…わかった。ぼくも協力する」'); }
   /* mansion_b22: 作戦 → 6番は3階の西通路のかげにかくれる。7番は2階の中央階段で待つ。8番 (金髪) は鬼をさそいに行く */
   if (F.f7in && F.ptin && T - Math.max(SB.t.f7in, SB.t.ptin) > 3 && once('charge')){ SB.t.ch = T; f6.post = null; f6.evading = false; f7.post = null; f7.evading = false;
-    feed(f6.name + '「作戦だ。おれはこの先にかくれて、消火器で鬼の目をくらます」');
+    feed(f6.name + '「作戦だ。おれは2階の階段の踊り場の上にかくれる。鬼が来たら、消火器で部屋をけむりだらけにする」');
     laterB(1.5, () => feed(f6.name + '「' + pt.name + 'は鬼をこの階段まで連れてこい。' + f7.name + 'は2階の階段で待って、合図でエレベーターで上がってきて、とびかかれ」'));
-    laterB(3.0, () => { feed(pt.name + '「わかった… やってみる」'); feed(f7.name + '「まかせろ」'); goB(f6, corrA(2, 13)); goB(f7, corrA(1, 6.9)); SB.lureT = 0; const nn = nearestNode(o.pos); goB(pt, nn ? { x: nn.x, y: nn.y, z: nn.z } : { x: o.pos.x, y: o.pos.y, z: o.pos.z }); F.lureGo = true; showMsg('6番の人はかくれ、7番の人は2階へ。' + pt.name + 'が鬼をさそいに行った', 3.5); }); }
+    laterB(3.0, () => { feed(pt.name + '「わかった… やってみる」'); feed(f7.name + '「まかせろ」'); goB(f6, HIDE_B); f7.post = null; f7.evading = false; f7.path = []; f7.ev = { stage: 'toHall', from: 1, to: 2, t: 0, reqT: 0 }; f7.evB = { t: 0, pre: true }; planPath(f7, { x: 1.25, y: FH, z: 7.6 }); feed(f7.name + '「おれは先に2階のエレベーターを呼んでおく」');   /* mansion_b23 */ SB.lureT = 0; const nn = nearestNode(o.pos); goB(pt, nn ? { x: nn.x, y: nn.y, z: nn.z } : { x: o.pos.x, y: o.pos.y, z: o.pos.z }); F.lureGo = true; showMsg('6番の人は2階の階段のとちゅうに、7番の人は2階のエレベーターへ。' + pt.name + 'が鬼をさそいに行った', 3.5); }); }
   /* mansion_b22: 8番 (金髪) が鬼に近づいて、さそう → 3階の中央階段 (corrA(2, 7.5)) へ走る。鬼は8番の行き先を追う */
-  if (F.lureGo && !F.lured){ SB.lureT += dt; if ((sameF(pt, o) && dist(pt, o) < 14) || SB.lureT > 30){ F.lured = true; SB.t.lured = T; feed(pt.name + '「おい、鬼！ こっちだ！ つかまえてみろ！」'); viaB(pt, [corrA(2, 7.5), corrA(2, 16)]); o.scr = { follow: pt, sp: D.walk * 1.15, stop: 2 }; showMsg(pt.name + 'が鬼をさそい出した！ 3階の中央階段へ連れてくる', 3); }
+  if (F.lureGo && !F.lured){ SB.lureT += dt; if ((sameF(pt, o) && dist(pt, o) < 14) || SB.lureT > 30){ F.lured = true; SB.t.lured = T; feed(pt.name + '「おい、鬼！ こっちだ！ つかまえてみろ！」'); viaB(pt, [corrA(2, 7.5), corrA(2, 16)]); o.scr = { follow: pt, sp: D.walk * 1.15, stop: 2 };
+      o.ammo = 25; for (let i = 0; i < 10; i++) laterB(.3 + i * .09, () => shotAtB(o, pt.pos, 1.3)); laterB(1.4, () => { o.ammo = Math.max(0, o.ammo - 10); feed('鬼が' + pt.name + 'にうちまくった！ でも、当たらない'); });   /* mansion_b25: 見つけたときに10発 (数は画面に出さない) */ showMsg(pt.name + 'が鬼をさそい出した！ 3階の中央階段へ連れてくる', 3); }
     else if (!pt.path.length){ const nn = nearestNode(o.pos); if (nn) goB(pt, { x: nn.x, y: nn.y, z: nn.z }); } }
   /* mansion_b22: 鬼が3階の中央階段に下りてきた → 6番が消火器 → 服をぬいで投げる → 鬼が弾を打ちつくす → 7番はエレベーターへ */
   if (F.lured && !F.spray && ((Math.abs(o.pos.y - 2 * FH) < 1 && o.pos.x < 9.8 && o.pos.z < 9.8 && o.pos.z > 3.5) || T - SB.t.lured > 55)){ F.spray = true; SB.t.spray = T;
-    o.scr = { pt: { x: 6.4, y: 2 * FH, z: 7.75 }, sp: D.walk, face: f6, stop: .8 }; goB(f6, corrA(2, 10.3)); feed(f6.name + '「今だ！」'); showMsg('6番の人が消火器をふき出した！ 鬼は前が見えない', 3);
+    o.scr = { pt: { x: clamp(o.pos.x, 2.5, 8.5), y: 2 * FH, z: Math.max(o.pos.z, 6.8) }, sp: D.walk, face: f6, stop: .8 }; goB(f6, { x: 7.4, y: 2 * FH, z: 6.9 });   /* mansion_b25: 6番は階段を上がって部屋のはしへ */ feed(f6.name + '「今だ！」'); showMsg('6番の人が消火器をふき出した！ 鬼は前が見えない', 3);
     extB.on = true; extB.t = 0; extB.emit = 0; extB.from = f6; extB.to = o; addExtinguisherB(f6); f6.reach = true;
-    f7.post = null; f7.evading = false; f7.path = []; f7.ev = { stage: 'toHall', from: 1, to: 2, t: 0, reqT: 0 }; f7.evB = { t: 0 }; planPath(f7, { x: 1.25, y: FH, z: 7.6 });   /* 合図: 7番は2階のエレベーターへ (ふつうの人と同じ乗り方) */
-    laterB(1.8, () => { stripB(f6); throwSweaterB(f6, o); feed(f6.name + '「これでもくらえ！」'); });
-    laterB(2.6, () => { for (let i = 0; i < 10; i++) laterB(i * .08, () => shotAtB(o, SB.sweater ? SB.sweater.position : f6.pos)); laterB(.95, () => { o.ammo = 0; o.reloadT = 12; feed('鬼はセーターをうちまくって、弾を打ちつくした！ 弾を入れかえている…'); showMsg('鬼の銃が打ち止め！ リロード中', 3); }); });
-    laterB(3.0, () => { f6.reach = false; if (f6.m.ext){ f6.m.armR.remove(f6.m.ext); f6.m.ext = null; } }); }
+    if (f7.evB){ f7.evB.pre = false; f7.evB.t = 0; } else { f7.post = null; f7.evading = false; f7.path = []; f7.ev = { stage: 'toHall', from: 1, to: 2, t: 0, reqT: 0 }; f7.evB = { t: 0 }; planPath(f7, { x: 1.25, y: FH, z: 7.6 }); }   /* 合図: 7番は呼んでおいたエレベーターに乗る (mansion_b23) */
+    laterB(1.2, () => { feed('けむりが中央階段の部屋じゅうにひろがった！ 鬼がけむりの中へうちまくる'); for (let i = 0; i < 11; i++) laterB(i * .1, () => shotAtB(o, { x: f6.pos.x + R(-1.6, 1.6), y: f6.pos.y, z: f6.pos.z + R(-1.6, 1.6) }, .5)); laterB(1.3, () => { o.ammo = Math.max(0, o.ammo - 11); }); });   /* mansion_b25: けむりの中へ11発 */
+    laterB(3.0, () => { stripB(f6); throwSweaterB(f6, o); feed(f6.name + '「これでもくらえ！」'); });
+    laterB(4.0, () => { for (let i = 0; i < 4; i++) laterB(i * .14, () => shotAtB(o, SB.sweater ? SB.sweater.position : f6.pos, .25)); laterB(.8, () => { o.ammo = 0; o.reloadT = 12; feed('鬼は服をうって、弾を打ちつくした！ 弾を入れかえている…'); showMsg('鬼の銃が打ち止め！ リロード中', 3); }); });   /* 残りの4発を服に */
+    laterB(4.2, () => { f6.reach = false; if (f6.m.ext){ f6.m.armR.remove(f6.m.ext); f6.m.ext = null; } }); }
   /* mansion_b22: 7番のエレベーター (2階 → 3階)。script の人は updateNPC で updateEvTrip が呼ばれないので、ここで動かす。だめなら階段で */
-  if (f7.evB && f7.alive){ const e = f7.evB; e.t += dt;
+  if (f7.evB && f7.alive && f7.evB.pre){ const e = f7.evB;   /* mansion_b23: 鬼が来る前: エレベーターを呼んで、扉の前で待つ (乗らない。扉は開けたままにしておく) */
+    if (!f7.ev) f7.ev = { stage: 'toHall', from: 1, to: 2, t: 0, reqT: 0 };
+    f7.ev.t = Math.min(f7.ev.t, 5); updateEvTrip(f7, dt); if (f7.ev && f7.ev.stage === 'board'){ f7.ev.stage = 'wait'; f7.ev.t = 0; f7.path = []; }
+    if (EV.floor === 1 && EV.state === 'open' && !EV.queue.size) EV.openT = Math.max(EV.openT, 2.5); }
+  else if (f7.evB && f7.alive){ const e = f7.evB; e.t += dt;
     if (f7.ev){ if (f7.ev.stage === 'ride') f7.pos.y = EV.y; const went = updateEvTrip(f7, dt); if (!f7.ev){ if (went && Math.abs(f7.pos.y - 2 * FH) < .8){ f7.evB = null; F.f7up = true; f7.script = true; f7.mode = 'script'; f7.wait = 0; } else e.fail = true; } }
     if (e.fail || e.t > 40 || EV.broken){ f7.ev = null; f7.evB = null; F.f7stairs = true; f7.script = true; f7.mode = 'script'; goB(f7, corrA(2, 6.9)); feed(f7.name + '「エレベーターがだめだ… 階段で行く！」'); } }
   if (F.f7stairs && !F.f7up && Math.abs(f7.pos.y - 2 * FH) < 1 && Math.hypot(f7.pos.x - 6.9, f7.pos.z - 7.75) < 2.2) F.f7up = true;
