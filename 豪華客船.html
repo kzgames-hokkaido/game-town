@@ -103,6 +103,7 @@ a.sub{text-align:center;text-decoration:none}
     <li>時間が終わったとき星が<b>3つ未満</b>（1つか2つ）の人は、<b>一応クリア</b></li>
     <li>じゃんけんは<b>同時出し</b>。相手の手は申しこんだ瞬間に決まっていて、あなたのカードを見て変えたりしない。星が0になったら係員が<b>別室</b>へ連れていく。別室では自由に歩けて、<kbd>V</kbd> で空から見る観戦もできる（<kbd>Q</kbd> でやめる）</li>
     <li><b>運だけにならない作戦</b>：①相手の<b>のこりのカード</b>を見る。相手がパーを持っていなければ、グーは<b>負けない</b>（対戦の画面に「負けない手」が出る）②ステージ横の<b>掲示板</b>で、場にのこっている全部のカードの数がわかる（少ない手は出されにくい）③人には<b>くせ</b>がある。最近出した手が見える ④ステージ右横の<b>カード交換所</b>で、星1つはらって、カード1枚を別の種類にかえられる</li>
+    <li><b>相手も考えている</b>：相手も<b>あなたののこりのカード</b>を見て、あなたの<b>多いカード</b>に勝つ手を出してくることがある。同じカードばかり残さないようにしよう</li>
     <li><b>裏切り</b>：対戦の前に「同じ手を出してあいこにしよう」と<b>約束</b>をもちかけてくる人がいる。守ればおたがい安全にカードをへらせるが、<b>裏切ってくる人</b>もいる（裏切った回数は見える）。あなたも裏切れる（裏切ると、その人はもう約束してくれない）。NPC同士でも裏切りが起きる</li>
     <li><b>失格すると</b>、借金 <b>40万イソ</b> を背負って<b>地下強制労働施設</b>（鉄骨渡り第一ゾーンの地下）へほうりこまれる。給料から返済していく</li>
     <li>NPC同士もテーブルでじゃんけんをして、星をうばい合う。星が0になった人は、<b>係員</b>が<b>別室</b>へ連れていく（別室は<b>マジックミラー</b>で、中から大広間が見える。中は自由に歩ける）。NPCも同じ条件で判定され、<b>40人以上が失格</b>になる</li>
@@ -711,7 +712,7 @@ function favor(n, q){ // n が q に対してどれくらい有利か (q にな�
 }
 function npcPick(n, q){ // NPC のカードえらび。かしこい人は 相手ののこりカードを見て、相手の多いカードに勝つ手を出す。それ以外は 持っている枚数で決める
   const own = HAND.filter(h => n.cards[h] > 0); if (!own.length) return null;
-  if (!q.isPlayer && n.smart && Math.random() < .65){ const most = HAND.slice().sort((a, b) => q.cards[b] - q.cards[a])[0]; const ans = { G: 'P', C: 'G', P: 'C' }[most]; if (own.includes(ans)) return ans; }
+  if (q.isPlayer ? Math.random() < (n.smart ? .6 : .35) : (n.smart && Math.random() < .65)){ const mx = Math.max(...HAND.map(h => q.cards[h])), most = pick(HAND.filter(h => q.cards[h] === mx)); const ans = { G: 'P', C: 'G', P: 'C' }[most]; if (own.includes(ans)) return ans; }   /* ship_harder: 相手も あなたの多いカードに勝つ手を出してくる (同数ならランダム) */
   const wt = h => n.cards[h] * (n.fav ? n.fav[HAND.indexOf(h)] : 1); /* 持っている枚数 × くせ */ let tot = own.reduce((s, h) => s + wt(h), 0), r = Math.random() * tot; for (const h of own){ r -= wt(h); if (r <= 0) return h; } return own[own.length - 1];
 }
 function resolve(a, ha, b, hb){ // a と b がカードを出した。星のうばい合い
@@ -807,7 +808,7 @@ function duelStep(dt){ if (!duel) return; duel.t += dt; duel.opp.duel.t = duel.t
     if (!duel.lock){ const left = Math.max(0, 5 - duel.t); $('duelCnt').textContent = duel.pick ? `${HNAME[duel.pick]} でいく！　あと ${Math.ceil(left)}` : `カードをえらぶ：1 グー　2 チョキ　3 パー　（あと ${Math.ceil(left)}）`;
       if (duel.t >= 5){ if (!duel.pick){ const own = HAND.filter(h => player.cards[h] > 0); duel.pick = duel.pact && player.cards[duel.pact] > 0 ? duel.pact : pick(own); } duel.lock = true; drawDuel(); $('duelPick').querySelectorAll('button').forEach(b => b.disabled = true); $('duelCnt').textContent = 'じゃん…　けん…'; beep(600, .08, .1); setTimeout(() => beep(600, .08, .1), 400); } }
     else if (duel.t >= 5.9){ const hb = duel.oppPick || npcPick(duel.opp, player); duel.done = true; $('duelCnt').textContent = 'ぽん！'; beep(760, .1, .12);
-      $('duelRev').textContent = `あなた ${HEMO[duel.pick]} ${HNAME[duel.pick]}　vs　相手 ${HEMO[hb]} ${HNAME[hb]}`; const w = resolve(player, duel.pick, duel.opp, hb);
+      $('duelRev').textContent = `あなた ${HEMO[duel.pick]} ${HNAME[duel.pick]}　vs　相手 ${HEMO[hb]} ${HNAME[hb]}`; const w = resolve(player, duel.pick, duel.opp, hb); if (!duel) return;   /* ship_harder: 星0で終わったら抜ける */
       const r = $('duelRes'); if (w === player){ r.textContent = '勝ち！ 星を1つうばった'; r.className = 'res'; beep(990, .15, .25); } else if (w){ r.textContent = '負け… 星を1つとられた'; r.className = 'res lose'; thump(80, .5, .4); } else { r.textContent = 'あいこ（カードはおたがい使った）'; r.className = 'res'; beep(500, .1, .15); }
       if (duel.pact){ const n = duel.opp, meB = duel.pick !== duel.pact, oppB = hb !== duel.pact; if (oppB){ n.betrayed++; feed(`${who(n)} が あなたを裏切った！（約束は ${HEMO[duel.pact]}）`); } if (meB){ n.grudge = true; player.betrayed = (player.betrayed || 0) + 1; feed(`あなたが ${who(n)} を裏切った！`); }
         if (oppB && !meB) r.textContent += '　← 裏切られた！'; else if (meB && !oppB) r.textContent += '　← あなたが裏切った'; else if (meB && oppB) r.textContent += '　← おたがい裏切り！'; else r.textContent = '約束どおり あいこ。カードを1枚へらせた'; }
@@ -992,7 +993,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
@@ -1189,5 +1190,21 @@ R：F　L：R　ZR：マウスのクリック<br>
 })();
 </script>
 <!-- /gamepad -->
+<!-- ===== 手もとのスマホ (全ゲーム共通。phone_hud.js) ===== -->
+<style>
+#phoneHud{position:fixed;right:14px;bottom:14px;width:124px;height:226px;background:#111;border-radius:18px;padding:9px 7px;box-shadow:0 6px 24px rgba(0,0,0,.65);z-index:30;pointer-events:none;transform:rotate(-5deg);display:none;box-sizing:border-box}
+#phoneHud .scr{width:100%;height:100%;background:#fff;border-radius:11px;color:#111;font:700 12px/1.5 "BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;padding:10px 6px;box-sizing:border-box;overflow:hidden;text-align:center;word-break:break-all}
+#phoneHud .scr b{display:block;font-size:13px;margin-bottom:6px;border-bottom:1px solid #111;padding-bottom:4px}
+</style>
+<div id="phoneHud"><div class="scr" id="phoneScr"></div></div>
+<script>
+(function(){ var el = document.getElementById('phoneHud'), sc = document.getElementById('phoneScr'); if (!el) return;
+  function txt(id){ var e = document.getElementById(id); return e ? (e.textContent || '').trim() : ''; }
+  var esc = function(s){ return s.replace(/[&<>]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
+  setInterval(function(){ var hud = document.getElementById('hud'), playing = !!hud && hud.style.display === 'block' && !document.querySelector('.screen.on');
+    el.style.display = playing ? 'block' : 'none'; if (!playing) return;
+    var a = txt('timer'), b = txt('alive'); sc.innerHTML = '<b>' + esc(document.title) + '</b>' + esc(a) + (b ? '<br><br>' + esc(b) : ''); }, 300); })();
+</script>
+<!-- /phonehud -->
 </body>
 </html>

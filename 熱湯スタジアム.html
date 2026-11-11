@@ -1474,7 +1474,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
@@ -1681,5 +1681,21 @@ R：F　L：R　ZR：マウスのクリック<br>
 })();
 </script>
 <!-- /gamepad -->
+<!-- ===== 手もとのスマホ (全ゲーム共通。phone_hud.js) ===== -->
+<style>
+#phoneHud{position:fixed;right:14px;bottom:14px;width:124px;height:226px;background:#111;border-radius:18px;padding:9px 7px;box-shadow:0 6px 24px rgba(0,0,0,.65);z-index:30;pointer-events:none;transform:rotate(-5deg);display:none;box-sizing:border-box}
+#phoneHud .scr{width:100%;height:100%;background:#fff;border-radius:11px;color:#111;font:700 12px/1.5 "BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;padding:10px 6px;box-sizing:border-box;overflow:hidden;text-align:center;word-break:break-all}
+#phoneHud .scr b{display:block;font-size:13px;margin-bottom:6px;border-bottom:1px solid #111;padding-bottom:4px}
+</style>
+<div id="phoneHud"><div class="scr" id="phoneScr"></div></div>
+<script>
+(function(){ var el = document.getElementById('phoneHud'), sc = document.getElementById('phoneScr'); if (!el) return;
+  function txt(id){ var e = document.getElementById(id); return e ? (e.textContent || '').trim() : ''; }
+  var esc = function(s){ return s.replace(/[&<>]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
+  setInterval(function(){ var hud = document.getElementById('hud'), playing = !!hud && hud.style.display === 'block' && !document.querySelector('.screen.on');
+    el.style.display = playing ? 'block' : 'none'; if (!playing) return;
+    var a = txt('timer'), b = txt('alive'); sc.innerHTML = '<b>' + esc(document.title) + '</b>' + esc(a) + (b ? '<br><br>' + esc(b) : ''); }, 300); })();
+</script>
+<!-- /phonehud -->
 </body>
 </html>

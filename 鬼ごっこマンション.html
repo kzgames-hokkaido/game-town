@@ -345,6 +345,9 @@ const GOAL = {};
 // エレベーター: 中央階段のとなり (A棟の廊下の行き止まり)。かごの中は x 0〜2.5, z 3.8〜6.3
 const EV = { y: 0, floor: 0, target: null, state: 'idle', doorT: 0, openT: 0, speed: 2, doorWalls: [], shown: -1, queue: new Set() };
 // ニセ出口: 1階・A棟の外廊下の手すりのすき間。外の小道に地雷
+/* mansion_b27: Bパターンの出口。通路の突き当たり (a=44) の扉 (d .65〜1.85)、外の踊り場と階段 (a 44.2〜46.9)、1m 低い外の地面 (a 44.2〜60、d -.2〜13)。地雷は南階段の外 */
+const EXITB = PB ? { w0: .65, w1: 1.85, mine: { x: 7.75, y: -1, z: 50.5 }, doors: [], yardA: { x0: 44.2, x1: 60, z0: -4, z1: 9.2 }, yardB: { x0: -4, x1: 9.2, z0: 44.2, z1: 60 }, bottom: { A: { x: 46.9, z: 7.75 }, B: { x: 7.75, z: 46.9 } }, pfx: null, craters: [] } : null;
+const inYardB = (x, z) => !!EXITB && ((x > EXITB.yardA.x0 && x < EXITB.yardA.x1 && z > EXITB.yardA.z0 && z < EXITB.yardA.z1) || (x > EXITB.yardB.x0 && x < EXITB.yardB.x1 && z > EXITB.yardB.z0 && z < EXITB.yardB.z1));
 const FAKE = PB ? { a0: 38.2, a1: 39.7, x: 38.95, gz: 9.1, mineZ: 15.5 } : { a0: 20.5, a1: 22.0, x: 21.25, gz: 9.1, mineZ: 15.5 }; // gz = 門の位置 (中庭側の手すりの線)。外は +z 方向
 
 function buildWing(W, level, corner){
@@ -362,7 +365,7 @@ function buildWing(W, level, corner){
   // A棟の廊下は L字の角 (x=0) から、B棟の廊下は A棟の廊下とつながる角 (z=9) から
   floorArea(W, W === WA ? 0 : 9, 44, 0, 2.5, k, 'tile', 'concrete');
   // 中庭側の手すり (角から先。角の手前は B棟の部屋の壁になる)
-  if (W === WA && k === 0){
+  if (W === WA && k === 0 && !PB){   /* mansion_b27: Bパターンは手すりのすき間なし (出口は突き当たりの扉) */
     // 1階のニセ出口のすき間 (門は別に作る)
     solidW(W, 'concrete', 9, FAKE.a0, -.2, 0, y, y + 1.1);
     solidW(W, 'concrete', FAKE.a1, 44.2, -.2, 0, y, y + 1.1);
@@ -371,13 +374,14 @@ function buildWing(W, level, corner){
     FAKE.wall = { ...wbox(W, FAKE.a0, FAKE.a1, -.2, 0), y0: 0, y1: 1.1, pass: null };
     walls.push(FAKE.wall);
   } else {
+    if (!FAKE.wall) FAKE.wall = { x0: 0, x1: 0, z0: 0, z1: 0, y0: -999, y1: -998, pass: null };   /* mansion_b27: Bパターン用のから */
     solidW(W, 'concrete', 9, 44.2, -.2, 0, y, y + 1.1);
     solidW(W, 'metal', 9, 44.2, -.25, .05, y + 1.1, y + 1.16, false);
   }
   for (let a = W === WA ? 3 : 12; a < 44; a += 5) solidW(W, 'lamp', a - .35, a + .35, 1.05, 1.45, y + 2.66, y + 2.7, false);
 
   // 廊下の突き当たりのロッカー
-  addLocker(W, 43.35, 43.95, .15, .95, y, k, [-1, 0]);
+  if (!(PB && k === 0)) addLocker(W, 43.35, 43.95, .15, .95, y, k, [-1, 0]);   /* mansion_b27: Bパターンの1階は、ロッカーの代わりに出口の扉 */
   // 部屋 (1棟4戸)
   aptStarts.forEach((s, i) => {
     const e = s + APT_W, open0 = rnd() < .72, open = PB ? (W === WA && k === 3 && i === 2) : open0;   /* Bパターン: 開くのはゴールの部屋だけ */
@@ -465,6 +469,26 @@ function stairwell(W, a0, fronts, name){
   floorArea(W, U(0), U(6.5), V(0), V(6.5), L, null, null);
 }
 
+/* mansion_b27: 1階の通路の突き当たりの出口 (扉 → 外の踊り場 → 下りる階段 → 1m 低い外の地面)。自然な見た目 (看板・バリケードなし) */
+function buildExitB(W){ const w0 = EXITB.w0, w1 = EXITB.w1, H = L * FH + .15;
+  solidW(W, 'concrete', 44, 44.2, -.2, w0, 0, H); solidW(W, 'concrete', 44, 44.2, w1, 9.2, 0, H); solidW(W, 'concrete', 44, 44.2, w0, w1, 2.1, H);   /* 扉の穴 (高さ 2.1) をあけたかべ */
+  const [hx, hz] = W.map(44.1, w0), [cx, cz] = W.map(44.1, (w0 + w1) / 2), wd = w1 - w0;   /* ちょうつがい (d=w0 がわ) と扉のまん中 */
+  const g = new THREE.Group(); g.position.set(hx, 0, hz); scene.add(g);
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(W === WA ? .08 : wd, 2.1, W === WA ? wd : .08), std({ map: T.door, roughness: .5, metalness: .1 })); panel.castShadow = true;
+  panel.position.set(W === WA ? 0 : -wd / 2, 1.05, W === WA ? -wd / 2 : 0); g.add(panel);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(.04, 8, 8), std({ color: 0xc8b060, metalness: .6, roughness: .3 })); knob.position.set(W === WA ? -.07 : -wd + .18, 1.0, W === WA ? -wd + .18 : -.07); g.add(knob);
+  const wall = { ...wbox(W, 44, 44.2, w0, w1), y0: 0, y1: 2.1 }; walls.push(wall);
+  EXITB.doors.push({ g, wall, cx, cz, ang: 0, open: W === WA ? -1.4 : 1.4 });
+  /* 外: 踊り場 (y 0) → 5段の階段 (1段 .2m 下がる、ふみ面 .3m) → 地面 (y -1) */
+  solidW(W, 'concrete', 44.2, 45.4, .4, 2.1, -1.3, 0, false); surfW(W, 44.2, 45.4, .4, 2.1, 0);
+  for (let i = 0; i < 5; i++) solidW(W, 'concrete', 45.4 + i * .3, 45.7 + i * .3, .4, 2.1, -1.3, -.2 * (i + 1), false);
+  surfaces.push({ ...wbox(W, 45.4, 46.9, .4, 2.1), h0: 0, h1: -1, axis: W === WA ? 'x' : 'z', p0: 45.4, p1: 46.9 });
+  solidW(W, 'concrete', 44.2, 46.9, .3, .4, -1.3, .9); solidW(W, 'concrete', 44.2, 46.9, 2.1, 2.2, -1.3, .9);   /* 階段の両わきの低いかべ */
+  solidW(W, 'metal', 44.2, 46.9, .33, .37, .9, .95, false); solidW(W, 'metal', 44.2, 46.9, 2.13, 2.17, .9, .95, false);   /* 手すり */
+  solidW(W, 'concrete', 44, 44.2, -.2, 13, -1.3, 0);   /* 建物の土台 */
+  solidW(W, 'grass', 44.2, 60, -.2, 13, -1.3, -1.0, false); surfW(W, 44.2, 60, -.2, 13, -1.0);   /* 低い地面 */
+  solidW(W, 'concrete', 60, 60.2, -.4, 13.2, -1.3, -.04); solidW(W, 'concrete', 44.2, 60.2, -.4, -.2, -1.3, -.04); solidW(W, 'concrete', 44.2, 60.2, 13, 13.2, -1.3, -.04);   /* 地面のふち (土どめ) */
+}
 function buildAll(){
   const cornerStair = [], endStairA = [], endStairB = [];
   for (let k = 0; k < L; k++){
@@ -479,8 +503,8 @@ function buildAll(){
   floorArea(WA, 0, 44, 0, 2.5, L); floorArea(WB, 9, 44, 0, 2.5, L);
   aptStarts.forEach(s => { floorArea(WA, s, s + APT_W, 2.5, 9, L); floorArea(WB, s, s + APT_W, 2.5, 9, L); });
   // 端の壁・裏の壁
-  solidW(WA, 'concrete', 44, 44.2, -.2, 9.2, 0, L*FH + .15);
-  solidW(WB, 'concrete', 44, 44.2, -.2, 9.2, 0, L*FH + .15);
+  if (PB){ buildExitB(WA); buildExitB(WB); }   /* mansion_b27 */
+  else { solidW(WA, 'concrete', 44, 44.2, -.2, 9.2, 0, L*FH + .15); solidW(WB, 'concrete', 44, 44.2, -.2, 9.2, 0, L*FH + .15); }
   solidW(WA, 'plaster', 9, 44.2, 9, 9.2, 0, L*FH);
   solidW(WB, 'plaster', 9.2, 44.2, 9, 9.2, 0, L*FH);
   // L字の角まわり: A棟の廊下の行き止まりの壁、B棟いちばん手前の部屋と廊下の間の壁
@@ -519,9 +543,10 @@ function buildAll(){
       for (let k = 0; k < L; k++){ const y = k * FH; const seat = new THREE.Mesh(new THREE.BoxGeometry(1.9, .06, .78), mSeat); seat.position.set(1.25, y + .45, 8.58);   /* 奥行き .78 (ひざがはみ出さない)。うしろのふちは南側のかべ (z 9) */ seat.castShadow = true; scene.add(seat);
         for (const [dx, dz] of [[-.8, -.3], [.8, -.3], [-.8, .3], [.8, .3]]){ const lg = new THREE.Mesh(new THREE.BoxGeometry(.04, .42, .04), mLeg); lg.position.set(1.25 + dx, y + .21, 8.58 + dz); scene.add(lg); } } } }
   // 外の地面・中庭・まわりの街
-  pushBox('asphalt', -150, -.4, -150, 200, -.04, 200);
+  if (PB){ for (const [x0, z0, x1, z1] of [[-150, -150, 200, -4], [-150, 60, 200, 200], [-150, -4, -4, 60], [60, -4, 200, 60], [9.2, -4, 44.2, 60], [-4, -4, 9.2, 44.2], [44.2, 9.2, 60, 60]]) pushBox('asphalt', x0, -.4, z0, x1, -.04, z1); }   /* mansion_b27: 出口の外の低い地面の所はあけておく */
+  else pushBox('asphalt', -150, -.4, -150, 200, -.04, 200);
   pushBox('grass', 9.2, -.04, 9.2, 60, -.02, 60);
-  pushBox('concrete', FAKE.a0, -.015, 9.2, FAKE.a1, -.005, 18.7);
+  if (!PB) pushBox('concrete', FAKE.a0, -.015, 9.2, FAKE.a1, -.005, 18.7);   /* mansion_b27 */
   const cr = mulberry32(77);
   for (let i = 0; i < 46; i++){
     const ang = cr() * Math.PI * 2, dist = 80 + cr() * 80, w = 10 + cr()*18, dd = 10 + cr()*18, h = 10 + cr()*50;
@@ -751,13 +776,13 @@ const fakeObj = {};
   for (let i = 0; i < 16; i++){ g2.fillStyle = i % 2 ? '#f5f5f5' : '#d32f2f'; g2.beginPath(); g2.moveTo(i*16, 32); g2.lineTo(i*16 + 16, 0); g2.lineTo(i*16 + 32, 0); g2.lineTo(i*16 + 16, 32); g2.fill(); }
   g2.fillStyle = '#111'; g2.font = 'bold 20px sans-serif'; g2.textAlign = 'center'; g2.fillText('立入禁止', 128, 23);
   const post = std({ color: 0x3a4048, roughness: .5 });
-  for (const x of [FAKE.a0 - .1, FAKE.a1]){ const m = new THREE.Mesh(new THREE.BoxGeometry(.1, 2.3, .15), post); m.position.set(x + .05, 1.15, FAKE.gz); m.castShadow = true; scene.add(m); }
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(FAKE.a1 - FAKE.a0 + .2, .1, .15), post); beam.position.set(FAKE.x, 2.3, FAKE.gz); scene.add(beam);
+  for (const x of [FAKE.a0 - .1, FAKE.a1]){ const m = new THREE.Mesh(new THREE.BoxGeometry(.1, 2.3, .15), post); m.position.set(x + .05, 1.15, FAKE.gz); m.castShadow = true; if (!PB) scene.add(m); }
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(FAKE.a1 - FAKE.a0 + .2, .1, .15), post); beam.position.set(FAKE.x, 2.3, FAKE.gz); if (!PB) scene.add(beam);
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.3, .48), new THREE.MeshBasicMaterial({ map: tx(c, false) }));
-  sign.position.set(FAKE.x, 1.95, FAKE.gz - .08); sign.rotation.y = Math.PI; scene.add(sign);
-  const sign2 = sign.clone(); sign2.rotation.y = 0; sign2.position.z = FAKE.gz + .08; scene.add(sign2);
+  sign.position.set(FAKE.x, 1.95, FAKE.gz - .08); sign.rotation.y = Math.PI; if (!PB) scene.add(sign);
+  const sign2 = sign.clone(); sign2.rotation.y = 0; sign2.position.z = FAKE.gz + .08; if (!PB) scene.add(sign2);
   // 門 (外側へ開く)
-  fakeObj.gate = new THREE.Group(); fakeObj.gate.position.set(FAKE.a0, 0, FAKE.gz); scene.add(fakeObj.gate);
+  fakeObj.gate = new THREE.Group(); fakeObj.gate.position.set(FAKE.a0, 0, FAKE.gz); if (!PB) scene.add(fakeObj.gate);
   const gm = std({ color: 0x5f7a6a, metalness: .2, roughness: .5 });
   const gw = FAKE.a1 - FAKE.a0;
   for (const [w, h, x, y] of [[gw, .06, gw/2, 1.02], [gw, .06, gw/2, .12]]){ const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, .05), gm); m.position.set(x, y, 0); fakeObj.gate.add(m); }
@@ -766,26 +791,26 @@ const fakeObj = {};
   fakeObj.mine = new THREE.Group();
   const mm1 = new THREE.Mesh(new THREE.CylinderGeometry(.17, .19, .05, 16), std({ color: 0x3d4a2c, roughness: .8 }));
   const mm2 = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .04, 10), std({ color: 0x222222 })); mm2.position.y = .04;
-  fakeObj.mine.add(mm1, mm2); fakeObj.mine.position.set(FAKE.x + .1, 0, FAKE.mineZ); scene.add(fakeObj.mine);
+  fakeObj.mine.add(mm1, mm2); if (EXITB) fakeObj.mine.position.set(EXITB.mine.x, EXITB.mine.y, EXITB.mine.z); else fakeObj.mine.position.set(FAKE.x + .1, 0, FAKE.mineZ); scene.add(fakeObj.mine);
   // 爆発あと
   const [c3, g3] = mk(128, 128); const rg = g3.createRadialGradient(64, 64, 5, 64, 64, 62);
   rg.addColorStop(0, 'rgba(10,8,6,.95)'); rg.addColorStop(.6, 'rgba(25,20,15,.7)'); rg.addColorStop(1, 'rgba(25,20,15,0)');
   g3.fillStyle = rg; g3.fillRect(0, 0, 128, 128);
   fakeObj.crater = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.MeshBasicMaterial({ map: tx(c3, false), transparent: true, depthWrite: false }));
-  fakeObj.crater.rotation.x = -Math.PI / 2; fakeObj.crater.position.set(FAKE.x + .1, .005, FAKE.mineZ); scene.add(fakeObj.crater);
+  fakeObj.crater.rotation.x = -Math.PI / 2; if (EXITB) fakeObj.crater.position.set(EXITB.mine.x, EXITB.mine.y + .005, EXITB.mine.z); else fakeObj.crater.position.set(FAKE.x + .1, .005, FAKE.mineZ); scene.add(fakeObj.crater);
   // 立入禁止テープ
   const tapeM = new THREE.MeshBasicMaterial({ map: tx(c2, false) });
   fakeObj.tape = new THREE.Group();
   for (const [y, r] of [[.75, .06], [1.35, -.05]]){ const m = new THREE.Mesh(new THREE.PlaneGeometry(gw + .2, .16), tapeM); m.position.set(FAKE.x, y, FAKE.gz - .15); m.rotation.set(0, Math.PI, r); fakeObj.tape.add(m); const b = m.clone(); b.rotation.set(0, 0, r); b.position.z = FAKE.gz + .15; fakeObj.tape.add(b); }
-  scene.add(fakeObj.tape);
+  if (!PB) scene.add(fakeObj.tape);
   // 爆発の炎・光・煙
-  fakeObj.fire = new THREE.Group(); fakeObj.fire.position.set(FAKE.x, .6, FAKE.mineZ); scene.add(fakeObj.fire);
+  fakeObj.fire = new THREE.Group(); fakeObj.fire.position.set(...(EXITB ? [EXITB.mine.x, EXITB.mine.y + .6, EXITB.mine.z] : [FAKE.x, .6, FAKE.mineZ])); scene.add(fakeObj.fire);
   fakeObj.fireParts = [];
   for (const [r, c] of [[1, 0xff7a20], [.75, 0xffb040], [.45, 0xfff0c0]]){
     const m = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 2), new THREE.MeshBasicMaterial({ color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
     fakeObj.fire.add(m); fakeObj.fireParts.push(m);
   }
-  fakeObj.light = new THREE.PointLight(0xff8a30, 0, 30, 1.5); fakeObj.light.position.set(FAKE.x, 1.2, FAKE.mineZ); scene.add(fakeObj.light);
+  fakeObj.light = new THREE.PointLight(0xff8a30, 0, 30, 1.5); fakeObj.light.position.set(...(EXITB ? [EXITB.mine.x, EXITB.mine.y + 1.2, EXITB.mine.z] : [FAKE.x, 1.2, FAKE.mineZ])); scene.add(fakeObj.light);
   fakeObj.fire.visible = false; fakeObj.crater.visible = false; fakeObj.tape.visible = false; // ゲーム開始前は隠す
   fakeObj.smoke = [];
   for (let i = 0; i < 10; i++){
@@ -850,6 +875,7 @@ function groundHeight(x, z, maxY){
   let best = -Infinity;
   for (const s of surfaces){
     if (x < s.x0 || x > s.x1 || z < s.z0 || z > s.z1) continue;
+    if (s.fallback && EXITB && inYardB(x, z)) continue;   /* mansion_b27: 出口の外の低い地面 (y -1) では、地面 0 を使わない */
     const h = surfH(s, x, z); if (h <= maxY && h > best) best = h;
   }
   return best;
@@ -1323,6 +1349,7 @@ function newGame(){
   FAKE.wall.pass = null; fakeObj.gate.rotation.y = 0; fakeObj.tape.visible = false; fakeObj.mine.visible = true;
   fakeObj.crater.visible = false; fakeObj.fire.visible = false; fakeObj.light.intensity = 0;
   for (const s of fakeObj.smoke) s.visible = false;
+  if (EXITB){ for (const d of EXITB.doors){ d.ang = 0; d.g.rotation.y = 0; d.wall.y0 = 0; d.wall.y1 = 2.1; } for (const c of EXITB.craters) scene.remove(c); EXITB.craters = []; if (EXITB.pfx){ EXITB.pfx.t = -1; EXITB.pfx.fire.visible = false; EXITB.pfx.light.intensity = 0; } }   /* mansion_b27 */
   oniKills = 0; shakeT = 0;
   teams = []; teamPlan = { at: R(1.5, 4), want: Math.random() < .6, invite: Math.random() < .35, done: false }; // 6割のゲームでチームができる。35%のゲームでは、あなたもさそわれる
   assignEvQuotas();
@@ -2350,7 +2377,7 @@ function drawMinimap(){
   for (const d of decoys){ if (floorOf(d.y) !== pk) continue; const [dx, dy] = P(d.x, d.z); mg.fillStyle = (performance.now() % 400 < 200) ? '#ffd54a' : '#ff8f00'; mg.beginPath(); mg.arc(dx, dy, 4, 0, 7); mg.fill(); }
   mg.fillStyle = '#8fa3b8';
   for (const l of lockers){ if (l.k !== pk) continue; const [lx, ly] = P(l.box.x0, l.box.z0); mg.fillRect(lx, ly, Math.max(2.5, (l.box.x1 - l.box.x0) * MMS), Math.max(2.5, (l.box.z1 - l.box.z0) * MMS)); }
-  if (pk === 0){
+  if (pk === 0 && !PB){   /* mansion_b27 */
     const [ex0, ey] = P(FAKE.a0, FAKE.gz), [ex1] = P(FAKE.a1, FAKE.gz);
     if (fe.stage === 'wait' || fe.stage === 'go'){ mg.fillStyle = '#3dff8a'; mg.fillRect(ex0, ey - 2, ex1 - ex0, 4); }
     else { mg.strokeStyle = '#ff3b30'; mg.lineWidth = 2; const cx = (ex0 + ex1) / 2; mg.beginPath(); mg.moveTo(cx - 4, ey - 4); mg.lineTo(cx + 4, ey + 4); mg.moveTo(cx + 4, ey - 4); mg.lineTo(cx - 4, ey + 4); mg.stroke(); }
@@ -2415,6 +2442,7 @@ function update(dt){
   maintainTeams();
   maintainCulprit();
   updateFakeExit(dt);
+  if (PB) updateExitB(dt);   /* mansion_b27 */
   if (PB) updateStoryB(dt);
   updateItems(dt);
   updateGoal(dt);
@@ -2447,6 +2475,7 @@ function updateCaught(dt){
   updateSprays(dt);
   if (o){ o.aim = true; o.speedNow = 0; animModel(o, dt); }
   updateGuns(dt);
+  if (PB) updateExitB(dt);   /* mansion_b27: 地雷の火を動かす */
   if (shakeT > 0){ shakeT = Math.max(0, shakeT - dt); const s = shakeT * .25; camera.position.x += R(-s, s); camera.position.y += R(-s, s); }
   for (const n of npcs) if (!n.alive) updateDeath(n, dt);
   if (caughtT > 2){ if (PB && settings.ghost && deathReason !== 'explosion') enterGhost(); else endGame(false); }
@@ -2455,6 +2484,7 @@ function updateCaught(dt){
 /* ===================== Bパターン: 決まった流れ ===================== */
 const SB = { on: false };
 const corrA = (k, x) => ({ x, y: k * FH, z: 7.75 }), corrB = (k, z) => ({ x: 7.75, y: k * FH, z });   /* 西通路 (A棟) / 南通路 (B棟) の上の点 */
+const HIDE8_B = { x: 35.6, y: 2 * FH, z: 6.85 };   /* mansion_b26: 8番 (金髪) が3番の追いかけのあいだにかくれる場所 (3階 西通路のはし) */
 const STOOL_B = k => ({ x: 1.25, y: k * FH, z: 8.82 }),   /* mansion_b24: エレベーターの前の長いいす */ HIDE_B = { x: 7.4, y: FH + 2.25, z: 4.0 };   /* mansion_b25: 2階の中央階段の踊り場より上 (3階へ上がる階段のとちゅう) */   /* mansion_b23: 中央階段の前のいす / 3階 1号室の仕切り (x 11.6) のかげ */
 if (PB){
   /* 部屋の番号 (1号室〜4号室)。角に近い方から */
@@ -2464,9 +2494,9 @@ if (PB){
   { const tag = t => { const c = document.createElement('canvas'); c.width = 192; c.height = 48; const g = c.getContext('2d'); g.fillStyle = '#1f3a5a'; g.fillRect(0, 0, 192, 48); g.fillStyle = '#fff'; g.font = 'bold 28px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, 96, 26); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshBasicMaterial({ map: tx }); };
     const mw = tag('西通路 →'), ms = tag('南通路 →'), gq = new THREE.PlaneGeometry(.9, .23);
     for (let k = 0; k < L; k++){ const a = new THREE.Mesh(gq, mw); a.position.set(8.88, k * FH + 2.5, 7.75); a.rotation.y = -Math.PI / 2; scene.add(a); const b = new THREE.Mesh(gq, ms); b.position.set(7.75, k * FH + 2.5, 8.88); b.rotation.y = Math.PI; scene.add(b); } }
-  /* 西階段の1階の前の茂み (地雷がかくれている) */
+  /* 出口の外 (南階段・西階段の先の低い地面) の茂み (地雷がかくれている) mansion_b27 */
   const bushM = new THREE.MeshStandardMaterial({ color: 0x2f6e2a, roughness: 1 });
-  for (const [bx, bz, sc] of [[FAKE.x - 1.6, 11.2, 1], [FAKE.x + 1.7, 12.4, 1.1], [FAKE.x - 1.4, 14, .9], [FAKE.x + .1, FAKE.mineZ, 1.15], [FAKE.x + 1.6, 16.3, 1], [FAKE.x - 1.7, 17.2, 1.05]]){ const g = new THREE.Group(); for (const [ox, oy, oz, rr] of [[0, .45, 0, .55], [.4, .35, .2, .4], [-.35, .38, -.15, .42], [.1, .7, -.1, .35]]){ const b = new THREE.Mesh(new THREE.SphereGeometry(rr, 10, 8), bushM); b.position.set(ox, oy, oz); b.castShadow = true; g.add(b); } g.scale.setScalar(sc); g.position.set(bx, 0, bz); scene.add(g); }
+  for (const [bx, bz, sc] of [[6.2, 47.9, 1], [9.4, 48.6, 1.1], [6.4, 50.2, .9], [EXITB.mine.x + .1, EXITB.mine.z, 1.15], [9.3, 51.6, 1], [6.1, 52.4, 1.05], [4.6, 49.4, .95], [48.2, 6.2, 1], [49.5, 8.6, 1.05], [50.6, 5.4, .95], [52.3, 7.6, 1.1], [49.0, 3.6, .9]]){ const g = new THREE.Group(); for (const [ox, oy, oz, rr] of [[0, .45, 0, .55], [.4, .35, .2, .4], [-.35, .38, -.15, .42], [.1, .7, -.1, .35]]){ const b = new THREE.Mesh(new THREE.SphereGeometry(rr, 10, 8), bushM); b.position.set(ox, oy, oz); b.castShadow = true; g.add(b); } g.scale.setScalar(sc); g.position.set(bx, -1, bz); scene.add(g); }
   /* ゴールのドアの両がわのボタン (2つを同時に押さないと開かない) */
   const ga = goalCands.find(a => a.W === WA && a.k === 3 && a.i === 2);
   if (ga){ const mk = a => { const [x, z] = ga.W.map(a, 2.46), [sx, sz] = ga.W.map(a, 1.7), m = new THREE.Mesh(new THREE.BoxGeometry(.22, .22, .05), new THREE.MeshStandardMaterial({ color: 0xd03030, emissive: 0x401010 })); m.position.set(x, ga.y + 1.2, z); scene.add(m); const fr = new THREE.Mesh(new THREE.BoxGeometry(.32, .32, .03), new THREE.MeshStandardMaterial({ color: 0x888888 })); fr.position.set(x, ga.y + 1.2, z - .01); scene.add(fr); return { mesh: m, stand: { x: sx, y: ga.y, z: sz } }; };
@@ -2496,13 +2526,13 @@ function setupStoryB(){
   /* 全員、1階の中央階段の部屋からスタート (あなたのまわりに) */
   r.forEach((n, i) => { const a = i / r.length * Math.PI * 2; put(n, { x: clamp(P.x + Math.cos(a) * 1.6, .6, 8.6), y: 0, z: clamp(P.z + Math.sin(a) * .9, 6.8, 8.8) }); });
   for (const n of r){ stayB(n); n.safe = false; n.follow = false; }
-  /* それぞれの場所へ: 4番は4階南通路・5番はまず3階・6番と7番は3階の中央階段・9番は9階南通路・10番は6階 */
-  goB(r[3], corrB(3, 30)); goB(r[4], corrA(2, 30)); goB(r[5], STOOL_B(2));   /* mansion_b23: 6番はいすへ */ goB(r[6], corrA(1, 36));   /* 6番は3階の中央階段にずっといる。7番は2階の西通路 (4番がやられたあと、3階の中央階段へ来る) */ goB(r[8], corrB(8, 31)); goB(r[9], corrA(5, 33));
+  /* それぞれの場所へ: 4番は6階南通路 (mansion_b30: やられる番まで)・5番は2階南通路・6番と7番は3階の中央階段・9番は9階南通路・10番は6階 */
+  goB(r[3], corrB(5, 30));   /* mansion_b30: 4番は6階の南通路 */ goB(r[4], corrB(1, 30));   /* mansion_b27: 5番は2階の南通路 (出口は1階の南階段の先) */ goB(r[5], STOOL_B(2));   /* mansion_b23: 6番はいすへ */ goB(r[6], corrA(1, 36));   /* 6番は3階の中央階段にずっといる。7番は2階の西通路 (4番がやられたあと、3階の中央階段へ来る) */ goB(r[8], corrB(8, 31)); goB(r[9], corrA(5, 33));
   /* あなたと仲間2人 (3番・8番) は、1階の西階段からスタート */
   player.pos.set(40.3, 0, 7.75); camY = 1.6; yaw = Math.PI / 2; pitch = 0;
   put(r[2], { x: 41.4, y: 0, z: 7.3 }); put(r[7], { x: 41.4, y: 0, z: 8.3 });
   /* 待っている人の場所 (鬼が来たら、ここからにげて、いなくなったらもどる) */
-  r[3].post = corrB(3, 30); r[4].post = corrA(2, 30); r[5].post = STOOL_B(2); r[6].post = corrA(1, 36);
+  r[3].post = corrB(5, 30); r[4].post = corrB(1, 30); r[5].post = STOOL_B(2); r[6].post = corrA(1, 36);
   for (const n of r){ n.evading = false; n.evT = 0; n.lastFP = null; }
   if (SB.fires) for (const f of SB.fires) scene.remove(f.m); SB.fires = []; SB.boomT = null; SB.warn = {};
   for (const p of extB.puffs) scene.remove(p.m); extB.puffs = []; extB.on = false; if (SB.sweater){ scene.remove(SB.sweater); SB.sweater = null; } SB.sweaterFly = null;   /* mansion_b22 */
@@ -2568,7 +2598,7 @@ function circB(o, dt){ const key = o.scr || o.state, w = o.circ || (o.circ = { t
   w.t = 0; w.trav = 0; w.p.copy(o.pos); }
 function storyOni(o, dt){ const sc = o.scr; if (!sc) return false;
   const p = player, dy = Math.abs(p.pos.y - o.pos.y), dp = Math.hypot(p.pos.x - o.pos.x, p.pos.z - o.pos.z);
-  if (p.alive && !p.hidden && dy < 1.5 && dp < 14 && losEye(o, p)){
+  if (!sc.blind && p.alive && !p.hidden && dy < 1.5 && dp < 14 && losEye(o, p)){   /* mansion_b26: blind のあいだは、あなたを見てもねらわない (3番を追うことだけ) */
     o.aim = true; if (o.aimTarget !== p){ o.aimTarget = p; o.aimT = dp < 3 ? GUN.aimNear : GUN.aimFar; if (!(o.beepT > 0)){ beep(1200, .12, .05); o.beepT = 1.2; } }
     o.aimT -= dt; turnTo(o, Math.atan2(p.pos.x - o.pos.x, p.pos.z - o.pos.z), dt, 14); o.speedNow = 0; moveBody(o, 0, 0, dt);
     if (o.aimT <= 0 && o.ammo > 0 && o.reloadT <= 0 && o.cool <= 0) fireGun(o, p, dp);
@@ -2576,7 +2606,7 @@ function storyOni(o, dt){ const sc = o.scr; if (!sc) return false;
   if (o.aimTarget === p) o.aimTarget = null;
   const tg = sc.follow ? sc.follow.pos : sc.pt, d = Math.hypot(tg.x - o.pos.x, tg.z - o.pos.z, (tg.y - o.pos.y) * 2);
   o.repathT -= dt; if ((d > (sc.stop || 1.5) && !o.path.length) || o.needPlan || o.scrKey !== sc || (sc.follow && o.repathT <= 0 && (!(sc.follow.alive && sc.follow.goalB) || sc.follow.goalB !== o.followGoal))){ o.repathT = 1.2; o.needPlan = false; o.scrKey = sc; const fg = sc.follow && sc.follow.alive && sc.follow.goalB; planPath(o, fg ? { x: fg.x, y: fg.y, z: fg.z } : sc.follow ? (nearestNode(tg) || { x: tg.x, y: tg.y, z: tg.z }) : { x: tg.x, y: tg.y, z: tg.z }); o.followGoal = fg; }   /* 追いかけるときは、相手が向かっている行き先へ (目指す点が入れかわらない) */   /* 行き先が同じあいだは、道を決め直さない (行ったり来たりしないように) */
-  if (d > (sc.stop || 1.5)) followPath(o, sc.sp || DIFF[settings.diff].walk, dt); else { o.speedNow = 0; moveBody(o, 0, 0, dt); }
+  if (d > (sc.stop || 1.5)) followPath(o, sc.sp || DIFF[settings.diff].walk, dt); else { o.speedNow = 0; moveBody(o, 0, 0, dt); if (sc.next){ o.scr = sc.next; o.needPlan = true; } }   /* mansion_b26: next = 着いたら次の動き (道を順番にたどる) */
   if (sc.face && sc.face.alive){ turnTo(o, Math.atan2(sc.face.pos.x - o.pos.x, sc.face.pos.z - o.pos.z), dt, 10); o.aim = true; }
   animModel(o, dt); return true; }
 /* ゴールのボタン: あなたと、もう1人が同時に押すと開く */
@@ -2603,25 +2633,35 @@ function updateStoryB(dt){
   { const sp = STOOL_B(2), want = f6.alive && !F.charge && !f6.evading && Math.hypot(f6.pos.x - sp.x, f6.pos.z - sp.z) < .5 && Math.abs(f6.pos.y - sp.y) < .6;
     if (want){ f6.pos.x = sp.x; f6.pos.z = sp.z; f6.heading = Math.PI; f6.path = []; f6.speedNow = 0; } sitB(f6, want);   /* mansion_b24: エレベーターの方を向いてすわる */
     if (F.charge && !F.spray && f6.alive && Math.hypot(f6.pos.x - HIDE_B.x, f6.pos.z - HIDE_B.z) < .6 && Math.abs(f6.pos.y - HIDE_B.y) < 1){ f6.heading = 0; f6.path = []; }   /* mansion_b25: 階段のとちゅうで、上 (3階) を向いて待つ */ }
-  if (!player.alive && once('pdead')){ for (const n of [n3, pt]) if (n.alive && n.follow){ n.follow = false; n.lastFP = null; stayB(n); n.post = { x: n.pos.x, y: n.pos.y, z: n.pos.z }; n.evading = false; } }   /* あなたがやられたら、仲間はその場にとどまる (幽霊についてこない) */
-  if (once('start')){ n3.follow = pt.follow = true; o.scr = { pt: corrA(4, 6.5), sp: D.walk * 1.2 }; feed(n3.name + '「いっしょににげよう！」'); feed(pt.name + '「ぼくもついていく」'); }
+  if (!player.alive && once('pdead')){ let said = false; for (const [n, p] of [[n3, corrA(2, 30)], [pt, corrA(2, 33.5)]]) if (n.alive && (n.follow || !F.start)){   /* mansion_b29: カウントダウン中にやられたときも */ n.follow = false; n.lastFP = null; n.evading = false; n.post = p; goB(n, p); if (!said){ said = true; feed(n.name + '「…もうだめだ。3階へにげよう！」'); } } }   /* mansion_b28: あなたがやられたら、仲間は幽霊についてこないで、建物にもどって3階の西通路へ行って待つ (外の地面で立ったままにならない) */
+  if (once('start')){ feed('ルール：建物の外には、多数の地雷がある'); n3.follow = pt.follow = player.alive;   /* mansion_b27: ルールはこれだけ (どこにあるかは言わない) */   /* mansion_b29: あなたが生きているときだけついていく */ o.scr = { pt: corrA(4, 6.5), sp: D.walk * 1.2 }; if (player.alive){ feed(n3.name + '「いっしょににげよう！」'); feed(pt.name + '「ぼくもついていく」'); } }   /* mansion_b29: あなたが死んでいたら言わない */
   /* 1番・2番: 4階 西通路で、40秒でやられる */
   if (T >= 13 && once('o12')) o.scr = { pt: corrB(4, 18), sp: D.walk * 1.2, stop: 2 };
   if (F.o12 && !F.meet12 && ((sameF(o, n1) && dist(o, n1) < 10) || T >= 23)){ F.meet12 = true; feed(n1.name + '「うわっ、鬼だ！ にげろ！」'); viaB(n1, [corrB(4, 41), corrB(3, 40.5), corrA(3, 41.5)]); viaB(n2, [corrB(4, 40), corrB(3, 39.5), corrA(3, 38.8)]); o.scr = { follow: n1, sp: D.chase * .95, stop: 6 }; }
   if (F.meet12 && !F.k12 && ((sameF(o, n1) && dist(o, n1) < 12 && n1.pos.y < 10.5 && n1.pos.z < 9.3 && n1.pos.x > 40.5 && (!n2.alive || n2.pos.x > 38)) || T >= 62)){ F.k12 = true; SB.t.k12 = T; o.scr = { pt: o.pos.clone(), sp: D.walk, face: n1 }; burstB(o, n1, n1.name + 'が、4階の西階段の前で、後ろからうたれた', true); laterB(.65, () => burstB(o, n2, n2.name + 'も、後ろからうたれた…', true)); }
   /* 3番: 「4階を見てくる」→ 1番と2番の死体を見て、1階へにげる → 55秒ごろ、1階でやられる */
-  if (F.k12 && T - SB.t.k12 > 1 && once('n3go')){ n3.follow = false; viaB(n3, [corrA(floorOf(n3.pos.y), 36), corrA(3, 38.6)]);   /* mansion_b18: まず今いる階の西通路へ → 西階段で4階へ */ feed(n3.name + '「上で銃の音がした… 4階のようすを見てくる。ここで待ってて！」'); showMsg('3番の人が4階へ見に行った', 2.5); }
+  if (F.k12 && T - SB.t.k12 > 1 && once('n3go')){ n3.follow = false; n3.post = null; n3.evading = false;   /* mansion_b30: 見に行くあいだは、ふつうのにげをしない */ viaB(n3, [corrA(floorOf(n3.pos.y), 36), corrA(3, 38.6)]);   /* mansion_b18: まず今いる階の西通路へ → 西階段で4階へ */ feed(n3.name + '「上で銃の音がした… 4階のようすを見てくる。ここで待ってて！」'); showMsg('3番の人が4階へ見に行った', 2.5); }
   if (F.k12 && T - SB.t.k12 > 1.5 && once('n3look')){ o.scr = { pt: corrA(3, 12), sp: D.walk * 1.3 }; }
-  if (F.n3look && F.n3go && !F.n3flee && (dist(n3, n1) < 7 && sameF(n3, n1) || T - SB.t.k12 > 24)){ F.n3flee = true; feed(n3.name + '「うわっ… 1番の人と2番の人が…！ にげなきゃ！」'); viaB(n3, [corrA(floorOf(n3.pos.y), 36), corrA(0, 36), corrA(0, 25), corrA(0, 12)]);   /* mansion_b18/b19: 西階段で1階へ下りて、西通路を進む。鬼が来なければ中央階段のほうまで */ o.scr = { pt: corrA(3, 40.5), sp: D.chase * 1.08, stop: 1.5 };   /* 鬼は、まず4階の西階段の前へ (中央階段からは下りない) */ showMsg('鬼が3番の人を追っている！ 3階のどこかにかくれて、やりすごそう', 3.5); SB.obj = '3階にかくれて、やりすごそう'; }
-  if (F.n3flee && !F.k3 && !F.oWest && ((Math.abs(o.pos.y - 3 * FH) < 1 && o.pos.x > 38) || (n3.pos.y < 1 && T - SB.t.k12 > 40))){ F.oWest = true; o.scr = { follow: n3, sp: D.chase * 1.25, stop: 3 }; }   /* mansion_b19/b20: 速く・3m 後ろまでついて行く (うつのは1階の西通路で) */   /* 西階段の前に着いたら、西階段を下りて3番を追う */
-  if (F.n3flee && !F.k3 && n3.alive && ((n3.pos.y < 1 && n3.pos.x > 9 && n3.pos.x < 30 && n3.pos.z > 6 && n3.pos.z < 9.5 && sameF(o, n3) && dist(o, n3) < 11) || T - SB.t.k12 > 150)){   /* mansion_b19/b20: 1階の西通路のまん中より西で、鬼が近くに来てからうたれる (階段や上の階ではうたない) */ F.k3 = true; SB.t.k3 = T; o.scr = { pt: corrA(0, 6), sp: D.walk }; const fl = floorOf(n3.pos.y) + 1, pl = (n3.pos.z < 9.5 && n3.pos.x > 9) ? '西通路' : (n3.pos.x < 9.5 && n3.pos.z > 9) ? '南通路' : '中央階段のそば'; burstB(o, n3, n3.name + 'が、' + fl + '階の' + pl + 'で、後ろからうたれた', true); }   /* mansion_b18: 1階の西通路に来てからやられる。時間切れのときは いる場所を出す */   /* 1階 西通路のまん中あたり */
+  if (F.n3go && !F.n3flee && !SB.t.n3saw && dist(n3, n1) < 6 && Math.abs(n3.pos.y - 3 * FH) < .4 && n3.pos.z > 6.3){ SB.t.n3saw = T; n3.path = []; n3.via = []; n3.goalB = null; n3.heading = Math.atan2(n1.pos.x - n3.pos.x, n1.pos.z - n3.pos.z); }   /* mansion_b30: 4階の西通路まで来て、1番・2番の体の方を向いて 1.2秒見る (階段の上からにげ返さない) */
+  if (F.n3look && F.n3go && !F.n3flee && ((SB.t.n3saw && T - SB.t.n3saw > 1.2) || (T - SB.t.k12 > 24 && Math.abs(n3.pos.y - 3 * FH) < 1 && n3.pos.z > 6.3) || T - SB.t.k12 > 45)){   /* mansion_b30: 見てからにげる */ F.n3flee = true; feed(n3.name + '「うわっ… 1番の人と2番の人が…！ にげなきゃ！」'); viaB(n3, [corrA(floorOf(n3.pos.y), 36), corrA(0, 36), corrA(0, 25), corrA(0, 12)]);   /* mansion_b18/b19: 西階段で1階へ下りて、西通路を進む。鬼が来なければ中央階段のほうまで */ o.scr = { pt: corrA(3, 40.5), sp: D.chase * 1.08, stop: 1.5, blind: true };   /* 鬼は、まず4階の西階段の前へ (中央階段からは下りない)。mansion_b26: ほかの人には目もくれない */ showMsg('鬼が3番の人を追っている！ 3階のどこかにかくれて、やりすごそう', 3.5); SB.obj = '3階にかくれて、やりすごそう';
+    if (pt.alive){ pt.follow = false; pt.lastFP = null; pt.post = null; pt.evading = false; goB(pt, HIDE8_B); feed(pt.name + '「ぼくは3階の西通路のはしにかくれる！」'); } }   /* mansion_b26: 8番は3階の西通路にかくれる */
+  if (F.n3flee && !F.k3 && !F.oWest && ((Math.abs(o.pos.y - 3 * FH) < 1 && o.pos.x > 38) || (n3.pos.y < 1 && T - SB.t.k12 > 40))){ F.oWest = true; const spd = D.chase * 1.25; o.scr = { pt: corrA(3, 40.5), sp: spd, stop: 1.5, blind: true, next: { pt: corrA(0, 40.5), sp: spd, stop: 1.5, blind: true, next: { follow: n3, sp: spd, stop: 3, blind: true } } }; }   /* mansion_b26: 西階段を下りてから追う */   /* mansion_b19/b20: 速く・3m 後ろまでついて行く (うつのは1階の西通路で) */   /* 西階段の前に着いたら、西階段を下りて3番を追う */
+  if (F.n3flee && !F.k3 && n3.alive && ((n3.pos.y < 1 && n3.pos.x > 9 && n3.pos.x < 30 && n3.pos.z > 6 && n3.pos.z < 9.5 && o.pos.y < .8 && o.pos.z > 6 && o.pos.x < 37 && sameF(o, n3) && dist(o, n3) < 11) || T - SB.t.k12 > 150)){   /* mansion_b26: 鬼も1階の西通路にいるとき */   /* mansion_b19/b20: 1階の西通路のまん中より西で、鬼が近くに来てからうたれる (階段や上の階ではうたない) */ F.k3 = true; SB.t.k3 = T; o.scr = { pt: corrA(0, 6), sp: D.walk }; const fl = floorOf(n3.pos.y) + 1, pl = (n3.pos.z < 9.5 && n3.pos.x > 9) ? '西通路' : (n3.pos.x < 9.5 && n3.pos.z > 9) ? '南通路' : '中央階段のそば'; burstB(o, n3, n3.name + 'が、' + fl + '階の' + pl + 'で、後ろからうたれた', true); }   /* mansion_b18: 1階の西通路に来てからやられる。時間切れのときは いる場所を出す */   /* 1階 西通路のまん中あたり */
+  /* mansion_b26: 8番 (金髪)。追いかけのあいだはかくれ場所で西階段の方を向く。3番がやられて2秒後、あなたから4〜9mの通路のかべぎわへ行って待つ。あなたが3m以内に来たら、またついてくる (あなたが10m以上はなれたら、かくれ場所を近くに取り直す) */
+  if (F.n3flee && !F.k3 && pt.alive && !pt.follow && !pt.path.length && Math.hypot(pt.pos.x - HIDE8_B.x, pt.pos.z - HIDE8_B.z) < .9 && Math.abs(pt.pos.y - HIDE8_B.y) < 1) pt.heading = Math.PI / 2;
+  if (F.k3 && !F.sep && pt.alive && !pt.follow && player.alive && !player.ghost && T - SB.t.k3 > 2){
+    const nearSpot = () => { const pp = player.pos, c = nodes.filter(n => !n.disabled && n.tag === 'corr' && Math.abs(n.y - pp.y) < 1.2 && Math.hypot(n.x - pp.x, n.z - pp.z) >= 4 && Math.hypot(n.x - pp.x, n.z - pp.z) <= 9).sort((a, b) => Math.hypot(a.x - pt.pos.x, a.z - pt.pos.z) - Math.hypot(b.x - pt.pos.x, b.z - pt.pos.z));   /* あなたから 4〜9m の通路の点のうち、8番に近いもの */
+      const nn = c[0] || nearestNode(pp); if (!nn) return { x: pp.x, y: pp.y, z: pp.z }; const q = { x: nn.x, y: nn.y, z: nn.z }; if (Math.abs(nn.z - 7.75) < .3 && nn.x > 9) q.z = 6.85; else if (Math.abs(nn.x - 7.75) < .3 && nn.z > 9) q.x = 6.85; return q; };
+    if (once('pt8near')){ SB.pt8 = nearSpot(); goB(pt, SB.pt8); feed(pt.name + '「ぼくはこの近くにかくれて待ってる。来てくれたら、またいっしょに行く」'); }
+    else if (Math.hypot(pt.pos.x - player.pos.x, pt.pos.z - player.pos.z) < 3 && Math.abs(pt.pos.y - player.pos.y) < 1.5){ pt.follow = true; pt.lastFP = null; pt.path = []; feed(pt.name + '「よかった、合流できた。また、いっしょに行こう」'); }
+    else if (SB.pt8 && !pt.path.length && Math.hypot(SB.pt8.x - player.pos.x, SB.pt8.z - player.pos.z, (SB.pt8.y - player.pos.y) * 2) > 10){ SB.pt8 = nearSpot(); goB(pt, SB.pt8); } }
   /* 4番: 4階 南通路で、前からうたれる */
   /* mansion_b16: 4番は3番のあと (b13 で地雷のあとにしたのは弟君の指摘でもどした) */
   if (F.k3 && T - SB.t.k3 > 2 && F.n4 !== true){ n4.post = null; n4.evading = false; }
   if (F.k3 && T - SB.t.k3 > 2 && once('n4')){ SB.t.n4 = T; o.scr = { pt: corrB(3, 20), sp: D.walk * 1.25, stop: 2 }; SB.obj = '鬼から生きのびろ（ゴールの場所は、まだわからない）'; }
   if (F.n4 && T - SB.t.n4 > 7 && once('n4walk')) goB(n4, corrB(3, 18));
   if (F.n4 && !F.k4 && n4.alive && ((sameF(o, n4) && dist(o, n4) < 11 && T - SB.t.n4 > 5) || T - SB.t.n4 > 35)){ F.k4 = true; SB.t.k4 = T; o.scr = { pt: corrB(3, 12), sp: D.walk, face: n4 }; burstB(o, n4, n4.name + 'が、4階 南通路で正面からうたれた'); }
-  /* 5番: 1階の西階段から外へ出ようとして、茂みの地雷をふむ */
+  /* 5番: 1階の南階段の先の扉から外へ出て、地雷をふむ (mansion_b27) */
   if (F.k4 && T - SB.t.k4 > 3 && once('f7join')){ f7.post = corrA(2, 6.9); f7.evading = false; goB(f7, corrA(2, 6.9)); }
   if (F.f7join && !F.f7met && f7.alive && f6.alive && Math.abs(f7.pos.y - 2 * FH) < 1 && Math.hypot(f7.pos.x - 6.9, f7.pos.z - 7.75) < 2.5){ F.f7met = true; feed(f7.name + '「おれも鬼をたおしたい。いっしょにやろう」'); laterB(1.5, () => feed(f6.name + '「よし。でも、2人じゃむりだ。もう1人いれば…」')); }   /* 6番と7番が合流 */   /* 7番は3階の中央階段へ。6番と合流して待つ */
   if (F.k4 && T - SB.t.k4 > 4 && once('n5')){ n5.post = null; n5.evading = false; SB.fakeGo = true; o.scr = null; }   /* mansion_b16: 5番の地雷は4番のあと */
@@ -2699,10 +2739,25 @@ function ghostMove(dt){ if (ghostCorpse) updateDeath(ghostCorpse, dt);   /* ghos
   if (shakeT > 0){ shakeT = Math.max(0, shakeT - dt); const q = shakeT * .25; camera.position.x += R(-q, q); camera.position.y += R(-q, q); }
   camera.rotation.set(pitch, yaw, 0);
   $('prompt').style.display = 'block'; $('prompt').textContent = '幽霊モード：W で見ている方へ進む（上を見ると上へ）　A・D 横　S うしろ　シフト 速く　Q 結果へ'; }
+/* mansion_b27: 出口の扉 (生きている人が 1.7m 以内に来たら外へ開く)。外の地面は地雷だらけ: 階段を下りて 2.2m 以上進むと、あなたも地雷をふむ */
+function updateExitB(dt){ if (!EXITB) return;
+  for (const d of EXITB.doors){ let near = false; for (const b of [player, ...npcs]){ if (!b.alive || (b === player && player.ghost)) continue; if (Math.abs(b.pos.y) < 1.2 && Math.hypot(b.pos.x - d.cx, b.pos.z - d.cz) < 1.7){ near = true; break; } }
+    d.ang += ((near ? 1 : 0) - d.ang) * Math.min(1, dt * 4); d.g.rotation.y = d.open * d.ang;
+    if (near){ d.wall.y0 = -999; d.wall.y1 = -998; } else if (d.ang < .15){ d.wall.y0 = 0; d.wall.y1 = 2.1; } }
+  if (state === 'play' && player.alive && !player.ghost && player.pos.y < -.5 && inYardB(player.pos.x, player.pos.z)){ const bA = EXITB.bottom.A, bB = EXITB.bottom.B;
+    if (Math.min(Math.hypot(player.pos.x - bA.x, player.pos.z - bA.z), Math.hypot(player.pos.x - bB.x, player.pos.z - bB.z)) > 2.2) mineKillPlayerB(); }
+  const P = EXITB.pfx; if (P && P.t >= 0){ P.t += dt; const t = P.t, k = Math.min(1, t / .35); P.fire.visible = t < 1.2; P.fire.scale.set(.3 + 2.4 * k, (.3 + 2.4 * k) * (1 + t * .6), .3 + 2.4 * k); P.fire.position.y = P.y0 + .6 + t * 1.2;
+    P.fire.children.forEach((m, i) => { m.material.opacity = Math.max(0, 1 - t / (1.2 - i * .3)); m.rotation.y += dt * (i + 1); }); P.light.intensity = Math.max(0, 60 * (1 - t / .8)); $('flash').style.opacity = Math.max(0, .9 * (1 - t / .5)); if (t > 1.5) P.t = -1; } }
+function mineKillPlayerB(){ const p = player.pos;
+  if (!EXITB.pfx){ const fire = fakeObj.fire.clone(); fire.children.forEach(m => { m.material = m.material.clone(); }); scene.add(fire); const light = new THREE.PointLight(0xff8a30, 0, 30, 1.5); scene.add(light); EXITB.pfx = { t: -1, fire, light, y0: 0 }; }
+  const P = EXITB.pfx; P.t = 0; P.y0 = p.y; P.fire.position.set(p.x, p.y + .6, p.z); P.light.position.set(p.x, p.y + 1.2, p.z); P.fire.visible = true;
+  const cr = fakeObj.crater.clone(); cr.position.set(p.x, p.y + .005, p.z); cr.visible = true; scene.add(cr); EXITB.craters.push(cr);
+  noiseHit(1.2, 1.4, 500); noiseHit(.6, .4, 3000); thump(38, 1, 1.1); thump(70, .8, .5); shakeT = 1;
+  feed('あなたは外で地雷をふんだ…'); showMsg('ドカン！ 地雷をふんだ… 外は地雷だらけだった', 3); playerDie('mine'); }
 function updateFakeExit(dt){
   if (fe.stage === 'wait' && (PB ? SB.fakeGo : elapsed >= COUNTDOWN + 6)){
     // 出口にいちばん近い (経路が短い) NPC を1人選ぶ
-    const exitNode = nodes.filter(n => n.k === 0 && n.tag === 'corr').sort((a, b) => Math.abs(a.x - FAKE.x) + Math.abs(a.z - 7.75) - Math.abs(b.x - FAKE.x) - Math.abs(b.z - 7.75))[0];
+    const exitNode = PB ? special.endB[0] : nodes.filter(n => n.k === 0 && n.tag === 'corr').sort((a, b) => Math.abs(a.x - FAKE.x) + Math.abs(a.z - 7.75) - Math.abs(b.x - FAKE.x) - Math.abs(b.z - 7.75))[0];
     const res = dijkstra([[exitNode, 0]]);
     let pick = null, pd = Infinity;
     // チームに入っていない子を優先する (いなければチームの子でも選ぶ)
@@ -2716,7 +2771,7 @@ function updateFakeExit(dt){
     pick.script = true; pick.mode = 'script'; pick.wait = 0;
     scriptPath(pick);
     FAKE.wall.pass = pick;
-    feed(PB ? `${pick.name}「西階段から外に出られる！ ここから逃げる！」` : `${pick.name}「出口を見つけた！ ここから逃げられる！」`);
+    feed(PB ? `${pick.name}「俺は銃で撃たれて死ぬなんて絶対嫌だ。そうだ、地雷なんて踏まなきゃいいだけだ！」` : `${pick.name}「出口を見つけた！ ここから逃げられる！」`);   /* mansion_b27: 弟君のセリフ */
   }
   if (fe.stage === 'go'){
     const n = fe.npc, dGate = Math.hypot(n.pos.x - FAKE.x, n.pos.z - FAKE.gz);
@@ -2724,7 +2779,7 @@ function updateFakeExit(dt){
     const want = n.pos.y < 1 && dGate < 2.2 ? 1 : 0;
     fe.gate += (want - fe.gate) * Math.min(1, dt * 5);
     fakeObj.gate.rotation.y = -fe.gate * 1.35;
-    if (Math.hypot(n.pos.x - FAKE.x - .1, n.pos.z - FAKE.mineZ) < .5) explodeMine();
+    { const mp = EXITB ? EXITB.mine : { x: FAKE.x + .1, z: FAKE.mineZ }; if (Math.hypot(n.pos.x - mp.x, n.pos.z - mp.z) < .5) explodeMine(); }   /* mansion_b27 */
   } else if (fe.stage === 'boom'){
     fe.t += dt; const t = fe.t;
     fe.gate += (0 - fe.gate) * Math.min(1, dt * 4); fakeObj.gate.rotation.y = -fe.gate * 1.35;
@@ -2743,6 +2798,9 @@ function updateFakeExit(dt){
   }
 }
 function scriptPath(n){
+  if (EXITB){ const out = [{ x: 7.75, y: 0, z: 44.6 }, { x: 7.75, y: 0, z: 45.1 }, { x: 7.75, y: -1, z: 47.3 }, { x: EXITB.mine.x, y: -1, z: EXITB.mine.z }];   /* mansion_b27: 南通路の突き当たりの扉 → 踊り場 → 階段を下りる → 地雷 */
+    if (n.pos.z > 44.3 && n.pos.x < 9.2){ n.path = out.filter(p => p.z > n.pos.z + .2); if (!n.path.length) n.path = [out[3]]; return; }
+    planPath(n, fe.exitNode); n.path.push(...out); return; }
   const outside = [{ x: FAKE.x, y: 0, z: FAKE.gz + 3.4 }, { x: FAKE.x + .1, y: 0, z: FAKE.mineZ }];
   // もう中庭に出ているか (中庭は A棟の手すりより外 かつ B棟の手すりより外)
   if (n.pos.z > FAKE.gz + .2 && n.pos.x > 9.3 && n.pos.y < 1){ n.path = outside; return; }
@@ -2754,9 +2812,9 @@ function explodeMine(){
   const n = fe.npc;
   fe.stage = 'boom'; fe.t = 0;
   n.script = false; FAKE.wall.pass = null;
-  fakeObj.mine.visible = false; fakeObj.crater.visible = true; fakeObj.fire.visible = true; fakeObj.tape.visible = true;
+  fakeObj.mine.visible = false; fakeObj.crater.visible = true; fakeObj.fire.visible = true; fakeObj.tape.visible = !PB;   /* mansion_b27 */
   for (const s of fakeObj.smoke){
-    s.visible = true; s.position.set(FAKE.x + R(-.4, .4), R(.3, 1), FAKE.mineZ + R(-.4, .4));
+    const mp = EXITB ? EXITB.mine : { x: FAKE.x, y: 0, z: FAKE.mineZ }; s.visible = true; s.position.set(mp.x + R(-.4, .4), mp.y + R(.3, 1), mp.z + R(-.4, .4));   /* mansion_b27 */
     s.userData = { vx: R(-1.5, 1.5), vy: R(1.5, 3.5), vz: R(-1.5, 1.5) };
   }
   // 爆風で少し飛ばされてから倒れる
@@ -2768,7 +2826,7 @@ function explodeMine(){
   // 爆発が見える位置にいたら画面が光る
   const seen = Math.abs(player.pos.y) < 1.5 && d < 40;
   fe.flash = seen ? .85 * v : 0;
-  showMsg('あの出口はワナだった…！', 3);
+  showMsg(PB ? n.name + 'が外で地雷をふんだ… 外は地雷だらけだ' : 'あの出口はワナだった…！', 3);   /* mansion_b27 */
 }
 
 // ---------- ゴール (カギはいらない。近づくとドアが開く) ----------
@@ -2789,7 +2847,7 @@ function endGame(win, goal = false){
   state = 'over'; if ((win || goal) && window.ACH) ACH.clear('mansion'); // 実績: クリア回数
   if (document.pointerLockElement) document.exitPointerLock();
   const aliveN = npcs.filter(n => n.alive).length;
-  $('resTitle').textContent = goal ? 'ゴール！' : win ? 'にげきった！' : deathReason === 'elevator' ? 'エレベーターが落ちた…' : deathReason === 'explosion' ? 'アパートごと爆破された…' : 'やられた…';   /* mansion_b15 */
+  $('resTitle').textContent = goal ? 'ゴール！' : win ? 'にげきった！' : deathReason === 'elevator' ? 'エレベーターが落ちた…' : deathReason === 'explosion' ? 'アパートごと爆破された…' : deathReason === 'mine' ? '地雷をふんだ…' : 'やられた…';   /* mansion_b15 */
   if ($('ghostTint')) $('ghostTint').style.opacity = 0;
   $('resText').innerHTML = goal
     ? `ゴールの部屋にたどりついた！<br>かかった時間：${fmt(Math.max(0, elapsed - COUNTDOWN))}<br>いっしょに生きのこった仲間：${aliveN}人／${npcs.length}人`
@@ -2943,7 +3001,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
@@ -3150,5 +3208,21 @@ R：F　L：R　ZR：マウスのクリック<br>
 })();
 </script>
 <!-- /gamepad -->
+<!-- ===== 手もとのスマホ (全ゲーム共通。phone_hud.js) ===== -->
+<style>
+#phoneHud{position:fixed;right:14px;bottom:14px;width:124px;height:226px;background:#111;border-radius:18px;padding:9px 7px;box-shadow:0 6px 24px rgba(0,0,0,.65);z-index:30;pointer-events:none;transform:rotate(-5deg);display:none;box-sizing:border-box}
+#phoneHud .scr{width:100%;height:100%;background:#fff;border-radius:11px;color:#111;font:700 12px/1.5 "BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;padding:10px 6px;box-sizing:border-box;overflow:hidden;text-align:center;word-break:break-all}
+#phoneHud .scr b{display:block;font-size:13px;margin-bottom:6px;border-bottom:1px solid #111;padding-bottom:4px}
+</style>
+<div id="phoneHud"><div class="scr" id="phoneScr"></div></div>
+<script>
+(function(){ var el = document.getElementById('phoneHud'), sc = document.getElementById('phoneScr'); if (!el) return;
+  function txt(id){ var e = document.getElementById(id); return e ? (e.textContent || '').trim() : ''; }
+  var esc = function(s){ return s.replace(/[&<>]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
+  setInterval(function(){ var hud = document.getElementById('hud'), playing = !!hud && hud.style.display === 'block' && !document.querySelector('.screen.on');
+    el.style.display = playing ? 'block' : 'none'; if (!playing) return;
+    var a = txt('timer'), b = txt('alive'); sc.innerHTML = '<b>' + esc(document.title) + '</b>' + esc(a) + (b ? '<br><br>' + esc(b) : ''); }, 300); })();
+</script>
+<!-- /phonehud -->
 </body>
 </html>

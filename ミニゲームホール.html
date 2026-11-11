@@ -86,7 +86,7 @@ a.sub{text-align:center;text-decoration:none}
   <ul>
     <li>ゲームマスターが用意した様々な<b>ミニゲーム</b>が、次々に始まる（全20種類）</li>
     <li>ミニゲームで負けた者は、<b>その場で死亡</b></li>
-    <li>全てのミニゲームを勝ち残り、<b>最後の1人</b>になればクリア</li>
+    <li>全てのミニゲームを勝ち残って<b>最後の2人</b>に残ると、<b>決勝戦</b>（赤＝山分け・青＝独り占めのボタン）。賞金10万円を手に入れればクリア</li>
     <li>各ゲームのルールは、開始前にモニターと画面に表示される</li>
     <li>死亡したら、幽霊モードで最後まで観戦できる（<kbd>Q</kbd> で終了）</li>
   </ul>
@@ -206,7 +206,7 @@ function dropTile(i){ if (!TILE.on[i]) return; TILE.on[i] = false; TILE.vy[i] = 
 function updateTiles(dt){ for (let i = 0; i < TN * TN; i++){ if (!TILE.on[i] && TILE.y[i] > -40){ TILE.vy[i] -= 22 * dt; TILE.y[i] += TILE.vy[i] * dt; } if (TILE.flash[i] > 0) TILE.flash[i] += dt; } }
 resetTiles(); drawTiles();
 // 正面 (北) の大きなモニター: 左に仮面のゲームマスター (3Dで描いて映す)、右に文字
-const MON = (() => { const [c, g] = mk(560, 448); const t = tx(c, false);
+const MON = (() => { const [c, g] = mk(1120, 896); const t = tx(c, false);   /* hall_roster: 2倍 (顔がつぶれないように) */
   const fr = new THREE.Mesh(new THREE.BoxGeometry(27, 12.2, .3), std({ color: 0x15131c, metalness: .5, roughness: .4 })); fr.position.set(0, 9.5, -HALF + .02); scene.add(fr);
   const tm = new THREE.Mesh(new THREE.PlaneGeometry(13.6, 10.9), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); tm.position.set(6.2, 9.5, -HALF + .25); scene.add(tm);
   return { c, g, t, last: '' }; })();
@@ -260,7 +260,7 @@ function updateGM(dt){
 }
 function drawMonitor(title, lines, big, word){
   const key = title + '|' + lines.join('|') + '|' + (big || '') + '|' + (word ? word.word + word.ink : ''); if (key === MON.last) return; MON.last = key;
-  const g = MON.g; g.fillStyle = '#05040a'; g.fillRect(0, 0, 560, 448); g.strokeStyle = '#3a1018'; g.lineWidth = 6; g.strokeRect(3, 3, 554, 442);
+  const g = MON.g; g.setTransform(2, 0, 0, 2, 0, 0);   /* hall_roster: 560×448 の描き方を2倍に */ g.fillStyle = '#05040a'; g.fillRect(0, 0, 560, 448); g.strokeStyle = '#3a1018'; g.lineWidth = 6; g.strokeRect(3, 3, 554, 442);
   g.textAlign = 'left'; g.textBaseline = 'top'; g.fillStyle = '#ffe14d'; g.font = 'bold 40px "BIZ UDPGothic","Yu Gothic UI",sans-serif';
   const wrap = (s, x, y, w, lh) => { let line = ''; for (const ch of s){ if (g.measureText(line + ch).width > w){ g.fillText(line, x, y); y += lh; line = ch; } else line += ch; } if (line) g.fillText(line, x, y); return y + lh; };
   let y = wrap(title, 24, 22, 512, 46) + 6;
@@ -659,7 +659,7 @@ const living = () => people.filter(p => p.alive);
 const liveNpcs = () => npcs.filter(p => p.alive);
 function makeRunner(name, isPlayer, opts){
   const r = { name, isPlayer, pos: new THREE.Vector3(), vy: 0, radius: .28, alive: true, heading: 0, speedNow: 0, phase: Math.random() * 6, ground: true, crouch: false, seat: null };
-  if (!isPlayer){ r.m = makePerson(opts); r.tag = makeNameTag(name); r.tagY = 2.15 * r.m.scale; }
+  if (!isPlayer){ r.m = makePerson(opts); r.tag = makeNameTag(name); r.tagY = 2.15 * r.m.scale; r.popts = opts; }   /* hall_roster: 顔写真用に見た目をおぼえる */
   return r;
 }
 let killedThisGame = 0;
@@ -668,7 +668,8 @@ function beamFx(p, color = 0xff2a2a){ const a = new THREE.Vector3(0, 9.5, -HALF 
   const m = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, len, 6), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .9 })); m.position.copy(a).add(b).multiplyScalar(.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()); scene.add(m); BEAMS.push({ m, t: 0 }); }
 function kill(p, why, how = 'shot'){
   if (!p.alive) return; if (p.isPlayer && window.__godMode) return;
-  p.alive = false; p.deathT = 0; p.how = how; p.seat = null; killedThisGame++;
+  if (living().length <= 2 && !FINAL.on){ if (p.pos.y < -1){ p.pos.set(R(-2, 2), 0, R(-2, 2)); p.vy = 0; } return; }   /* hall_last2: 最後の2人はやられない (穴に落ちていたら床のまん中にもどす) */
+  p.alive = false; p.deathT = 0; p.how = how; p.seat = null; killedThisGame++; p.deadGame = gameNo;   /* hall_roster */
   for (const n of npcs) if (n.alive && n !== p){ const dx = n.pos.x - p.pos.x, dz = n.pos.z - p.pos.z, d = Math.hypot(dx, dz); if (d < 5 && d > .01 && Math.random() < .7) n.scare = { x: n.pos.x + dx / d * R(2, 4), z: n.pos.z + dz / d * R(2, 4), t: R(.5, 1) }; } /* 驚いて離れる */
   if (how === 'shot'){ beamFx(p); thump(90, .25, .2); }
   if (p.isPlayer){ deathBy = why; state = 'caught'; caughtT = 0; if (document.pointerLockElement) document.exitPointerLock(); feed('あなたが' + why); p.m = makePerson(PLAYER_LOOK); p.heading = yaw; }
@@ -1127,28 +1128,86 @@ function nextGame(){
 }
 function updateFlow(dt){
   flowT += dt;
+  if (flow === 'final'){ updateFinal(dt); return; }   /* hall_final */
   if (flow === 'intro'){
     uiBig = flowT > 5 ? `${Math.ceil(8 - flowT)}` : '';
     for (const n of liveNpcs()){ if (n.seat) seatPose(n); else { if (G.keep){ stand(n, dt); turnTo(n, Math.PI, dt, 2); } else idle(n, dt); animModel(n, dt); } }
     if (flowT >= 8){ flow = 'play'; flowT = 0; $('rules').style.display = 'none'; uiBig = 'スタート！'; setTimeout(() => { if (uiBig === 'スタート！') uiBig = ''; }, 900); beep(990, .15, .3); }
     return;
   }
-  if (flow === 'play'){ gt += dt; const done = G.update(dt); if (done){ flow = 'after'; flowT = 0; G.cleanup && G.cleanup(); const k = killedThisGame; uiBig = `第${gameNo}ゲーム 終了　${k}人 脱落`; uiObj = ''; drawMonitor(`第${gameNo}ゲーム 終了`, [`${k}人が脱落した`, `残り ${living().length}人`], ''); GM.point = 1; } return; }
-  if (flow === 'after'){ for (const n of liveNpcs()){ idle(n, dt); animModel(n, dt); } if (flowT > 4){ uiBig = ''; if (living().length <= 1){ flow = 'end'; finish(); } else nextGame(); } }
+  if (flow === 'play'){ gt += dt; let done = G.update(dt); if (living().length <= 2) done = true;   /* hall_last2 */ if (done){ flow = 'after'; flowT = 0; G.cleanup && G.cleanup(); const k = killedThisGame; uiBig = `第${gameNo}ゲーム 終了　${k}人 脱落`; uiObj = ''; showRosterMon();   /* hall_roster: モニターに生存確認 */ GM.point = 1; } return; }
+  if (flow === 'after'){ updateRosterMon(dt); for (const n of liveNpcs()){ idle(n, dt); animModel(n, dt); } if (flowT > afterLen){   /* hall_roster */ uiBig = ''; if (living().length <= 2){ if (living().length === 2) startFinal(); else { flow = 'end'; finish(); } }   /* hall_last2/hall_final: 2人になったら決勝戦 */ else nextGame(); } }
 }
 function finish(){
   const L = living(); clearProps(); resetTiles();
-  if (L.length === 1){ const w = L[0]; uiBig = w.isPlayer ? 'あなたが最後の1人！' : `最後の1人は ${w.name}`; drawMonitor('全ゲーム終了', [w.isPlayer ? 'お前が最後の1人だ' : '最後の1人が決まった'], 'おめでとう'); if (w.isPlayer && window.ACH) ACH.clear('hall'); }
+  if (L.length === 2){ const me = L.some(p => p.isPlayer); uiBig = me ? 'あなたは最後の2人に残った！' : '最後の2人が決まった'; drawMonitor('全ゲーム終了', [me ? 'お前たち2人が最後まで残った' : '最後の2人が決まった'], 'おめでとう'); if (me && window.ACH) ACH.clear('hall'); }   /* hall_last2: 最後の2人 */
+  else if (L.length === 1){ const w = L[0]; uiBig = w.isPlayer ? 'あなたが最後の1人！' : `最後の1人は ${w.name}`; drawMonitor('全ゲーム終了', [w.isPlayer ? 'お前が最後の1人だ' : '最後の1人が決まった'], 'おめでとう'); if (w.isPlayer && window.ACH) ACH.clear('hall'); }
   else { uiBig = '全員脱落…'; drawMonitor('全ゲーム終了', ['生き残った者はいない'], ''); }
   endT = 0;
 }
+
+// ---------- 顔写真 (モニター用。首輪マーク当てと同じ) hall_roster ----------
+const faceR = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+faceR.setSize(128, 128, false); faceR.toneMapping = THREE.ACESFilmicToneMapping; faceR.toneMappingExposure = 1.1;
+const faceScene = new THREE.Scene(); faceScene.background = new THREE.Color(0x3a4252);
+faceScene.add(new THREE.HemisphereLight(0xffffff, 0x555555, 1.5));
+{ const d = new THREE.DirectionalLight(0xffffff, 1.6); d.position.set(1, 2, 3); faceScene.add(d); }
+const faceCam = new THREE.PerspectiveCamera(28, 1, .05, 10);
+function takeFace(opts){
+  const m = makePerson(opts); scene.remove(m.group); faceScene.add(m.group);
+  const s = m.scale; faceCam.position.set(0, 1.72 * s, 1.05 * s); faceCam.lookAt(0, 1.68 * s, 0);
+  faceR.render(faceScene, faceCam);
+  const [c, g] = mk(128, 128); g.drawImage(faceR.domElement, 0, 0);
+  faceScene.remove(m.group); for (const mt of m.mats) mt.dispose();
+  return c;
+}
+/* 生存確認 (2026-11-09 弟君の注文): ゲームが終わるたびに、ゲームマスターのとなりのモニターに 50人の顔を 10列×5段 でならべる。このゲームで脱落した人の顔に、赤い×を1つずつ付けていく */
+let rosterPending = new Map(), rosterClock = 0, afterLen = 4;
+function showRosterMon(){ const dead = people.filter(p => !p.alive && p.deadGame === gameNo); rosterPending = new Map(dead.map((p, i) => [p, .8 + i * .45])); rosterClock = 0; afterLen = Math.max(4, 1.2 + dead.length * .45 + 2.5); drawRosterMon(); }
+function updateRosterMon(dt){ rosterClock += dt; let ch = false; for (const [p, at] of rosterPending) if (rosterClock >= at){ rosterPending.delete(p); ch = true; thump(90, .45, .25); noiseHit(.25, .12, 900); } if (ch) drawRosterMon(); }
+function drawRosterMon(){ const g = MON.g, W = 1120, H = 896, F = '"BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif'; MON.last = 'roster' + rosterPending.size; g.setTransform(1, 0, 0, 1, 0, 0);
+  g.fillStyle = '#05040a'; g.fillRect(0, 0, W, H); g.strokeStyle = '#3a1018'; g.lineWidth = 10; g.strokeRect(5, 5, W - 10, H - 10);
+  const isDead = p => !p.alive && !rosterPending.has(p), aliveN = people.filter(p => !isDead(p)).length;
+  g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = '#ffe14d'; g.font = 'bold 44px ' + F; g.fillText(`第${gameNo}ゲーム 終了　生存確認`, 28, 48);
+  g.textAlign = 'right'; g.fillStyle = '#ffffff'; g.fillText(`生存 ${aliveN}人 ／ ${TOTAL}人`, W - 28, 48);
+  const cols = 10, TW = 104, TH = 150, gap = 6, x0 = (W - (cols * TW + (cols - 1) * gap)) / 2, y0 = 92;
+  people.forEach((p, i) => { const x = x0 + (i % cols) * (TW + gap), y = y0 + ((i / cols) | 0) * (TH + gap), dead = isDead(p), fx = x + 6, fy = y + 6, fs = TW - 12;
+    g.fillStyle = '#151019'; g.fillRect(x, y, TW, TH);
+    if (p.face){ g.save(); if (dead) g.filter = 'grayscale(1) brightness(.45)'; g.drawImage(p.face, fx, fy, fs, fs); g.restore(); }
+    g.textAlign = 'center'; g.font = 'bold 22px ' + F; g.fillStyle = p.isPlayer ? '#7fd6ff' : dead ? '#6d6f75' : '#e8f0e8'; g.fillText(p.isPlayer ? 'あなた' : i + '番', x + TW / 2, y + fs + 30);
+    if (p.isPlayer){ g.strokeStyle = '#7fd6ff'; g.lineWidth = 4; g.strokeRect(x + 2, y + 2, TW - 4, TH - 4); }
+    if (dead){ g.strokeStyle = '#ff2a20'; g.lineWidth = 11; g.lineCap = 'round'; g.beginPath(); g.moveTo(fx + 10, fy + 10); g.lineTo(fx + fs - 10, fy + fs - 10); g.moveTo(fx + fs - 10, fy + 10); g.lineTo(fx + 10, fy + fs - 10); g.stroke(); } });
+  g.setTransform(2, 0, 0, 2, 0, 0); MON.t.needsUpdate = true; }
+
+// ---------- 決勝戦 (2026-11-09 弟君の注文) hall_final ----------
+const FINAL = { on: false, t: 0, pick: new Map(), btns: [], done: false, result: '', prize: 0 };
+function startFinal(){ const L = living(); FINAL.on = true; FINAL.t = 0; FINAL.pick = new Map(); FINAL.done = false; FINAL.result = ''; FINAL.prize = 0; FINAL.btns = []; flow = 'final'; flowT = 0; clearProps(); resetTiles(); clearBodies(); G = null;
+  L.forEach((p, i) => { const x = i ? 5 : -5; place(p, x, -20); p.heading = 0; if (p.isPlayer) yaw = 0; p.finalDecideT = p.isPlayer ? 1e9 : R(4, 12); p.finalChoice = p.isPlayer ? null : (Math.random() < .4 ? 'blue' : 'red');
+    for (const [c, dx] of [['red', -1.1], ['blue', 1.1]]){ const ped = addProp(new THREE.Mesh(new THREE.BoxGeometry(.5, .9, .5), std({ color: 0x444450, metalness: .4, roughness: .5 }))); ped.position.set(x + dx, .45, -23);
+      const btn = addProp(new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, .1, 20), new THREE.MeshStandardMaterial({ color: c === 'red' ? 0xe53935 : 0x1e66d0, emissive: c === 'red' ? 0x601010 : 0x102060 }))); btn.position.set(x + dx, .95, -23); FINAL.btns.push({ p, c, x: x + dx, z: -23, m: btn }); } });
+  uiBig = '決勝戦！'; uiObj = '赤＝山分け　青＝独り占め（赤と青なら、赤を押した者が死ぬ。両方青なら賞金なし）';
+  drawMonitor('決勝戦　賞金10万円', ['赤のボタン＝2人で山分け', '青のボタン＝独り占め', '赤と青なら、赤を押した者は死ぬ', '両方青なら、賞金はなし'], ''); GM.point = 1; beep(660, .15, .3); setTimeout(() => beep(880, .15, .3), 200);
+  $('rules').innerHTML = '<b>決勝戦　賞金10万円</b><br>赤のボタン＝2人で山分け（5万円ずつ）<br>青のボタン＝独り占め<br>赤と青なら、赤を押した者はうたれる<br>両方青なら、賞金はなし<br>（自分の前のボタンに近づいて E）'; $('rules').style.display = 'block'; setTimeout(() => { $('rules').style.display = 'none'; }, 10000); }
+function finalPress(p, c){ if (!FINAL.on || FINAL.done || FINAL.pick.has(p) || !p.alive) return; FINAL.pick.set(p, c); beep(c === 'red' ? 440 : 880, .15, .3);
+  for (const b of FINAL.btns) if (b.p === p) b.m.material.emissive.set(b.c === c ? (c === 'red' ? 0xff3030 : 0x3070ff) : 0x000000);
+  feed((p.isPlayer ? 'あなた' : p.name) + 'がボタンを押した'); }
+function updateFinal(dt){ FINAL.t += dt; const fin = living();
+  for (const p of fin){ if (p.isPlayer) continue; if (!FINAL.pick.has(p) && FINAL.t >= p.finalDecideT){ const b = FINAL.btns.find(q => q.p === p && q.c === p.finalChoice); const d = goTo(p, b.x, b.z + .8, 2.2, dt); if (d < .3) finalPress(p, p.finalChoice); } else { stand(p, dt); turnTo(p, 0, dt, 3); } animModel(p, dt); }
+  if (FINAL.done) return;
+  if (player.alive && fin.includes(player) && !FINAL.pick.has(player)){ const nb = FINAL.btns.find(b => b.p === player && Math.hypot(b.x - player.pos.x, b.z - player.pos.z) < 1.4); setPrompt(nb ? 'E：' + (nb.c === 'red' ? '赤' : '青') + 'のボタンを押す' : '自分の前の、赤か青のボタンに近づいて E'); if (nb && keys.KeyE){ finalPress(player, nb.c); keys.KeyE = false; } if (FINAL.t > 30) finalPress(player, 'red'); }
+  if (fin.every(p => FINAL.pick.has(p)) || FINAL.t > 40){ for (const p of fin) if (!FINAL.pick.has(p)) FINAL.pick.set(p, 'red'); resolveFinal(); } }
+function resolveFinal(){ FINAL.done = true; const fin = living(), [a, b] = fin, ca = FINAL.pick.get(a), cb = FINAL.pick.get(b), nm = p => p.isPlayer ? 'あなた' : p.name;
+  if (ca === 'red' && cb === 'red'){ FINAL.result = 'split'; FINAL.prize = fin.includes(player) ? 50000 : 0; uiBig = '2人とも赤！ 賞金10万円を山分け'; drawMonitor('決勝戦 終了', ['2人とも赤を押した', '賞金10万円は山分け', '5万円ずつ'], 'おめでとう'); }
+  else if (ca === 'blue' && cb === 'blue'){ FINAL.result = 'none'; uiBig = '2人とも青… 賞金はなし'; drawMonitor('決勝戦 終了', ['2人とも青を押した', '賞金は、だれのものにもならない'], ''); }
+  else { const red = ca === 'red' ? a : b, blue = red === a ? b : a; FINAL.result = 'one'; FINAL.prize = blue.isPlayer ? 100000 : 0; uiBig = nm(blue) + 'が青、' + nm(red) + 'が赤… ' + nm(red) + 'がうたれた'; drawMonitor('決勝戦 終了', [nm(blue) + 'が青、' + nm(red) + 'が赤', nm(red) + 'は脱落', nm(blue) + 'が賞金10万円を独り占め'], ''); setTimeout(() => { if (state === 'play') kill(red, '決勝戦で赤を押して、うたれた'); }, 1200); }
+  if (FINAL.prize && window.ACH) ACH.clear('hall'); setPrompt(''); uiObj = ''; endT = 0; }
 
 // ---------- 新しいゲーム ----------
 function newGame(){
   for (const n of npcs){ scene.remove(n.m.group); if (n.tag) scene.remove(n.tag); }
   if (player && player.m) scene.remove(player.m.group);
   clearProps(); resetTiles(); for (const b of bloods) scene.remove(b); bloods = [];
-  npcs = []; people = [];
+  npcs = []; people = []; FINAL.on = false; FINAL.result = ''; FINAL.prize = 0; FINAL.pick = new Map();   /* hall_final */
   player = makeRunner('あなた', true); people.push(player);
   for (let k = 0; k < TOTAL - 1; k++){
     const name = ALLN[k % ALLN.length] + (k >= ALLN.length ? (k / ALLN.length | 0) + 1 : ''), i = k % ALLN.length, lk = k < ALLN.length ? (LOOKS[name] || {}) : {};
@@ -1157,6 +1216,7 @@ function newGame(){
     npcs.push(n); people.push(n);
   }
   lineUp(10, Math.PI);
+  for (const p of people) p.face = takeFace(p.isPlayer ? PLAYER_LOOK : p.popts);   /* hall_roster: モニター用の顔写真 */
   for (const n of npcs) animModel(n, 0);
   order = shuffle([...GAMES]); for (const g of GAMES) g.played = false; gameNo = 0;
   elapsed = 0; endT = -1; caughtT = 0; deathBy = ''; ghost = false; yaw = Math.PI; pitch = 0; camY = 1.6;
@@ -1229,8 +1289,8 @@ function feed(t){ const d = document.createElement('div'); d.textContent = t; $(
 function endGame(quit = false){
   if (state === 'over') return; state = 'over'; ghost = false; musicOn(false); $('ghostTint').style.display = 'none'; $('rules').style.display = 'none';
   if (document.pointerLockElement) document.exitPointerLock();
-  const L = living(), win = L.length === 1 && L[0].isPlayer;
-  $('resTitle').textContent = win ? 'クリア！ 最後の1人！' : quit ? '観戦を終了した' : 'ゲームオーバー';
+  const L = living(), win = FINAL.prize > 0 || (!FINAL.result && L.length === 1 && L[0].isPlayer);   /* hall_last2/hall_final: 賞金を手に入れたらクリア */
+  $('resTitle').textContent = win ? (FINAL.prize >= 100000 ? 'クリア！ 賞金10万円を独り占め！' : 'クリア！ 賞金5万円（山分け）！') : (FINAL.result === 'none' && player.alive) ? '決勝戦 終了… 賞金はなし' : quit ? '観戦を終了した' : 'ゲームオーバー';
   $('resText').innerHTML = `<p>${win ? '全てのミニゲームを勝ち残った！' : player.alive ? '' : deathBy}</p><p>遊んだミニゲーム：${gameNo}個　残った人：${L.length}人 ／ ${TOTAL}人</p>`;
   $('hud').style.display = 'none'; $('result').classList.add('on');
 }
@@ -1280,7 +1340,7 @@ function tick(){
   if (state === 'title'){ titleT += real * .05; camera.position.set(Math.sin(titleT) * 22, 9, 20 + Math.cos(titleT) * 6); camera.lookAt(0, 6, -HALF); }
   renderer.render(scene, camera);
 }
-drawMonitor('ミニゲームホール', ['ようこそ、諸君', '最後の1人になるまで', 'ゲームを続けてもらう'], '');
+drawMonitor('ミニゲームホール', ['ようこそ、諸君', '最後の2人になるまで', 'ゲームを続けてもらう'], '');   /* hall_last2 */
 window.__ready = true;
 window.__game = { get state(){ return state; }, get people(){ return people; }, get npcs(){ return npcs; }, get player(){ return player; }, get G(){ return G; }, get flow(){ return flow; }, get gameNo(){ return gameNo; }, GAMES, living, endGame, keys, get camera(){ return camera; },
   setView(y, p){ yaw = y; pitch = p; }, set god(v){ window.__godMode = v; },
@@ -1329,7 +1389,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
@@ -1413,15 +1473,6 @@ loop();
 })();
 </script>
 <!-- ===== 実績ここまで ===== -->
-
-
-
-
-
-
-
-
-
 
 <!-- ===== コントローラー (プロコンなど) でも操作できる。キーボードとマウスの操作はそのまま ===== -->
 <style>
@@ -1537,5 +1588,21 @@ R：F　L：R　ZR：マウスのクリック<br>
 })();
 </script>
 <!-- /gamepad -->
+<!-- ===== 手もとのスマホ (全ゲーム共通。phone_hud.js) ===== -->
+<style>
+#phoneHud{position:fixed;right:14px;bottom:14px;width:124px;height:226px;background:#111;border-radius:18px;padding:9px 7px;box-shadow:0 6px 24px rgba(0,0,0,.65);z-index:30;pointer-events:none;transform:rotate(-5deg);display:none;box-sizing:border-box}
+#phoneHud .scr{width:100%;height:100%;background:#fff;border-radius:11px;color:#111;font:700 12px/1.5 "BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif;padding:10px 6px;box-sizing:border-box;overflow:hidden;text-align:center;word-break:break-all}
+#phoneHud .scr b{display:block;font-size:13px;margin-bottom:6px;border-bottom:1px solid #111;padding-bottom:4px}
+</style>
+<div id="phoneHud"><div class="scr" id="phoneScr"></div></div>
+<script>
+(function(){ var el = document.getElementById('phoneHud'), sc = document.getElementById('phoneScr'); if (!el) return;
+  function txt(id){ var e = document.getElementById(id); return e ? (e.textContent || '').trim() : ''; }
+  var esc = function(s){ return s.replace(/[&<>]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
+  setInterval(function(){ var hud = document.getElementById('hud'), playing = !!hud && hud.style.display === 'block' && !document.querySelector('.screen.on');
+    el.style.display = playing ? 'block' : 'none'; if (!playing) return;
+    var a = txt('timer'), b = txt('alive'); sc.innerHTML = '<b>' + esc(document.title) + '</b>' + esc(a) + (b ? '<br><br>' + esc(b) : ''); }, 300); })();
+</script>
+<!-- /phonehud -->
 </body>
 </html>
