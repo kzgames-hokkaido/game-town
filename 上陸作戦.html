@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>上陸作戦</title><!-- war_v2 war_v3 war_v4 war_v5 war_v6 war_v7 war_v8 war_v9 war_v10 -->
+<title>上陸作戦</title><!-- war_v2 war_v3 war_v4 war_v5 war_v6 war_v7 war_v8 war_v9 war_v10 war_v11 war_v12 war_v13 war_v14 war_v15 -->
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:"BIZ UDPGothic","Yu Gothic UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;user-select:none}
@@ -86,7 +86,7 @@ a.sub{text-align:center;text-decoration:none}
 
 <div class="screen on" id="title"><div class="panel">
   <h1><small>戦争を再現したゲーム</small>上陸作戦（アメリカ軍 対 ドイツ軍）</h1>
-  <p>アメリカ軍は<b>大きな船から小さな船に乗りかえて</b>海岸に上陸する。ドイツ軍は<b>バンカー</b>から機関銃でむかえうつ。アメリカ軍は<b>場所を1つずつ攻略</b>していく。</p>
+  <p>アメリカ軍は<b>超大きな船の中から、小さな船に乗って</b>海岸に上陸する（小さな船は座れて、6〜8人ずつ出発する）。アメリカ軍は船の<b>兵士控え室</b>から始まる（①でやられた時もここから出直す）。船の中には武器庫・医務室・寝室・食堂もあり、歩いて入れる（観戦モードのカメラでも入れる）。ドイツ軍は<b>バンカー</b>から機関銃でむかえうつ。アメリカ軍は<b>場所を1つずつ攻略</b>していく。</p>
   <ul>
     <li>攻略する順番：<b>①海岸のバンカー → ②森 → ③橋</b>（橋の終わりの右がわにバンカー）<b> → ④町</b>（まっすぐな一本道）<b> → ⑤ドイツの大きな入口</b>（中にかべ。ドイツ兵がたくさん。<b>⑤ではドイツ軍は復活しない</b>）</li>
     <li>場所のまわりで、味方の人数が敵より多いと攻略のゲージがたまる。⑤まで攻略すればアメリカ軍の勝ち。アメリカ軍の<b>増援</b>がつきたらドイツ軍の勝ち</li>
@@ -136,7 +136,7 @@ const CLS = {
   gunner: { name: 'バンカー兵', dmg: 24, int: 1.0, range: 26, acc: .35, clip: 8, reload: 1.4, speed: 1, pInt: .4, note: 'バンカーの機関銃をうつ。はなれているときはピストル' },   /* war_v3 */
   bunker: { name: 'バンカーの機関銃', dmg: 18, int: .11, range: 72, acc: .34, clip: 999, reload: 0, speed: 0, pInt: .08, note: 'バンカーの機関銃' },
 };
-const SIDE = { us: { name: 'アメリカ軍', shirt: 0x55623c, pants: 0x4a5236, helm: 0x3a4628, max: 30, tickets: 300 }, de: { name: 'ドイツ軍', shirt: 0x5c626a, pants: 0x4c5158, helm: 0x40454c, max: 23, tickets: 270 } };
+const SIDE = { us: { name: 'アメリカ軍', shirt: 0x55623c, pants: 0x4a5236, helm: 0x3a4628, max: 30, tickets: 260 }, de: { name: 'ドイツ軍', shirt: 0x5c626a, pants: 0x4c5158, helm: 0x40454c, max: 23, tickets: 270 } };
 /* 攻略する場所 (海 → ドイツ。z が小さいほど奥) */
 const PTS = [{ name: '海岸のバンカー', x: 0, z: 134 }, { name: '森', x: 0, z: 95 }, { name: '橋', x: 0, z: 24 }, { name: '町', x: 0, z: -28 }, { name: 'ドイツの大きな入口', x: 0, z: -106 }];
 const CAP_R = 12, CAP_T = 13, W = 30, GARR = [52, 44, 52, 52, 0], LAST_N = 55;   /* war_v8: 第五は増援なし。始まるときに LAST_N 人 そろえる */
@@ -186,7 +186,64 @@ const M = { sand: std({ color: 0xb8a878, roughness: 1 }), grass: std({ color: 0x
   ship: std({ color: 0x6a7078, metalness: .4, roughness: .6 }), boat: std({ color: 0x5a6258, metalness: .3, roughness: .7 }), house: std({ color: 0xa89a84, roughness: .95 }), house2: std({ color: 0x8a7a6a, roughness: .95 }), roof: std({ color: 0x5a3a2a, roughness: .9 }), stone: std({ color: 0x6a665e, roughness: .95 }), flagU: std({ color: 0x3a5aa8 }), flagD: std({ color: 0x8a1a1a }), box: std({ color: 0x4a5a3a, roughness: .8 }) };
 function box(x0, y0, z0, x1, y1, z1, mat){ const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), mat); m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); scene.add(m); return m; }
 function solid(x0, y0, z0, x1, y1, z1, mat){ const w = { x0, x1, z0, z1, y0, y1 }; walls.push(w); if (mat) box(x0, y0, z0, x1, y1, z1, mat); return w; }
-const BUNKERS = [], COVERS = [], SHIPS = [{ x: -16, z: 286 }, { x: 16, z: 290 }];
+const BUNKERS = [], COVERS = [], SHIP = { x0: -26, x1: 26, z0: 252, z1: 372, hx: 13, hz: 300, dz: 273, top: 17, ceil: 7 };   /* war_v11: 超大きな船 1せき。hx・hz = 船内ホールのはば・おく、dz = ドックとホールのさかい */
+const SHIPIN = new THREE.Group(); scene.add(SHIPIN);   /* war_v12: 船の中の部屋の物 (カメラが船の中の時だけ表示) */
+/* war_v12: 船の中の部屋 (z 300〜340、高さ 3.6)。兵士控え室・武器庫・医務室・ろうか・寝室・食堂 */
+function shipRooms(IN, YL, LAMP){ const H = 3.6;
+  const IB = (x0, y0, z0, x1, y1, z1, m) => { const o = box(x0, y0, z0, x1, y1, z1, m); SHIPIN.add(o); return o; }, IS = (x0, y0, z0, x1, y1, z1, m) => { solid(x0, 0, z0, x1, y1, z1, null); return IB(x0, y0, z0, x1, y1, z1, m); };
+  const CY = (x, y, z, r, h, m, r2) => { const o = new THREE.Mesh(new THREE.CylinderGeometry(r2 === undefined ? r : r2, r, h, 10), m); o.position.set(x, y + h / 2, z); SHIPIN.add(o); return o; };
+  const LOCK = std({ color: 0x56626c, roughness: .7, metalness: .2 }), LOCK2 = std({ color: 0x4c5860, roughness: .7, metalness: .2 }), WHITE = std({ color: 0xe6e6de, roughness: .9 }), REDX = std({ color: 0xb02a2a, roughness: .8 }), MAP = std({ color: 0xd8cfa8, roughness: 1 }), SEA = std({ color: 0x6a8aa8, roughness: 1 }), BLANK = std({ color: 0x5a6a50, roughness: 1 }), BRASS = std({ color: 0xb89a48, roughness: .5, metalness: .5 }), ORANGE = std({ color: 0xd8742a, roughness: .8 }), HM = std({ color: 0x4a5a3a, roughness: .8 }), HG = new THREE.SphereGeometry(.17, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), BREAD = std({ color: 0xb0803c, roughness: 1 });
+  const wallZ = (z, x0, x1, doors = []) => { let x = x0; for (const [a, b] of doors){ IS(x, 0, z, a, H, z + .4, IN); IB(a, 2.3, z, b, H, z + .4, IN); x = b; } IS(x, 0, z, x1, H, z + .4, IN); };
+  const wallX = (x, z0, z1, doors = []) => { let z = z0; for (const [a, b] of doors){ IS(x, 0, z, x + .4, H, a, IN); IB(x, 2.3, a, x + .4, H, b, IN); z = b; } IS(x, 0, z, x + .4, H, z1, IN); };
+  const lamp = (x, z, ax) => IB(x - (ax ? .12 : .7), H - .13, z - (ax ? .7 : .12), x + (ax ? .12 : .7), H - .05, z + (ax ? .7 : .12), LAMP);
+  const bench = (x0, z0, x1, z1) => { IS(x0, .34, z0, x1, .42, z1, M.wood); if (x1 - x0 > z1 - z0){ for (const x of [x0 + .15, x1 - .23]) IB(x, 0, z0 + .03, x + .08, .34, z1 - .03, M.steel); } else for (const z of [z0 + .15, z1 - .23]) IB(x0 + .03, 0, z, x1 - .03, .34, z + .08, M.steel); };
+  const table = (x0, z0, x1, z1, h, m) => { IS(x0, h - .07, z0, x1, h, z1, m || M.wood); for (const x of [x0 + .08, x1 - .16]) for (const z of [z0 + .08, z1 - .16]) IB(x, 0, z, x + .08, h - .07, z + .08, M.steel); };
+  const shelf = (x0, x1, z0, z1, k) => { solid(x0, 0, z0, x1, 2, z1, null); for (const y of [.5, 1.1, 1.7]) IB(x0, y - .04, z0, x1, y, z1, M.wood); for (const z of [z0, z1 - .06]) for (const x of [x0, x1 - .06]) IB(x, 0, z, x + .06, 1.95, z + .06, M.wood);
+    for (const y of [.03, .5, 1.1, 1.7]){ let z = z0 + .1; while (z < z1 - .5){ const t = (k++ * 7) % 5, w = t === 2 ? .5 : .4; if (t === 4){ z += .25; continue; } if (t === 2 && y < 1.5) IB(x0 + .05, y, z, x1 - .05, y + .32, z + w, SM.crate); else if (t === 3) IB(x0 + .1, y, z, x1 - .1, y + .36, z + .34, SM.can); else { IB(x0 + .06, y, z, x1 - .06, y + .2, z + w, SM.ammo); IB(x0 + .05, y + .07, z + .05, x1 - .05, y + .13, z + w - .05, SM.band); } z += w + .08; } } };
+  const rack = (x0, x1, z, n) => { IB(x0, .3, z, x1, .4, z + .3, M.wood); IB(x0, 1.2, z, x1, 1.28, z + .12, M.wood); for (let i = 0; i < n; i++){ const x = x0 + .3 + i * (x1 - x0 - .6) / (n - 1); IB(x - .03, .4, z + .05, x + .03, 1.55, z + .13, M.dark); IB(x - .04, .4, z + .04, x + .04, .8, z + .16, M.wood); } };   /* 銃のたな */
+  /* かべ・天井 */
+  solid(-26, 0, 300, -25, H, 340, null); solid(25, 0, 300, 26, H, 340, null); solid(-25, 0, 340, 25, H, 341, null); solid(-25, 0, 299, -13, H, 300, null); solid(13, 0, 299, 25, H, 300, null);
+  IB(-25, 0, 300, -24.94, H, 340, IN); IB(24.94, 0, 300, 25, H, 340, IN); IB(-25, 0, 339.94, 25, H, 340, IN); IB(-25, 0, 300, -13, H, 300.06, IN); IB(13, 0, 300, 25, H, 300.06, IN); IB(-25, H - .05, 300, 25, H, 340, IN);
+  wallX(-10.4, 301, 318, [[308, 310]]); wallX(10, 301, 318, [[308, 310]]); wallZ(318, -25, 25, [[-1.2, 1.2]]); wallZ(321.6, -25, 25, [[-13, -11], [11, 13]]); wallX(-.2, 322, 340);
+  /* ---- 兵士控え室 (x -10〜10、z 301〜318) ---- */
+  bench(-9.9, 302, -9.3, 307.4); bench(-9.9, 310.6, -9.3, 317); bench(9.3, 302, 9.9, 307.4); bench(9.3, 310.6, 9.9, 317); bench(-3.75, 306, -3.25, 313); bench(3.25, 306, 3.75, 313);
+  for (const sx of [-1, 1]) for (const [a, b] of [[302, 307.4], [310.6, 317]]){ IB(sx > 0 ? 9.6 : -10, 1.9, a, sx > 0 ? 10 : -9.6, 1.94, b, M.wood); for (let z = a + .4; z < b - .2; z += .8){ const h = new THREE.Mesh(HG, HM); h.position.set(sx * 9.8, 1.94, z); SHIPIN.add(h); } }   /* ヘルメットのたな */
+  for (const sg of [-1, 1]){ solid(sg > 0 ? 2 : -9.7, 0, 317.5, sg > 0 ? 9.7 : -2, 2, 318, null); for (let i = 0; i < 11; i++){ const x = sg > 0 ? 2 + i * .7 : -2.68 - i * .7; IB(x, 0, 317.5, x + .68, 2, 318, i % 2 ? LOCK : LOCK2); IB(x + .15, 1.6, 317.48, x + .53, 1.75, 317.5, M.dark); } }   /* ロッカー */
+  rack(-5.6, -1.4, 301, 8); IB(1.5, 1.0, 301, 5.5, 2.6, 301.06, M.wood); IB(1.6, 1.1, 301.06, 5.4, 2.5, 301.08, MAP); IB(1.6, 2.0, 301.08, 5.4, 2.5, 301.09, SEA); for (const x of [2.5, 3.5, 4.5]){ IB(x - .04, 1.5, 301.08, x + .04, 2.05, 301.095, REDX); IB(x - .12, 1.28, 301.08, x + .12, 1.42, 301.095, M.dark); }   /* 銃のたな と 作戦の地図 */
+  table(5.5, 315.2, 8, 316.4, .78); IB(6, .78, 315.5, 6.9, 1.2, 316, LOCK); IB(6.1, .9, 315.48, 6.3, 1.1, 315.5, M.dark); IB(6.5, .9, 315.48, 6.8, 1.0, 315.5, BRASS); CY(6.8, 1.2, 315.9, .012, .9, M.steel); IB(7.2, .78, 315.6, 7.7, .8, 316, WHITE);   /* 無線機 */
+  IS(-8, 0, 315.2, -6.6, .9, 316.4, SM.crate); IB(-7.7, .9, 315.4, -6.9, 1.5, 316.2, SM.crate); IB(-7.5, 1.5, 315.55, -7.1, 1.7, 316.05, SM.ammo); solid(-6.1, 0, 315.5, -5.3, .9, 316.3, null); CY(-5.7, 0, 315.9, .36, .9, SM.can);
+  for (const x of [-6, 0, 6]){ for (const z of [304.5, 310, 315.5]) lamp(x, z); IB(x - .08, 0, 301, x + .08, .015, 304.5, YL); } IB(-8.2, 3.25, 301, -8.05, 3.4, 318, M.steel); IB(8.05, 3.25, 301, 8.2, 3.4, 318, M.steel);
+  IB(9.985, 2.4, 308.6, 10, 3.0, 309.4, WHITE); IB(9.97, 2.45, 308.87, 10, 2.95, 309.13, REDX); IB(9.97, 2.57, 308.72, 10, 2.83, 309.28, REDX); IB(-10, 2.4, 308.6, -9.985, 3.0, 309.4, M.dark); for (const z of [308.8, 309, 309.2]) IB(-10, 2.5, z - .04, -9.97, 2.9, z + .04, BRASS);   /* とびらの上のしるし (医務室・武器庫) */
+  /* ---- 武器庫 (x -25〜-10.4、z 300〜318) ---- */
+  rack(-24, -13.4, 300.06, 20); shelf(-25, -24.5, 301.5, 310, 3);
+  IB(-24.7, 0, 311.2, -23.4, .1, 316.4, M.wood); for (let i = 0; i < 9; i++) for (let j = 0; j < 2; j++) CY(-24.4 + j * .55, .1, 311.6 + i * .55, .17, .75, BRASS, .09); solid(-24.7, 0, 311.2, -23.4, .9, 316.4, null);   /* 大砲の弾 */
+  table(-20, 306, -14, 308.4, .88); IB(-19.2, .88, 307, -17.6, 1.02, 307.2, M.dark); IB(-17.6, .93, 307.07, -16.5, .98, 307.13, M.dark); IB(-18.6, .88, 306.9, -18.5, 1.0, 307.3, M.steel); for (const x of [-16, -15.4, -14.8]) { IB(x, .88, 306.3, x + .45, 1.08, 306.7, SM.ammo); IB(x - .01, .95, 306.35, x + .46, 1.01, 306.65, SM.band); } IB(-19.6, .88, 307.6, -18.8, 1.1, 308.2, SM.crate); for (let i = 0; i < 6; i++) CY(-19.45 + (i % 3) * .25, 1.1, 307.75 + ((i / 3) | 0) * .28, .07, .1, HM);
+  IS(-14, 0, 314, -11, 1, 317.6, SM.crate); IB(-13.5, 1, 314.5, -11.5, 1.9, 317, SM.crate); IB(-13, 1.9, 315, -12, 2.5, 316.5, SM.ammo); solid(-22.4, 0, 316.9, -17.6, .95, 317.9, null); for (let i = 0; i < 6; i++) CY(-22 + i * .8, 0, 317.4, .36, .95, SM.can);
+  for (const x of [-21, -15]) for (const z of [304, 312]) lamp(x, z);
+  /* ---- 医務室 (x 10.4〜25、z 300〜318) ---- */
+  IB(10.4, 0, 300, 25, .02, 318, std({ color: 0xa4aaa4, roughness: .8 }));
+  for (let i = 0; i < 4; i++){ const x = 12 + i * 3; IS(x, .3, 300.2, x + .9, .45, 302.2, M.steel); IB(x + .03, .45, 300.25, x + .87, .58, 302.15, WHITE); IB(x + .02, .58, 300.95, x + .88, .63, 302.16, BLANK); IB(x + .15, .58, 300.3, x + .75, .68, 300.7, WHITE); CY(x + 1.25, 0, 300.5, .02, 1.8, M.steel); IB(x + 1.17, 1.5, 300.45, x + 1.33, 1.75, 300.55, WHITE); if (i < 3) IB(x + 1.9, .2, 300.2, x + 1.94, 1.8, 302, WHITE); }   /* ベッド 4つ */
+  IS(24.4, 0, 306, 24.94, 2, 309, WHITE); IB(24.37, 1.2, 307.37, 24.4, 1.7, 307.63, REDX); IB(24.37, 1.32, 307.22, 24.4, 1.58, 307.78, REDX);   /* 薬のたな */
+  table(14, 316.6, 16.4, 317.6, .78); IS(14.9, .4, 315.7, 15.5, .46, 316.3, M.wood); IB(14.9, .46, 315.7, 15.5, 1.0, 315.76, M.wood); IB(14.3, .78, 316.8, 14.8, .8, 317.3, WHITE); for (let i = 0; i < 4; i++) CY(15.4 + i * .22, .78, 317.3, .05, .22, i % 2 ? HM : BREAD);
+  table(17, 308, 19, 309, .8, WHITE); CY(18, H - .7, 308.5, .02, .7, M.steel); IB(17.7, H - .78, 308.2, 18.3, H - .7, 308.8, LAMP); IB(20, .05, 312, 22.2, .1, 312.6, BLANK); IB(19.9, .04, 311.98, 22.3, .09, 312.03, M.wood); IB(19.9, .04, 312.57, 22.3, .09, 312.62, M.wood);   /* しんさつ台 と たんか */
+  IS(18, 0, 317.5, 22, 1.8, 317.94, WHITE); for (const y of [.6, 1.2]) IB(18, y, 317.48, 22, y + .03, 317.5, M.steel); for (const x of [14, 21]) for (const z of [305, 313]) lamp(x, z);
+  /* ---- ろうか (z 318.4〜321.6) ---- */
+  IB(-25, 3.28, 319, 25, 3.4, 319.12, M.steel); IB(-25, 3.2, 321, 25, 3.36, 321.16, REDX); IB(-25, 0, 319.95, 25, .012, 320.05, YL); for (let x = -20; x <= 20; x += 8) lamp(x, 320);
+  for (const x of [-6, 6]){ CY(x, .25, 318.52, .09, .5, REDX); const lr = new THREE.Mesh(new THREE.TorusGeometry(.32, .08, 6, 14), ORANGE); lr.position.set(x * .6, 1.6, 321.52); SHIPIN.add(lr); }
+  for (const sx of [-1, 1]) IB(sx > 0 ? 24.9 : -24.96, 0, 319.4, sx > 0 ? 24.96 : -24.9, 2.2, 320.6, M.dark); IB(22, 0, 318.42, 22.05, H, 318.47, M.steel); IB(22.55, 0, 318.42, 22.6, H, 318.47, M.steel); for (let y = .4; y < H; y += .45) IB(22, y, 318.42, 22.6, y + .04, 318.46, M.steel);   /* はしご */
+  IB(-12.4, 2.4, 321.57, -11.6, 2.8, 321.6, BLANK); IB(11.6, 2.4, 321.57, 12.4, 2.8, 321.6, ORANGE);
+  /* ---- 寝室 (x -25〜-0.2、z 322〜340): 2だんベッド ---- */
+  IB(-25, 0, 322, -.2, .02, 340, std({ color: 0x48544a, roughness: 1 }));
+  for (const x0 of [-24.8, -18.6, -8.4, -2.4]) for (let i = 0; i < 4; i++){ const z = 323.6 + i * 4; solid(x0, 0, z, x0 + 2, 1.9, z + .9, null); for (const x of [x0, x0 + 1.94]) for (const zz of [z, z + .84]) IB(x, 0, zz, x + .06, 1.9, zz + .06, M.steel); for (const y of [.4, 1.4]){ IB(x0, y, z, x0 + 2, y + .12, z + .9, WHITE); IB(x0 + .5, y + .12, z - .01, x0 + 2.01, y + .17, z + .91, BLANK); } }
+  for (let i = 0; i < 6; i++) IS(-23 + i * 3.6, 0, 339.2, -22.1 + i * 3.6, .5, 339.9, SM.crate); table(-13.2, 330, -11, 331.2, .76); for (const z of [329.3, 331.5]) IS(-12.4, .4, z, -11.9, .45, z + .4, M.wood); for (let i = 0; i < 5; i++) IB(-12.9 + i * .3, .76, 330.3 + (i % 2) * .3, -12.78 + i * .3, .765, 330.48 + (i % 2) * .3, WHITE); CY(-11.3, .76, 330.9, .04, .1, WHITE);
+  for (const x of [-21, -13.5, -5]) for (const z of [326, 335]) lamp(x, z, true);
+  /* ---- 食堂 (x 0.2〜25、z 322〜340) ---- */
+  IB(.2, 0, 322, 25, .02, 340, std({ color: 0x6a5e4c, roughness: 1 }));
+  for (const tz of [325.8, 330, 334.2]){ IS(4, .72, tz - .45, 20, .8, tz + .45, M.wood); for (const x of [5, 12, 18.9]) IB(x, 0, tz - .35, x + .1, .72, tz + .35, M.steel); bench(4, tz - 1.05, 20, tz - .75); bench(4, tz + .75, 20, tz + 1.05);
+    for (let i = 0; i < 5; i++){ const x = 5.5 + i * 3 + (tz > 328 && tz < 332 ? 1 : 0), sd = i % 2 ? .08 : -.33; IB(x, .8, tz + sd, x + .5, .82, tz + sd + .25, LOCK); CY(x + .25, .82, tz + sd + .12, .09, .02, WHITE); CY(x + .62, .8, tz + sd + .12, .04, .1, WHITE); } }
+  IS(2, 0, 338.2, 23, 1.0, 339, LOCK); IB(1.9, 1.0, 338.1, 23.1, 1.06, 339.1, M.steel); CY(6, 1.06, 338.6, .35, .5, M.steel); CY(9, 1.06, 338.6, .3, .4, M.steel); CY(13, 1.06, 338.6, .22, .35, BRASS, .16); CY(16, 1.06, 338.6, .12, .25, WHITE); for (let i = 0; i < 4; i++) IB(18.5 + i * .5, 1.06, 338.4, 18.9 + i * .5, 1.22, 338.8, BREAD);
+  IB(3, 1.8, 339.6, 22, 1.85, 339.94, M.wood); for (let i = 0; i < 14; i++) CY(3.6 + i * 1.35, 1.85, 339.78, .09, .22, i % 3 ? SM.can : BRASS); for (const z of [335.5, 336.6]){ solid(23.3, 0, z - .45, 24.3, 1, z + .45, null); CY(23.8, 0, z, .42, 1.0, M.wood); }
+  for (const x of [7, 17]) for (const z of [324, 330, 336]) lamp(x, z); }
 /* war_v9: バンカーの横の小さな倉庫 (たなに弾薬箱・木箱・缶) */
 const SM = { ammo: std({ color: 0x4a5632, roughness: .8 }), band: std({ color: 0xc8b040, roughness: .7 }), crate: std({ color: 0x8a6a3e, roughness: .9 }), can: std({ color: 0x39452f, roughness: .6, metalness: .3 }) };
 function storeRoom(sx, sz){ const ex = sx + 3.2, ez = sz + 3.4;   /* 中は 2.7 × 2.4 メートル。入口は西 (バンカーがわ) */
@@ -209,7 +266,7 @@ function bunker(x, z, pt){ const x0 = x - 4, x1 = x + 4, z0 = z - 3, z1 = z + 3;
 { /* 地面 */
   box(-W - 60, -.5, -140, W + 60, 0, 142, M.grass); box(-W - 60, -.5, 142, W + 60, 0, 206, M.sand); surfaces.push({ x0: -W - 60, x1: W + 60, z0: -140, z1: 206, h0: 0, h1: 0 });
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(500, 300), M.water); sea.rotation.x = -Math.PI / 2; sea.position.set(0, -.35, 330); scene.add(sea); surfaces.push({ x0: -W, x1: W, z0: 206, z1: 310, h0: -1.2, h1: -1.2 });
-  solid(-W - 1, -2, -132, -W, 6, 310, null); solid(W, -2, -132, W + 1, 6, 310, null); solid(-W, -2, -133, W, 12, -132, null); solid(-W, -2, 309, W, 6, 310, null);
+  solid(-W - 1, -2, -132, -W, 6, 310, null); solid(W, -2, -132, W + 1, 6, 310, null); solid(-W, -2, -133, W, 12, -132, null); solid(-W, -2, 249, W, 6, 250, null);   /* war_v12: 海のおくの見えないかべは 船の手前へ (前は z 309 にあって 兵士控え室を横切っていた) */
   /* 海岸: 鉄のさく (かくれられる)、土のう、バンカー3つ */
   for (let k = 0; k < 22; k++){ const x = R(-W + 3, W - 3), z = R(150, 198); solid(x - .5, 0, z - .5, x + .5, 1.4, z + .5, null); for (const rz of [.7, -.7]){ const b = new THREE.Mesh(new THREE.BoxGeometry(.18, 2.4, .18), M.steel); b.position.set(x, .8, z); b.rotation.z = rz; scene.add(b); } const b3 = new THREE.Mesh(new THREE.BoxGeometry(.18, 2.2, .18), M.steel); b3.position.set(x, .8, z); b3.rotation.x = .9; scene.add(b3); COVERS.push({ x, z: z - 1 }); }
   for (const x of [-18, 0, 18]) bunker(x, 136, 0);
@@ -231,9 +288,32 @@ function bunker(x, z, pt){ const x0 = x - 4, x1 = x + 4, z0 = z - 3, z1 = z + 3;
   solid(-W, 0, -63, -5.5, 9, -61, M.stone); solid(5.5, 0, -63, W, 9, -61, M.stone); box(-7.5, 0, -64, -5.5, 12, -60, M.stone); box(5.5, 0, -64, 7.5, 12, -60, M.stone); box(-7.5, 9.5, -63.5, 7.5, 11.5, -60.5, M.stone);
   solid(-18, 0, -89, 18, 3.2, -88, M.stone); for (const [x, z] of [[-10, -76], [9, -74], [-22, -98], [22, -100], [0, -98]]) solid(x - 2.2, 0, z - .4, x + 2.2, 1.4, z + .4, M.bag);
   solid(-12, 0, -128, 12, 8, -119, M.stone); box(-12.4, 8, -128.4, 12.4, 8.6, -118.6, M.roof); box(-1.2, 0, -119.05, 1.2, 2.6, -119, M.dark);
-  /* 大きな船 2せき */
-  for (const s of SHIPS){ box(s.x - 7, -1, s.z - 22, s.x + 7, 5, s.z + 22, M.ship); box(s.x - 4, 5, s.z - 8, s.x + 4, 10, s.z + 6, M.ship); const fn = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.4, 5, 12), M.dark); fn.position.set(s.x, 12.5, s.z); scene.add(fn); surfaces.push({ x0: s.x - 7, x1: s.x + 7, z0: s.z - 22, z1: s.z + 22, h0: 5, h1: 5 }); solid(s.x - 4, 5, s.z - 8, s.x + 4, 10, s.z + 6, null); for (const sx of [-1, 1]) solid(s.x + sx * 7 - .1, 5, s.z - 22, s.x + sx * 7 + .1, 6, s.z + 22, M.steel); solid(s.x - 7, 5, s.z + 21.9, s.x + 7, 6, s.z + 22, M.steel);
-    for (let i = 0; i < 6; i++) box(s.x - 5 + i * 2, .2, s.z - 22.3, s.x - 4.9 + i * 2, 5, s.z - 22.2, M.wood); for (let j = 0; j < 5; j++) box(s.x - 5, .6 + j * 1, s.z - 22.3, s.x + 5.1, .7 + j * 1, s.z - 22.2, M.wood);   /* 乗りかえ用のあみ */ }
+  /* war_v11: 超大きな船 1せき。船内 (ホール) の前に 小さな船のドックがあり、船首の大きな口から海へ出る */
+  { const S = SHIP, IN = std({ color: 0x8e968c, roughness: .9 }), FL = std({ color: 0x4c5054, roughness: .95 }), YL = std({ color: 0xd8b830, roughness: .8 }), LAMP = new THREE.MeshBasicMaterial({ color: 0xfff2c8 }), RED = std({ color: 0x6a2a26, roughness: .8 }), HULL = std({ color: 0x7e868e, roughness: .85 }), T = S.top, C = S.ceil;
+    box(S.x0, -1, S.z0, -S.hx, T, S.hz, HULL); box(S.hx, -1, S.z0, S.x1, T, S.hz, HULL); box(-S.hx, C, S.z0, S.hx, T, S.hz, HULL); box(S.x0, -1, S.hz, -25, T, S.z1, HULL); box(25, -1, S.hz, S.x1, T, S.z1, HULL); box(-25, -1, 340, 25, T, S.z1, HULL); box(-25, 3.6, S.hz, 25, T, 340, HULL); box(-25, -1, S.hz, 25, 0, 340, FL);   /* war_v12: z 300〜340 は部屋 (高さ 3.6) */   /* 左・右・後ろ・船内の上 */
+    box(-S.hx, -1, S.dz, S.hx, 0, S.hz, FL); box(-S.hx, -1, S.z0, -9, 0, S.dz, FL); box(9, -1, S.z0, S.hx, 0, S.dz, FL);   /* ホールのゆか と ドックの両わき */
+    box(-S.hx, 0, S.z0, -9, C, S.z0 + 1, HULL); box(9, 0, S.z0, S.hx, C, S.z0 + 1, HULL); box(-9.5, -.6, S.z0 - 7, -9, C, S.z0, M.steel); box(9, -.6, S.z0 - 7, 9.5, C, S.z0, M.steel);   /* 船首のかべ (まん中 18m が口) と 開いたとびら */
+    box(S.x0 - .06, -1, S.z0, S.x0, .7, S.z1, RED); box(S.x1, -1, S.z0, S.x1 + .06, .7, S.z1, RED); box(S.x0, -1, S.z1, S.x1, .7, S.z1 + .06, RED); box(S.x0, -1, S.z0 - .06, -9.5, .7, S.z0, RED); box(9.5, -1, S.z0 - .06, S.x1, .7, S.z0, RED);
+    box(-S.hx, 0, S.z0 + 1, -S.hx + .08, C, S.hz, IN); box(S.hx - .08, 0, S.z0 + 1, S.hx, C, S.hz, IN); box(-S.hx, 3.6, S.hz - .08, S.hx, C, S.hz, IN); box(-S.hx, C - .08, S.z0, S.hx, C, S.hz, IN);   /* 船内のかべ・天井 */
+    for (const x of [-7, 0, 7]){ box(x - 1.1, 2.4, S.hz, x + 1.1, 3.6, S.hz + 1, IN); box(x - .1, 0, 280, x + .1, .015, 297, YL); for (const z of [258, 266, 277, 285, 293]) box(x - .8, C - .16, z - .15, x + .8, C - .08, z + .15, LAMP); }   /* おくのとびら と 明かり */
+    box(-9, 0, S.dz, 9, .02, S.dz + .35, YL); box(-9.4, 0, S.z0 + 1, -9.05, .02, S.dz, YL); box(9.05, 0, S.z0 + 1, 9.4, .02, S.dz, YL); box(-9, 0, S.dz - .25, 9, .15, S.dz, M.steel);
+    for (const sx of [-1, 1]){ box(sx * 9.02 - .04, .86, S.z0 + 1, sx * 9.02 + .04, .93, S.dz, M.steel); for (let z = S.z0 + 1.5; z < S.dz; z += 3) box(sx * 9.02 - .04, 0, z - .04, sx * 9.02 + .04, .9, z + .04, M.steel); }   /* ドックの手すり */
+    solid(-S.hx - 1, 0, S.z0, -S.hx, C, S.hz, null); solid(S.hx, 0, S.z0, S.hx + 1, C, S.hz, null); for (const [a, b] of [[-13, -8.1], [-5.9, -1.1], [1.1, 5.9], [8.1, 13]]) solid(a, 0, S.hz, b, 3.6, S.hz + 1, IN);   /* war_v12: ホールのおくのかべ。とびら 3つ (兵士控え室へ) */
+    solid(-S.hx, 0, S.z0, -9, C, S.z0 + 1, null); solid(9, 0, S.z0, S.hx, C, S.z0 + 1, null);
+    solid(-9, 0, S.dz - .25, 9, .9, S.dz, null); solid(-9.25, 0, S.z0, -9, .9, S.dz, null); solid(9, 0, S.z0, 9.25, .9, S.dz, null);   /* 水に落ちないための見えないかべ */
+    surfaces.push({ x0: -S.hx, x1: S.hx, z0: S.z0, z1: S.hz, h0: 0, h1: 0 }); surfaces.push({ x0: -25, x1: 25, z0: S.hz, z1: 340, h0: 0, h1: 0 }); shipRooms(IN, YL, LAMP);
+    box(-13, 6.2, 284, 13, 6.6, 284.6, YL); box(-1, 5.8, 283.8, 1, 6.2, 284.8, M.steel); box(-.03, 3.6, 284.27, .03, 5.8, 284.33, M.dark); box(-.12, 3.3, 284.2, .12, 3.6, 284.4, M.steel);   /* ホールのクレーン */
+    solid(10.9, 0, 285.6, 12.9, .9, 288.4, null); for (const [x, z] of [[11.4, 286.1], [12.3, 286.2], [11.5, 287.1], [12.4, 287.2], [11.9, 288]]){ const d = new THREE.Mesh(new THREE.CylinderGeometry(.38, .38, .95, 12), SM.can); d.position.set(x, .475, z); scene.add(d); }
+    for (const [x, z] of [[-11.5, 276], [11.4, 276.6]]){ const rp = new THREE.Mesh(new THREE.TorusGeometry(.45, .1, 6, 14), M.bag); rp.rotation.x = Math.PI / 2; rp.position.set(x, .1, z); scene.add(rp); }
+    for (const sx of [-1, 1]) for (const z of [258, 266]){ const lr = new THREE.Mesh(new THREE.TorusGeometry(.3, .08, 6, 14), new THREE.MeshStandardMaterial({ color: 0xd8742a, roughness: .8 })); lr.rotation.y = Math.PI / 2; lr.position.set(sx * 9.12, .55, z); scene.add(lr); }
+    for (const [x, z] of [[-11.7, 281], [-11.7, 284], [11.7, 279], [11.7, 291], [-11.7, 294]]){ solid(x - 1, 0, z - 1, x + 1, 1.2, z + 1, SM.crate); box(x - .6, 1.2, z - .6, x + .6, 2.1, z + .6, SM.crate); box(x - .9, 0, z + 1.1, x + .9, .4, z + 1.7, SM.ammo); }
+    /* 船の上: 手すり・大砲 2つ・艦橋・えんとつ 2本・マスト */
+    box(S.x0, T, S.z0, S.x0 + .2, T + 1, S.z1, M.steel); box(S.x1 - .2, T, S.z0, S.x1, T + 1, S.z1, M.steel); box(S.x0, T, S.z0, S.x1, T + 1, S.z0 + .2, M.steel); box(S.x0, T, S.z1 - .2, S.x1, T + 1, S.z1, M.steel);
+    for (const [z, h] of [[272, 0], [297, 3.2]]){ if (h) box(-7, T, z - 6.5, 7, T + h, z + 6.5, HULL); box(-5.5, T + h, z - 5, 5.5, T + h + 3.2, z + 5, M.steel); for (const x of [-2, 2]){ const br = new THREE.Mesh(new THREE.CylinderGeometry(.42, .5, 14, 10), M.dark); br.position.set(x, T + h + 2.9, z - 11.5); br.rotation.x = -(Math.PI / 2 - .14); scene.add(br); } }
+    box(-17, T, 318, 17, T + 9, 364, HULL); box(-12, T + 9, 323, 12, T + 15.5, 346, HULL); box(-11, T + 12, 322.9, 11, T + 13.8, 323, M.dark); box(-16, T + 4, 317.9, 16, T + 5.4, 318, M.dark);
+    for (const z of [351, 359]){ const fn = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 3, 11, 14), M.dark); fn.position.set(0, T + 14.5, z); scene.add(fn); }
+    const ms = new THREE.Mesh(new THREE.CylinderGeometry(.25, .35, 15, 8), M.steel); ms.position.set(0, T + 23, 334); scene.add(ms); box(-5, T + 26, 333.9, 5, T + 26.3, 334.1, M.steel); }
+
 }
 const GRID = 4, grid = new Map();
 const gk = (i, j) => (i + 200) * 1000 + (j + 200);
@@ -614,22 +694,22 @@ function dropBag(s){ const g = new THREE.Group(); g.position.set(s.pos.x, 0, s.p
 const nearBag = (s, d) => { let best = null, bd = d; for (const q of bags){ if (q.side !== s.side) continue; const dd = Math.hypot(q.x - s.pos.x, q.z - s.pos.z); if (dd < bd){ bd = dd; best = q; } } return best; };
 function takeHelmet(s, b){ if (b.n <= 0 || s.helmet) return false; b.n--; b.hs[b.n].visible = false; setHelmet(s, true); if (b.n <= 0) setTimeout(() => { scene.remove(b.g); boxes = boxes.filter(q => q !== b); }, 4000); return true; }
 /* 出てくる場所: アメリカ軍 = 攻略した場所のいちばん前 (はじめは海岸)。ドイツ軍 = 今まもっている場所 */
-function spawnPos(side){ if (side === 'us'){ if (front === 0) return { x: R(-22, 22), z: R(199, 204) }; const p = PTS[front - 1]; return { x: front - 1 === 3 ? R(-4, 4) : clamp(p.x + R(-9, 9), -W + 2, W - 2), z: p.z + R(2, 7) }; } const p = PTS[Math.min(front, PTS.length - 1)]; const town = front === 3; return { x: town ? R(-4, 4) : clamp(p.x + R(-16, 16), -W + 2, W - 2), z: p.z - R(6, 12) }; }
-function placeSoldier(s){ const q = spawnPos(s.side); s.pos.set(q.x, 0, q.z); s.vy = 0; s.hp = 100; s.alive = true; setHelmet(s, true); s.ammo = s.C.clip; s.reloadT = 0; s.target = null; s.spot = null; s.boat = null; s.gunAt = null; if (s.m){ s.m.group.visible = true; s.m.group.rotation.set(0, 0, 0); for (const mt of s.m.mats){ mt.opacity = 1; mt.transparent = false; } for (const e of s.m.eyes) e.visible = true; for (const x of s.m.xEyes) x.visible = false; } }
-function addNPC(side, cls){ const s = makeSoldier(side, cls, false); soldiers.push(s); placeSoldier(s); if (side === 'us' && front === 0){ const b = boats.filter(q => q.st === 'load' && q.riders.length < 8).sort((a, c) => a.riders.length - c.riders.length)[0]; if (b){ s.boat = b; b.riders.push(s); } } return s; }
+function spawnPos(side){ if (side === 'us'){ if (front === 0) return { x: pick([-6.4, 0, 6.4]) + R(-1.8, 1.8), z: R(303, 314) };   /* war_v12: 船の兵士控え室 */ const p = PTS[front - 1]; return { x: front - 1 === 3 ? R(-4, 4) : clamp(p.x + R(-9, 9), -W + 2, W - 2), z: p.z + R(2, 7) }; } const p = PTS[Math.min(front, PTS.length - 1)]; const town = front === 3; return { x: town ? R(-4, 4) : clamp(p.x + R(-16, 16), -W + 2, W - 2), z: p.z - R(6, 12) }; }
+function placeSoldier(s){ const q = spawnPos(s.side); s.pos.set(q.x, 0, q.z); s.vy = 0; s.hp = 100; s.alive = true; setHelmet(s, true); s.ammo = s.C.clip; s.reloadT = 0; s.target = null; s.spot = null; s.boat = null; s.gunAt = null; s.onShip = s.side === 'us' && front === 0; s.toBoat = null; s.seated = false; s.shipT = 0; s.shipOff = R(-1.1, 1.1); s.door = s.pos.x < -3.5 ? -7 : s.pos.x > 3.5 ? 7 : 0; s.readyT = .5; s.aim = true;   /* war_v12: door = 兵士控え室から出るとびら。readyT = 控え室で待つ時間 */ if (s.m){ s.m.group.visible = true; s.m.group.rotation.set(0, 0, 0); for (const mt of s.m.mats){ mt.opacity = 1; mt.transparent = false; } for (const e of s.m.eyes) e.visible = true; for (const x of s.m.xEyes) x.visible = false; } }
+function addNPC(side, cls){ const s = makeSoldier(side, cls, false); soldiers.push(s); placeSoldier(s); return s; }
 const rollCls = side => { const r = Math.random(); if (side === 'de' && r < .16) return 'gunner'; const q = Math.random(); return q < .7 ? 'assault' : q < .8 ? 'rifle' : q < .9 ? 'sniper' : q < .95 ? 'mg' : 'medic'; };   /* war_v6: アサルト7割・ライフル1割・狙撃1割・機関銃と衛生が のこり1割 */   /* ドイツ軍には バンカー兵 (16%) */
 function newGame(){
   for (const s of soldiers) if (s.m) scene.remove(s.m.group); for (const b of bags) scene.remove(b.g); bags = []; for (const b of boxes) scene.remove(b.g); for (const b of boats) scene.remove(b.g); for (const f of flags) scene.remove(f.g); for (const t of tracers) scene.remove(t.l); for (const b of blasts) scene.remove(b.m);
   AMB = null; soldiers = []; boxes = []; boats = []; flags = []; tracers = []; blasts = []; elapsed = 0; front = 0; capP = 0; winner = ''; outT = 0; kills = 0; deaths = 0; shellT = 6; tickets = { us: SIDE.us.tickets, de: GARR[0] }; wave = { us: 2, de: 0 }; $('red').style.opacity = 0; $('feed').innerHTML = ''; $('dead').style.opacity = 0; zoom = false;
-  /* 小さな船 4そう (大きな船 → 海岸をくり返す) */
-  for (let i = 0; i < 4; i++){ const g = new THREE.Group(); const hull = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.3, 8), M.boat); hull.position.y = -.2; g.add(hull); const fl = new THREE.Mesh(new THREE.BoxGeometry(3.2, .1, 7.4), M.steel); fl.position.y = -.1; g.add(fl); const ramp = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.9, .15), M.steel); ramp.position.set(0, .7, -4); g.add(ramp); for (const sx of [-1, 1]){ const sd = new THREE.Mesh(new THREE.BoxGeometry(.15, 1.5, 8), M.boat); sd.position.set(sx * 1.75, .6, 0); g.add(sd); } scene.add(g); const sh = SHIPS[i % 2]; boats.push({ g, ramp, x: sh.x + (i < 2 ? -3 : 3), z: sh.z - 27, sx: sh.x + (i < 2 ? -3 : 3), sz: sh.z - 27, bx: -21 + i * 14, st: 'load', t: i * 3.5, riders: [] }); }
+  /* 小さな船 4そう (超大きな船のドック → 海岸をくり返す) */
+  for (let i = 0; i < 4; i++){ const g = new THREE.Group(); const hull = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.3, 8), M.boat); hull.position.y = -.2; g.add(hull); const fl = new THREE.Mesh(new THREE.BoxGeometry(3.2, .1, 7.4), M.steel); fl.position.y = -.1; g.add(fl); const ramp = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.9, .15), M.steel); ramp.position.set(0, .7, -4); g.add(ramp); for (const sx of [-1, 1]){ const sd = new THREE.Mesh(new THREE.BoxGeometry(.15, 1.5, 8), M.boat); sd.position.set(sx * 1.75, .6, 0); g.add(sd); } for (const sx of [-1, 1]){ const bn = new THREE.Mesh(new THREE.BoxGeometry(.5, .12, 5.6), M.wood); bn.position.set(sx * 1.3, .79, -.1); g.add(bn); } scene.add(g); const bsx = -6.6 + i * 4.4; boats.push({ g, ramp, x: bsx, z: 268.3, sx: bsx, sz: 268.3, bx: -21 + i * 14, st: 'load', t: 0, wait: 0, cap: 6 + ((Math.random() * 3) | 0), riders: [] }); }   /* war_v11: 長いす 2本。ドックの中に 4そう ならぶ */
   for (const p of PTS){ const g = new THREE.Group(); g.position.set(p.x + 3, 0, p.z); const pole = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 6, 6), M.steel); pole.position.y = 3; g.add(pole); const fl = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1, .04), M.flagD); fl.position.set(.85, 5.4, 0); g.add(fl); scene.add(g); flags.push({ g, fl }); }
   for (const b of BUNKERS){ b.gunner = null; b.playerOn = false; b.respT = 0; }
-  spectate = mySide === 'watch'; player = makeSoldier(spectate ? 'us' : mySide, myCls, true); player.watch = spectate;
-  if (!spectate){ soldiers.push(player); if (myCls === 'helmet') giveBox(player); if (mySide === 'us'){ const sh = SHIPS[0]; player.pos.set(sh.x - 2, 5, sh.z - 18); yaw = 0; player.onShip = true; } else { placeSoldier(player); yaw = 0; } }
+  makeCrew(); spectate = mySide === 'watch'; player = makeSoldier(spectate ? 'us' : mySide, myCls, true); player.watch = spectate;
+  if (!spectate){ soldiers.push(player); if (myCls === 'helmet') giveBox(player); if (mySide === 'us'){ player.pos.set(0, 0, 312); yaw = 0; player.onShip = true; } else { placeSoldier(player); yaw = 0; } }
   else { player.alive = false; gpos.set(0, 30, 215); yaw = 0; pitch = -.5; }
-  for (let i = 0; i < SIDE.us.max - 1; i++){ const s = addNPC('us', rollCls('us')); if (i < 3) giveBox(s); if (i < 15) tickets.us--; else { if (s.boat){ s.boat.riders = s.boat.riders.filter(q => q !== s); s.boat = null; } s.alive = false; s.deadT = 99; s.lie = 0; s.m.group.visible = false; } }   /* war_v2: はじめの組は 15人。のこりは次の組 (10〜15人) で出てくる */
-  wave.us = 14;
+  for (let i = 0; i < US0 - 1; i++){ const s = addNPC('us', rollCls('us')); if (i < 3) giveBox(s); if (i < 15) tickets.us--; else { if (s.boat){ s.boat.riders = s.boat.riders.filter(q => q !== s); s.boat = null; } s.alive = false; s.deadT = 99; s.lie = 0; s.m.group.visible = false; } }   /* war_v2: はじめの組は 15人。のこりは次の組 (10〜15人) で出てくる */
+  wave.us = 4;
   for (let i = 0; i < SIDE.de.max - 1; i++){ const s = addNPC('de', rollCls('de')); if (i < 2) giveBox(s); tickets.de--; }
   pitch = spectate ? -.5 : 0; camY = 1.6;
 }
@@ -685,7 +765,13 @@ function updateAmbusher(s, dt){ const b = s.ambB; s.ambT -= dt; let low = false;
   animModel(s, dt); if (low) s.m.group.position.y = s.pos.y - .35; }
 function updateNPC(s, dt){ const C = s.C, P = PTS[Math.min(front, PTS.length - 1)];
   if (s.amb){ updateAmbusher(s, dt); return; }   /* war_v10 */
-  if (s.boat){ const b = s.boat, i = b.riders.indexOf(s); s.pos.set(b.x + (i % 2 ? .8 : -.8), -.05, b.z - 2.2 + ((i / 2) | 0) * 1.3); s.heading = Math.PI; s.speedNow = 0; s.crouch = true; animModel(s, dt); s.m.group.position.y = s.pos.y - .35; return; } s.crouch = false;
+  if (s.onShip){ updateShipNPC(s, dt); return; }   /* war_v11 */
+  if (s.boat){ const b = s.boat, q = seatOf(b, b.riders.indexOf(s)); s.aim = false; s.crouch = false; let gy = -.1, sit = 0;   /* war_v11: 後ろから乗って、まん中を歩いて、長いすに座る */
+    if (!s.seated){ s.hopT += dt; if (s.hopT < .4){ const k = s.hopT / .4; s.pos.x = s.hopFrom.x + (b.x - s.hopFrom.x) * k; s.pos.z = s.hopFrom.z + (b.z + 3.3 - s.hopFrom.z) * k; gy = -.1 * k + Math.sin(k * Math.PI) * .4; s.speedNow = 0; s.heading = Math.PI; }
+      else if (s.pos.z > q.z + .05){ s.pos.x = b.x; s.pos.z = Math.max(q.z, Math.min(s.pos.z, b.z + 3.3) - 4 * dt); s.speedNow = 4; s.heading = Math.PI; }
+      else { s.sideT += dt; const k = Math.min(1, s.sideT / .3); s.pos.x = b.x + (q.x - b.x) * k; s.pos.z = q.z; sit = k; s.speedNow = 0; s.heading = q.h; if (k >= 1) s.seated = true; } }
+    else { s.pos.x = q.x; s.pos.z = q.z; s.heading = q.h; s.speedNow = 0; sit = 1; }
+    s.pos.y = -.05; animModel(s, dt); s.m.group.position.y = gy + (-.48 - gy) * sit; if (sit){ s.m.legL.rotation.x = s.m.legR.rotation.x = -1.0 * sit; s.m.armL.rotation.x = s.m.armR.rotation.x = -.5 * sit; }   /* 船のゆか = -0.1、長いすの上 = 0.3 */ return; } s.crouch = false;
   if (s.pos.z < 18.3 && s.pos.z > -60.3 && Math.abs(s.pos.x) > 4.8) s.pos.x = clamp(s.pos.x, -4.4, 4.4);   /* war_v2: 町では道の上にもどす */
   s.think -= dt; if (s.think <= 0){ s.think = R(.25, .45); s.target = findTarget(s); if (!s.helmet && !s.target){ const b = boxes.find(q => q.side === s.side && q.n > 0 && Math.hypot(q.x - s.pos.x, q.z - s.pos.z) < 22); s.goBox = b || null; } else s.goBox = null;
     if (s.hasBox && !boxes.some(q => q.side === s.side && q.n > 0 && Math.hypot(q.x - s.pos.x, q.z - s.pos.z) < 25) && soldiers.some(q => q.alive && q.side === s.side && !q.helmet && Math.hypot(q.pos.x - s.pos.x, q.pos.z - s.pos.z) < 14)) dropBox(s); }
@@ -703,18 +789,37 @@ function updateNPC(s, dt){ const C = s.C, P = PTS[Math.min(front, PTS.length - 1
     const arrived = moveTo(s, s.spot.x, s.spot.z, 3.6 * C.speed, dt); if (arrived) turnTo(s, 0, dt, 4); }
   animModel(s, dt); }
 /* ---------- 小さな船 ---------- */
-function updateBoats(dt){ for (const b of boats){ b.t += dt; if (b.st === 'load'){ b.x = b.sx; b.z = b.sz; b.ramp.rotation.x = 0; if (b.t > 6 && (b.riders.length >= 4 || b.t > 14) && b.riders.length){ b.st = 'go'; b.t = 0; } else if (b.t > 14) b.t = 6; }
-    else if (b.st === 'go'){ const k = Math.min(1, b.t / 11); b.x = b.sx + (b.bx - b.sx) * k; b.z = b.sz + (208.5 - b.sz) * k; if (k >= 1){ b.st = 'land'; b.t = 0; } }
-    else if (b.st === 'land'){ b.ramp.rotation.x = -Math.min(1.45, b.t * 2.2); if (b.t > .8){ for (const s of b.riders){ s.boat = null; s.pos.set(b.x + R(-1, 1), 0, 203.4 + R(-.8, .8)); s.crouch = false; if (s.isPlayer){ showMsg('上陸！ 鉄のさくにかくれながら、バンカーへ進め', 3); } } b.riders = []; } if (b.t > 3){ b.st = 'back'; b.t = 0; } }
-    else { const k = Math.min(1, b.t / 9); b.ramp.rotation.x = 0; b.x = b.bx + (b.sx - b.bx) * k; b.z = 208.5 + (b.sz - 208.5) * k; if (k >= 1){ b.st = 'load'; b.t = 0; } }
+/* war_v12: 船の中でくつろぐ兵士 (戦わない。兵士控え室と食堂の長いすに座っている) */
+let CREW = null;
+function makeCrew(){ if (CREW) return; CREW = []; const E = Math.PI / 2; for (const [x, z, h] of [[-9.55, 303.2, E], [-9.55, 304.6, E], [-9.55, 312.4, E], [9.55, 305, -E], [9.55, 313.2, -E], [9.55, 315, -E], [-3.5, 308, -E], [3.5, 311, E], [8, 324.9, 0], [10.5, 326.7, Math.PI], [15, 324.9, 0], [7, 333.3, 0]]){
+    const a = makeSoldier('us', 'rifle', false); SHIPIN.add(a.m.group); a.pos.set(x, 0, z); a.heading = h; a.speedNow = 0; a.aim = false; animModel(a, 0); a.m.group.position.y = -.38; a.m.legL.rotation.x = a.m.legR.rotation.x = -1.0; a.m.armL.rotation.x = a.m.armR.rotation.x = -.5; CREW.push(a); } }
+const US0 = 45;   /* war_v14: ①の間のアメリカ兵の上限 (自分をふくむ) */
+/* war_v11: 船内 → 小さな船 */
+function seatOf(b, i){ const sd = i % 2 ? 1 : -1; return { x: b.x + sd * 1.25, z: b.z - 2.0 + ((i / 2) | 0) * 1.25, h: sd > 0 ? -Math.PI / 2 : Math.PI / 2 }; }
+function boardBoat(s, b){ s.onShip = false; s.toBoat = null; s.boat = b; b.riders.push(s); b.wait = 0; s.seated = false; s.hopT = 0; s.sideT = 0; s.hopFrom = { x: s.pos.x, z: s.pos.z }; }
+function assignBoats(){ const wait = soldiers.filter(s => s.alive && s.onShip && !s.isPlayer && !s.toBoat && s.readyT <= 0); if (!wait.length) return; const cnt = b => (b.st === 'load' ? b.riders.length : 0) + soldiers.filter(s => s.alive && s.onShip && s.toBoat === b).length, rk = b => b.st === 'load' ? 1e3 : b.st === 'back' ? 100 + b.t : b.t; let rem = wait.length;   /* war_v14: 戻ってくる船 (back・land) にも割りふる。早く着く船が先 */
+  for (const s of wait){ const ld = boats.filter(b => b.st !== 'go').sort((a, c) => rk(c) - rk(a)).map(b => ({ b, n: cnt(b) })); const part = ld.filter(q => q.n > 0 && q.n < q.b.cap).sort((a, c) => c.n - a.n)[0], more = ld.filter(q => q.n > 0 && q.n < 8).sort((a, c) => c.n - a.n)[0], empty = ld.filter(q => q.n === 0)[0]; const q = part || (rem >= 6 ? empty || more : more || empty); if (!q) break; s.toBoat = q.b; s.shipT = 0; rem--; } }
+function updateShipNPC(s, dt){ let b = s.toBoat; s.crouch = false; s.aim = false; s.readyT -= dt; if (b && (b.st === 'go' || (b.st === 'load' && b.riders.length >= 8))){ s.toBoat = b = null; }
+  if (!b){ s.speedNow = 0; turnTo(s, Math.PI, dt, 6); moveBody(s, 0, 0, dt); animModel(s, dt); return; }   /* war_v12: 乗る船が決まるまで その場 (兵士控え室) で待つ */
+  let tx = b.sx + s.shipOff, tz = SHIP.dz + .6, fin = true; if (s.pos.z > 299.3){ fin = false; tx = s.door; tz = Math.abs(s.pos.x - s.door) < .5 || s.pos.z <= 301.9 ? 298.9 : 302.4; } const dx = tx - s.pos.x, dz = tz - s.pos.z, d = Math.hypot(dx, dz); s.shipT += dt;
+  if (fin && d < .35 && b.st !== 'load'){ s.speedNow = 0; s.shipT = 0; turnTo(s, Math.PI, dt, 6); moveBody(s, 0, 0, dt); animModel(s, dt); return; }   /* war_v14: 船が戻るまで ドックで待つ */
+  if ((fin && d < .35) || (s.shipT > 25 && b.st === 'load')){ s.speedNow = 0; boardBoat(s, b); return; }
+  { const sp = 5.2 * s.C.speed, st = Math.min(d, sp * dt); if (d > .01) moveBody(s, dx / d * st, dz / d * st, dt); s.speedNow = sp; turnTo(s, Math.atan2(dx, dz), dt, 9); }
+  animModel(s, dt); }
+function boatLen(b){ return b.sz - 246 + Math.hypot(b.bx - b.sx, 37.5); }
+function boatAt(b, d){ const L1 = b.sz - 246; if (d <= L1){ b.x = b.sx; b.z = b.sz - d; return false; } const L2 = Math.hypot(b.bx - b.sx, 37.5), k = Math.min(1, (d - L1) / L2); b.x = b.sx + (b.bx - b.sx) * k; b.z = 246 - 37.5 * k; return k >= 1; }   /* まっすぐ船首の口を出てから、海岸の自分の場所へ */
+function updateBoats(dt){ assignBoats(); for (const b of boats){ b.t += dt; if (b.st === 'load'){ b.x = b.sx; b.z = b.sz; b.ramp.rotation.x = 0; const busy = soldiers.some(s => s.alive && s.onShip && s.toBoat === b) || b.riders.some(s => !s.isPlayer && !s.seated); if (!b.riders.length) b.wait = 0; else if (!busy){ b.wait += dt; if (b.wait > (b.riders.length >= 6 ? .6 : b.riders.some(s => s.isPlayer) ? 20 : front > 0 || tickets.us <= 0 ? 3 : 1e9)){ b.st = 'go'; b.t = 0; b.n0 = b.riders.length; } } }   /* war_v11: 6〜8人 座ったら出発。6人にたりない時は 次の組を待つ (自分が乗っている時は 20秒まで。もう船内に人が来ない時は すぐ出る) */
+    else if (b.st === 'go'){ if (boatAt(b, b.t * 9)){ b.st = 'land'; b.t = 0; } }
+    else if (b.st === 'land'){ b.ramp.rotation.x = -Math.min(1.45, b.t * 2.2); if (b.t > .8){ for (const s of b.riders){ s.boat = null; s.pos.set(b.x + R(-1, 1), 0, 203.4 + R(-.8, .8)); s.crouch = false; s.aim = true;   /* war_v12: 上陸したら銃を構える */ if (s.isPlayer){ showMsg('上陸！ 鉄のさくにかくれながら、バンカーへ進め', 3); } } b.riders = []; } if (b.t > 1.8){ b.st = 'back'; b.t = 0; } }
+    else { b.ramp.rotation.x = 0; const d = boatLen(b) - b.t * 12; boatAt(b, Math.max(0, d)); if (d <= 0){ b.st = 'load'; b.t = 0; b.wait = 0; b.cap = 6 + ((Math.random() * 3) | 0); } }
     b.g.position.set(b.x, -.55 + Math.sin(elapsed * 1.6 + b.bx) * .08, b.z); } }
 /* ---------- 毎フレーム ---------- */
 function update(dt){
   elapsed += dt; const P = PTS[Math.min(front, PTS.length - 1)];
   updateBoats(dt);
   /* 増援 (6秒ごと) */
-  for (const side of ['us', 'de']){ wave[side] -= dt; if (wave[side] <= 0){ wave[side] = side === 'us' ? 5 : 5; let n = soldiers.filter(s => s.side === side && s.alive && !s.isPlayer).length; let dead = soldiers.filter(s => s.side === side && !s.alive && !s.isPlayer && !s.amb && s.deadT > 2.5);
-    if (side === 'us'){ if (dead.length < 10 && tickets.us >= 10) dead = []; else dead = dead.slice(0, 10 + ((Math.random() * 6) | 0)); }   /* war_v2: アメリカ軍は 10〜15人ずつ出てくる (増援ののこりが 10人より少ないときは のこり全部) */ for (const s of dead){ if (n >= (side === 'de' && front >= PTS.length - 1 ? 30 : SIDE[side].max) - 1 || tickets[side] <= 0) break; tickets[side]--; n++; s.cls = rollCls(side); s.C = CLS[s.cls]; placeSoldier(s); s.lane = R(-W + 4, W - 4); if (side === 'us' && front === 0){ const b = boats.filter(q => q.st === 'load' && q.riders.length < 8).sort((a, c) => a.riders.length - c.riders.length)[0]; if (b){ s.boat = b; b.riders.push(s); } } if (!s.hasBox && s.carrier && Math.random() < .35){ s.hasBox = true; if (s.boxMesh) s.boxMesh.visible = true; } }
+  for (const side of ['us', 'de']){ wave[side] -= dt; if (wave[side] <= 0){ wave[side] = side === 'us' && front === 0 ? 2 : 5; let n = soldiers.filter(s => s.side === side && s.alive && !s.isPlayer).length; let dead = soldiers.filter(s => s.side === side && !s.alive && !s.isPlayer && !s.amb && s.deadT > 2.5);
+    if (side === 'us'){ const free = Math.min(dead.length, (front === 0 ? US0 : SIDE.us.max) - 1 - n); if (free < 10 && tickets.us >= 10) dead = []; else dead = dead.slice(0, Math.max(0, Math.min(free, 10 + ((Math.random() * 6) | 0)))); }   /* war_v2: アメリカ軍は 10〜15人ずつ出てくる (増援ののこりが 10人より少ないときは のこり全部) */ for (const s of dead){ if (n >= (side === 'de' && front >= PTS.length - 1 ? 30 : side === 'us' && front === 0 ? US0 : SIDE[side].max) - 1 || tickets[side] <= 0) break; tickets[side]--; n++; s.cls = rollCls(side); s.C = CLS[s.cls]; placeSoldier(s); s.lane = R(-W + 4, W - 4); if (!s.hasBox && s.carrier && Math.random() < .35){ s.hasBox = true; if (s.boxMesh) s.boxMesh.visible = true; } }
     if (side === 'de' && front >= PTS.length - 1){ let k = 0; while (n < 29 && tickets.de > 0 && k < 4){ addNPC('de', rollCls('de')); tickets.de--; n++; k++; } }   /* 最後の入口: ドイツ兵がたくさん */ } }
   for (const b of BUNKERS) if (b.respT > 0) b.respT -= dt;
   for (const s of soldiers){ if (s.isPlayer) continue; if (s.alive) updateNPC(s, dt); else { s.deadT += dt; if (s.m){ const k = Math.min(1, s.deadT / .5), e = k * k; s.m.group.rotation.set(-e * Math.PI / 2, s.lie, 0, 'YXZ'); s.m.group.position.set(s.pos.x, s.pos.y + .14 * e, s.pos.z); if (s.deadT > 5) s.m.group.visible = false; } } }
@@ -732,12 +837,12 @@ function update(dt){
   hud(us => 0);
 }
 function updatePlayer(dt){ const p = player;
-  if (spectate){ const f = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0), sd = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0), sp = (keys.ShiftLeft || keys.ShiftRight) ? 40 : 14, cp = Math.cos(pitch); gpos.x += (-Math.sin(yaw) * cp * f + Math.cos(yaw) * sd) * sp * dt; gpos.z += (-Math.cos(yaw) * cp * f - Math.sin(yaw) * sd) * sp * dt; gpos.y = clamp(gpos.y + (Math.sin(pitch) * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, 1, 90); gpos.x = clamp(gpos.x, -W - 40, W + 40); gpos.z = clamp(gpos.z, -135, 320); camera.position.copy(gpos); camera.rotation.set(pitch, yaw, 0); setPrompt('観戦モード　W・A・S・D：移動　スペース／C：上下　シフト：速く　Q：やめる'); return; }
-  if (!p.alive){ p.respT -= dt; camera.position.set(p.pos.x, p.pos.y + .4, p.pos.z); camera.rotation.set(-.3, yaw, .3); if (p.respT <= 0){ placeSoldier(p); if (p.cls === 'helmet'){ p.hasBox = true; p.boxCd = 0; } p.onShip = false; $('dead').style.opacity = 0; $('red').style.opacity = 0; yaw = p.side === 'us' ? 0 : Math.PI; pitch = 0; showMsg('自分の陣地のいちばん前から出直した', 2); } return; }
+  if (spectate){ const f = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0), sd = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0), sp = (keys.ShiftLeft || keys.ShiftRight) ? 40 : 14, cp = Math.cos(pitch); gpos.x += (-Math.sin(yaw) * cp * f + Math.cos(yaw) * sd) * sp * dt; gpos.z += (-Math.cos(yaw) * cp * f - Math.sin(yaw) * sd) * sp * dt; gpos.y = clamp(gpos.y + (Math.sin(pitch) * f + (keys.Space ? 1 : 0) - (keys.KeyC ? 1 : 0)) * sp * dt, 1, 90); gpos.x = clamp(gpos.x, -W - 40, W + 40); gpos.z = clamp(gpos.z, -135, 375);   /* war_v13: 観戦カメラで 船の中の部屋 (食堂・寝室) まで入れる */ camera.position.copy(gpos); camera.rotation.set(pitch, yaw, 0); setPrompt('観戦モード　W・A・S・D：移動　スペース／C：上下　シフト：速く　Q：やめる'); return; }
+  if (!p.alive){ p.respT -= dt; camera.position.set(p.pos.x, p.pos.y + .4, p.pos.z); camera.rotation.set(-.3, yaw, .3); if (p.respT <= 0){ placeSoldier(p); if (p.cls === 'helmet'){ p.hasBox = true; p.boxCd = 0; } $('dead').style.opacity = 0; $('red').style.opacity = 0; yaw = p.side === 'us' ? 0 : Math.PI; pitch = 0; showMsg(p.onShip ? '船の兵士控え室から出直した。小さな船に乗ろう' : '自分の陣地のいちばん前から出直した', 2); } return; }
   if (p.cd > 0) p.cd -= dt; if (p.reloadT > 0){ p.reloadT -= dt; if (p.reloadT <= 0) p.ammo = p.C.clip; }
   if (p.bagCd > 0) p.bagCd -= dt; if (p.boxCd > 0){ p.boxCd -= dt; if (p.boxCd <= 0 && p.cls === 'helmet'){ p.hasBox = true; showMsg('新しいヘルメット箱がとどいた', 1.5); } }
   let prompt = '';
-  if (p.boat){ const b = p.boat, i = b.riders.indexOf(p); p.pos.set(b.x + (i % 2 ? .8 : -.8), -.05, b.z - 2.2 + ((i / 2) | 0) * 1.3); camera.position.set(p.pos.x, .95, p.pos.z); camera.rotation.set(pitch, yaw, 0); setPrompt(b.st === 'load' ? '小さな船に乗った。もうすぐ出発…' : '海岸へ向かっている…'); return; }
+  if (p.boat){ const b = p.boat, q = seatOf(b, b.riders.indexOf(p)); p.pos.set(q.x, -.05, q.z); camera.position.set(p.pos.x, 1.1, p.pos.z); camera.rotation.set(pitch, yaw, 0); setPrompt(b.st === 'load' ? '小さな船に座った。6人そろうと出発…' : '海岸へ向かっている…'); return; }
   if (p.gunAt){ p.pos.set(p.gunAt.gx, 0, p.gunAt.gz); yaw = clamp(yaw, Math.PI - 1.0, Math.PI + 1.0); pitch = clamp(pitch, -.25, .2); camera.position.set(p.pos.x, 1.42, p.pos.z + .2); camera.rotation.set(pitch, yaw, 0); p.gunAt.gun.rotation.y = yaw + Math.PI; if (mouseDown) playerShoot(); setPrompt('バンカーの機関銃　クリック：うつ　E：はなれる'); if (keys.KeyE){ keys.KeyE = false; p.gunAt.playerOn = false; p.gunAt = null; p.pos.z -= 1.2; } return; }
   const f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), sd = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
   let dx = -Math.sin(yaw) * f + Math.cos(yaw) * sd, dz = -Math.cos(yaw) * f - Math.sin(yaw) * sd; const len = Math.hypot(dx, dz); if (len > 0){ dx /= len; dz /= len; }
@@ -745,7 +850,7 @@ function updatePlayer(dt){ const p = player;
   camY += ((p.crouch ? 1.0 : 1.6) - camY) * Math.min(1, dt * 10); camera.position.set(p.pos.x, p.pos.y + camY + Math.sin(bob) * (mv > .001 ? .03 : 0), p.pos.z); camera.rotation.set(pitch, yaw, 0);
   const wantFov = zoom && p.C === CLS.sniper ? 22 : 70; if (Math.abs(camera.fov - wantFov) > .5){ camera.fov += (wantFov - camera.fov) * Math.min(1, dt * 12); camera.updateProjectionMatrix(); }
   if (mouseDown && (p.C === CLS.mg || p.C === CLS.assault || !p.shotHeld)){ p.shotHeld = true; playerShoot(); } if (!mouseDown) p.shotHeld = false;
-  if (p.onShip){ const sh = SHIPS[0]; if (p.pos.z < sh.z - 19.5){ prompt = 'E：小さな船に乗りかえる'; if (keys.KeyE){ keys.KeyE = false; const b = boats.filter(q => q.st === 'load').sort((a, c) => Math.hypot(a.x - p.pos.x, a.z - p.pos.z) - Math.hypot(c.x - p.pos.x, c.z - p.pos.z))[0]; if (b){ p.onShip = false; p.boat = b; b.riders.push(p); b.t = Math.max(b.t, 9); beep(660, .1, .15); } else showMsg('小さな船がもどってくるのを待とう', 2); } } else prompt = '船のいちばん前（海岸がわ）へ行って、小さな船に乗りかえよう'; }
+  if (p.onShip){ const b = boats.filter(q => q.st === 'load' && q.riders.length < 8).sort((a, c) => Math.abs(a.sx - p.pos.x) - Math.abs(c.sx - p.pos.x))[0]; if (!b) prompt = '小さな船がもどってくるのを待とう'; else if (p.pos.z < SHIP.dz + 2.2 && Math.abs(b.sx - p.pos.x) < 2.6){ prompt = 'E：小さな船に乗る（座る）'; if (keys.KeyE){ keys.KeyE = false; boardBoat(p, b); beep(660, .1, .15); } } else prompt = p.pos.z > 300.5 ? '前のとびらを出ると小さな船。後ろのとびらから食堂・寝室、横のとびらから武器庫・医務室に入れる' : '前にとまっている小さな船まで歩いて、乗ろう'; }   /* war_v11 */
   if (!p.helmet){ const b = boxes.find(q => q.side === p.side && q.n > 0 && Math.hypot(q.x - p.pos.x, q.z - p.pos.z) < 2); if (b){ prompt = 'E：ヘルメット箱からヘルメットをかぶる（のこり ' + b.n + '）'; if (keys.KeyE){ keys.KeyE = false; if (takeHelmet(p, b)){ showMsg('ヘルメットをかぶった', 1.5); beep(700, .08, .1); } } } }
   if (p.side === 'de' && !prompt){ const b = BUNKERS.find(q => q.pt === front && !q.playerOn && Math.hypot(q.gx - p.pos.x, q.gz - p.pos.z) < 1.6); if (b){ prompt = 'E：バンカーの機関銃をうつ'; if (keys.KeyE){ keys.KeyE = false; if (b.gunner){ b.gunner.gunAt = null; b.gunner.C = CLS[b.gunner.cls]; b.gunner.pos.z -= 2; b.gunner = null; } b.playerOn = true; p.gunAt = b; yaw = Math.PI; pitch = 0; } } }
   if (!prompt && p.hp < 100){ const bg = nearBag(p, 2.2); if (bg){ if (keys.KeyE){ p.healT = (p.healT || 0) + dt; if (p.healT >= 4){ p.hp = 100; p.healT = 0; keys.KeyE = false; showMsg('回復した', 1.5); beep(880, .1, .15); } } else p.healT = 0; prompt = 'E を4秒おしつづけて回復（' + (p.healT > 0 ? 'あと ' + Math.ceil(4 - p.healT) + '秒' : '回復バッグ') + '）'; } else p.healT = 0; }   /* war_v2: 回復は回復バッグの近くで E を4秒 */
@@ -766,11 +871,11 @@ function finish(quit){ if (state !== 'play') return; state = 'over'; if (documen
   if (won && window.ACH) ACH.clear('war'); $('hud').style.display = 'none'; $('result').classList.add('on'); }
 
 // ===================== 操作 =====================
-function drawPick(){ $('pickSide').innerHTML = [['us', 'アメリカ軍（攻める）', '大きな船から小さな船に乗りかえて上陸'], ['de', 'ドイツ軍（まもる）', 'バンカーや持ち場でむかえうつ'], ['watch', '観戦モード', '参加しないで空から見る']].map(([k, n, d]) => `<button data-s="${k}" class="${k === mySide ? 'sel' : ''}">${n}<small>${d}</small></button>`).join('');
+function drawPick(){ $('pickSide').innerHTML = [['us', 'アメリカ軍（攻める）', '超大きな船の中から小さな船に乗って上陸'], ['de', 'ドイツ軍（まもる）', 'バンカーや持ち場でむかえうつ'], ['watch', '観戦モード', '参加しないで空から見る']].map(([k, n, d]) => `<button data-s="${k}" class="${k === mySide ? 'sel' : ''}">${n}<small>${d}</small></button>`).join('');
   $('pickCls').innerHTML = ['rifle', 'assault', 'mg', 'sniper', 'medic', 'helmet'].map(k => `<button data-c="${k}" class="${k === myCls ? 'sel' : ''}">${CLS[k].name}<small>${CLS[k].note}</small></button>`).join('');
   $('pickSide').querySelectorAll('button').forEach(b => b.onclick = () => { mySide = b.dataset.s; drawPick(); }); $('pickCls').querySelectorAll('button').forEach(b => b.onclick = () => { myCls = b.dataset.c; drawPick(); }); }
 drawPick();
-function startGame(){ initAudio(); newGame(); state = 'play'; paused = false; for (const id of ['title', 'result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); showMsg(spectate ? '観戦モード。空から戦場を見よう' : mySide === 'us' ? '大きな船の上だ。前へ行って、小さな船に乗りかえろ（E）' : 'ドイツ軍だ。持ち場でアメリカ軍をむかえうて', 4); }
+function startGame(){ initAudio(); newGame(); state = 'play'; paused = false; for (const id of ['title', 'result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); showMsg(spectate ? '観戦モード。空から戦場を見よう' : mySide === 'us' ? '船の兵士控え室だ。とびらを出て、前の小さな船まで歩いて乗れ（E）' : 'ドイツ軍だ。持ち場でアメリカ軍をむかえうて', 4); }
 function toTitle(){ state = 'title'; paused = false; for (const id of ['result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'none'; $('title').classList.add('on'); }
 $('startBtn').onclick = startGame; $('retryBtn').onclick = startGame;
 let lockFailed = false;
@@ -800,9 +905,9 @@ setInterval(() => { if (performance.now() - lastTick > 120) tick(); }, 33);
 function tick(){ lastTick = performance.now(); const real = Math.min(.25, clock.getDelta()), steps = Math.max(1, Math.ceil(real / .04)), dt = real / steps;
   for (let i = 0; i < steps; i++){ if (state === 'play' && !paused) update(dt); }
   if (state === 'title'){ titleT += real; camera.position.set(Math.sin(titleT * .08) * 20, 16, 222 + Math.sin(titleT * .1) * 6); camera.lookAt(0, 2, 150); }
-  renderer.render(scene, camera); }
+  SHIPIN.visible = camera.position.z > 262 && camera.position.y < 9; renderer.render(scene, camera); }   /* war_v12 */
 window.__ready = true;
-window.__game = { get state(){ return state; }, get amb(){ return AMB; }, get soldiers(){ return soldiers; }, get player(){ return player; }, get front(){ return front; }, get tickets(){ return tickets; }, get capP(){ return capP; }, get winner(){ return winner; }, get boats(){ return boats; }, get boxes(){ return boxes; }, get elapsed(){ return elapsed; }, keys, BUNKERS, PTS, set side(v){ mySide = v; }, set cls(v){ myCls = v; }, setView(y, p){ yaw = y; pitch = p; }, playerShoot, finish, get camera(){ return camera; }, get renderer(){ return renderer; }, get scene(){ return scene; },
+window.__game = { get state(){ return state; }, get amb(){ return AMB; }, get ship(){ return SHIP; }, get shipIn(){ return SHIPIN; }, get soldiers(){ return soldiers; }, get player(){ return player; }, get front(){ return front; }, get tickets(){ return tickets; }, get capP(){ return capP; }, get winner(){ return winner; }, get boats(){ return boats; }, get boxes(){ return boxes; }, get elapsed(){ return elapsed; }, keys, BUNKERS, PTS, set side(v){ mySide = v; }, set cls(v){ myCls = v; }, setView(y, p){ yaw = y; pitch = p; }, playerShoot, finish, get camera(){ return camera; }, get renderer(){ return renderer; }, get scene(){ return scene; },
   sim(sec, render = true){ const n = Math.round(sec * 30); for (let i = 0; i < n; i++){ if (state === 'play') update(1 / 30); } if (render) renderer.render(scene, camera); } };
 loop();
 </script>
