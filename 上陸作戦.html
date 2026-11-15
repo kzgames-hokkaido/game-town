@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>上陸作戦</title><!-- war_v2 war_v3 war_v4 war_v5 war_v6 war_v7 war_v8 war_v9 war_v10 war_v11 war_v12 war_v13 war_v14 war_v15 war_v16 -->
+<title>上陸作戦</title><!-- war_v2 war_v3 war_v4 war_v5 war_v6 war_v7 war_v8 war_v9 war_v10 war_v11 war_v12 war_v13 war_v14 war_v15 war_v16 war_v17 -->
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#fff;font-family:"BIZ UDPGothic","Yu Gothic UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;user-select:none}
@@ -88,12 +88,15 @@ a.sub{text-align:center;text-decoration:none}
   <h1><small>戦争を再現したゲーム</small>上陸作戦（アメリカ軍 対 ドイツ軍）</h1>
   <p>アメリカ軍は<b>超大きな船の中から、小さな船に乗って</b>海岸に上陸する（小さな船は座れて、6〜8人ずつ出発する）。アメリカ軍は船の<b>兵士控え室</b>から始まる（①でやられた時もここから出直す）。船の中には武器庫・医務室・寝室・食堂もあり、歩いて入れる（観戦モードのカメラでも入れる）。アメリカ軍には、ヘルメットではなく<b>帽子</b>の兵士が時々いる（6人に1人ぐらい。ヘルメットがないので、頭に当たるとやられる）。ドイツ軍は<b>バンカー</b>から機関銃でむかえうつ。アメリカ軍は<b>場所を1つずつ攻略</b>していく。</p>
   <ul>
-    <li>攻略する順番：<b>①海岸のバンカー → ②森 → ③橋</b>（橋の終わりの右がわにバンカー）<b> → ④町</b>（まっすぐな一本道）<b> → ⑤ドイツの大きな入口</b>（中にかべ。ドイツ兵がたくさん。<b>⑤ではドイツ軍は復活しない</b>）</li>
+    <li><b>ワールド（戦場）</b>は5つ。<b>海岸の上陸</b>（今までの戦場。船から上陸）のほかに、地形も道もまるごとちがう<b>雪山のとりで・砂漠の飛行場・ジャングルの川・夜の町</b>がある。新しい4つは船がなく、基地キャンプから歩いて出る。どのワールドも ①〜⑤ を順番に攻略する</li>
+    <li>海岸の上陸の攻略する順番：<b>①海岸のバンカー → ②森 → ③橋</b>（橋の終わりの右がわにバンカー）<b> → ④町</b>（まっすぐな一本道）<b> → ⑤ドイツの大きな入口</b>（中にかべ。ドイツ兵がたくさん。<b>⑤ではドイツ軍は復活しない</b>）</li>
     <li>場所のまわりで、味方の人数が敵より多いと攻略のゲージがたまる。⑤まで攻略すればアメリカ軍の勝ち。アメリカ軍の<b>増援</b>がつきたらドイツ軍の勝ち</li>
     <li>はじめに<b>アメリカ軍・ドイツ軍・観戦</b>をえらべる。やられても、<b>自分の陣地のいちばん前</b>から出直せる</li>
     <li>兵士の種類：<b>ライフル兵</b>（ふつう）、<b>アサルトライフル兵</b>（マウス長押し・コントローラーの ZR 長押しで ずっとうてる）、<b>機関銃兵</b>（連射。動きはおそい）、<b>狙撃兵</b>（遠くから一発。右クリックでのぞく）、<b>衛生兵</b>（回復バッグを置く）、<b>ヘルメット箱の兵士</b>（ヘルメット箱を置く。3つ入り）。<b>回復</b>は、衛生兵が置いた<b>回復バッグ</b>の近くで <kbd>E</kbd> を<b>4秒</b>おしつづける。ドイツ軍のバンカーには<b>バンカー兵</b>（機関銃をうつ係。機関銃からはなれているときは<b>ピストル</b>で戦う）がいる。バンカーの右がわには小さな<b>倉庫</b>がある（たなに弾薬箱）（ドイツ軍なら、バンカーの中の機関銃の前で <kbd>E</kbd> で自分もうてる）</li>
     <li><b>ヘルメット</b>：かぶっていると弾の力が弱まり、頭への弾を1回はじく。弾や爆風で<b>ヘルメットが飛ぶ</b>ことがある。<b>ヘルメット箱</b>（3つ入り）を持った兵士が箱を置くので、箱のそばで <kbd>E</kbd> でかぶり直せる</li>
   </ul>
+  <p style="margin:10px 0 0;font-weight:800">ワールド（戦場）：えらぶと、そのワールドを読みこみ直す</p>
+  <div class="pick" id="pickWorld"></div>
   <div class="pick" id="pickSide"></div>
   <div class="pick" id="pickCls"></div>
   <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：移動　<kbd>シフト</kbd>：走る　<kbd>C</kbd>：しゃがむ　クリック：うつ　右クリック：のぞく（狙撃兵）　<kbd>R</kbd>：弾をこめる　<kbd>E</kbd>：船に乗りかえる／ヘルメットをかぶる／回復（4秒）／バンカーの機関銃　<kbd>F</kbd>：回復バッグを置く（衛生兵）／ヘルメット箱を置く（ヘルメット箱の兵士）　観戦中 <kbd>Q</kbd>：やめる</div>
@@ -137,8 +140,25 @@ const CLS = {
   bunker: { name: 'バンカーの機関銃', dmg: 18, int: .11, range: 72, acc: .34, clip: 999, reload: 0, speed: 0, pInt: .08, note: 'バンカーの機関銃' },
 };
 const SIDE = { us: { name: 'アメリカ軍', shirt: 0x55623c, pants: 0x4a5236, helm: 0x3a4628, max: 30, tickets: 260 }, de: { name: 'ドイツ軍', shirt: 0x5c626a, pants: 0x4c5158, helm: 0x40454c, max: 23, tickets: 270 } };
+/* war_v17: ワールド (戦場)。?w=番号 でえらぶ。0 は今までの海岸。1〜4 は地形がまるごとちがう (pts = ①〜⑤の名前と場所) */
+const WORLDS = [
+  { name: '海岸の上陸', desc: '超大きな船から小さな船で上陸。バンカー・森・橋・町・大きな入口', sky: 0x9aa4ac, fog: [60, 330], hemi: [0xdde4ee, 0x5a5a48, 1.25], amb: .3, sun: [0xfff0dc, 1.2], rangeK: 1, wx: null },
+  { name: '雪山のとりで', desc: '雪。村 → こおった湖 → がけの関所 → ざんごう → 山のとりで', sky: 0xb2bec8, fog: [30, 190], hemi: [0xeef4ff, 0x8a9098, 1.35], amb: .35, sun: [0xffffff, .7], rangeK: .8, wx: 'snow', tree: 'pine',
+    mat: { grass: 0xe6ecf0, leaf: 0xdfe8ea, trunk: 0x3c2c20, road: 0xb4bcc4, roof: 0xe4e8ec, bag: 0xb9bdb6, water: 0xbfd8e6, house: 0x9c9488, house2: 0x7f776e, stone: 0x8a9096 },
+    pts: [['雪の村', -8, 140], ['こおった湖', 8, 84], ['がけの関所', 0, 28], ['ざんごう', -10, -26], ['山のとりで', 0, -100]] },
+  { name: '砂漠の飛行場', desc: '砂ぼこり。オアシス → 岩の谷 → 飛行場 → 石油タンク → 砂のとりで。遠くまで見える', sky: 0xd9c9a0, fog: [90, 420], hemi: [0xfff2d0, 0x9a8458, 1.35], amb: .35, sun: [0xfff4d8, 1.5], rangeK: 1.15, wx: 'dust', tree: 'palm', usT: 310,
+    mat: { grass: 0xd2b880, road: 0x6c6a66, house: 0xcfb890, house2: 0xbfa77c, roof: 0xa88a5c, stone: 0xb49a6c, bag: 0xa89468, water: 0x2f8a96, leaf: 0x4f8a3a, trunk: 0x7a6038 },
+    pts: [['オアシス', 6, 142], ['岩の谷', -6, 90], ['飛行場', 0, 28], ['石油タンク', 12, -28], ['砂のとりで', 0, -100]] },
+  { name: 'ジャングルの川', desc: '雨。つり橋 → ジャングルの道 → 村 → 遺跡 → 山の基地。近くしか見えない', sky: 0x7f9a8c, fog: [26, 150], hemi: [0xd8f0dc, 0x3a5a36, 1.15], amb: .3, sun: [0xf4ffe0, .9], rangeK: .72, wx: 'rain', tree: 'palm', usT: 220,
+    mat: { grass: 0x356a2e, leaf: 0x1f6a2a, trunk: 0x6a5434, road: 0x6a5a40, house: 0xb89a62, house2: 0xa4854e, roof: 0x8a6a2c, stone: 0x6e7460, water: 0x2a6a62, bag: 0x7a7450 },
+    pts: [['つり橋', -10, 137], ['ジャングルの道', 8, 90], ['村', -6, 38], ['遺跡', 6, -28], ['山の基地', 0, -100]] },
+  { name: '夜の町', desc: '夜。駅 → 大通り → 広場 → 工場 → 司令部。暗くて近くしか見えない', sky: 0x0b1220, fog: [22, 150], hemi: [0x8496c0, 0x2a3040, .85], amb: .22, sun: [0xaec4ff, .45], rangeK: .68, wx: null, night: true, usT: 220,
+    mat: { grass: 0x3c4044, road: 0x2e3034, water: 0x16283a, bag: 0x6a6450 },
+    pts: [['駅', 0, 146], ['大通り', -8, 91], ['広場', 0, 34], ['工場', 10, -28], ['司令部', 0, -100]] } ];
+const WSEL = (() => { try { const n = +(new URLSearchParams(location.search).get('w') || 0); return n >= 0 && n < WORLDS.length ? n | 0 : 0; } catch (e){ return 0; } })(), WD = WORLDS[WSEL], WXL = [], BANDS = [];   /* WXL = 夜のサーチライト。BANDS = 通れない帯とすき間 (ワールド 1〜4) */
+let WX = null, WXT = 0;
 /* 攻略する場所 (海 → ドイツ。z が小さいほど奥) */
-const PTS = [{ name: '海岸のバンカー', x: 0, z: 134 }, { name: '森', x: 0, z: 95 }, { name: '橋', x: 0, z: 24 }, { name: '町', x: 0, z: -28 }, { name: 'ドイツの大きな入口', x: 0, z: -106 }];
+const PTS = [{ name: '海岸のバンカー', x: 0, z: 134 }, { name: '森', x: 0, z: 95 }, { name: '橋', x: 0, z: 24 }, { name: '町', x: 0, z: -28 }, { name: 'ドイツの大きな入口', x: 0, z: -106 }]; if (WD.pts) WD.pts.forEach((q, i) => { PTS[i].name = q[0]; PTS[i].x = q[1]; PTS[i].z = q[2]; });
 const CAP_R = 12, CAP_T = 13, W = 30, GARR = [52, 44, 52, 52, 0], LAST_N = 55;   /* war_v8: 第五は増援なし。始まるときに LAST_N 人 そろえる */
 function lastStand(){ for (const s of soldiers){ if (s.side !== 'de' || s.alive || s.isPlayer || s.amb) continue; s.cls = rollCls('de'); s.C = CLS[s.cls]; placeSoldier(s); s.lane = R(-W + 4, W - 4); } let n = soldiers.filter(s => s.side === 'de' && s.alive && !s.isPlayer).length; while (n < LAST_N){ addNPC('de', rollCls('de')); n++; } tickets.de = 0; }   /* GARR: 場所ごとのドイツ軍の守備兵の数 (その場所の兵がつきたら もう出てこない。次の場所には新しい守備兵) */
 let player = null;
@@ -150,8 +170,8 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x9aa4ac);
-scene.fog = new THREE.Fog(0x9aa4ac, 60, 330);
+scene.background = new THREE.Color(WD.sky);
+scene.fog = new THREE.Fog(WD.sky, WD.fog[0], WD.fog[1]);
 const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 600);
 camera.rotation.order = 'YXZ'; scene.add(camera);
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
@@ -184,6 +204,8 @@ const walls = [], surfaces = [];
 const M = { sand: std({ color: 0xb8a878, roughness: 1 }), grass: std({ color: 0x4a6a3a, roughness: 1 }), road: std({ color: 0x5a5a58, roughness: 1 }), conc: std({ color: 0x7a7c80, roughness: .95 }), dark: std({ color: 0x2a2c30 }), steel: std({ color: 0x3a3c40, metalness: .5, roughness: .6 }),
   wood: std({ color: 0x6a4a2a, roughness: .9 }), trunk: std({ color: 0x4a3420, roughness: 1 }), leaf: std({ color: 0x2a4a26, roughness: 1 }), bag: std({ color: 0x8a7a58, roughness: 1 }), water: std({ color: 0x2a4a62, roughness: .3, metalness: .2 }),
   ship: std({ color: 0x6a7078, metalness: .4, roughness: .6 }), boat: std({ color: 0x5a6258, metalness: .3, roughness: .7 }), house: std({ color: 0xa89a84, roughness: .95 }), house2: std({ color: 0x8a7a6a, roughness: .95 }), roof: std({ color: 0x5a3a2a, roughness: .9 }), stone: std({ color: 0x6a665e, roughness: .95 }), flagU: std({ color: 0x3a5aa8 }), flagD: std({ color: 0x8a1a1a }), box: std({ color: 0x4a5a3a, roughness: .8 }) };
+if (WD.mat) for (const k in WD.mat) M[k].color.setHex(WD.mat[k]);   /* war_v17: ワールドの色 */
+M.win = WD.night ? new THREE.MeshBasicMaterial({ color: 0xffd98a }) : M.dark;
 function box(x0, y0, z0, x1, y1, z1, mat){ const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), mat); m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); scene.add(m); return m; }
 function solid(x0, y0, z0, x1, y1, z1, mat){ const w = { x0, x1, z0, z1, y0, y1 }; walls.push(w); if (mat) box(x0, y0, z0, x1, y1, z1, mat); return w; }
 const BUNKERS = [], COVERS = [], SHIP = { x0: -26, x1: 26, z0: 252, z1: 372, hx: 13, hz: 300, dz: 273, top: 17, ceil: 7 };   /* war_v11: 超大きな船 1せき。hx・hz = 船内ホールのはば・おく、dz = ドックとホールのさかい */
@@ -257,13 +279,95 @@ function storeRoom(sx, sz){ const ex = sx + 3.2, ez = sz + 3.4;   /* 中は 2.7 
       else { box(tx0 + .06, y, z, tx1 - .06, y + .2, z + w, SM.ammo); box(tx0 + .045, y + .07, z + .05, tx0 + .065, y + .13, z + w - .05, SM.band); if (t === 1 && y < 1.5){ box(tx0 + .06, y + .2, z, tx1 - .06, y + .4, z + w, SM.ammo); box(tx0 + .045, y + .27, z + .05, tx0 + .065, y + .33, z + w - .05, SM.band); } }
       z += w + .08; } }
   solid(sx + .15, 0, sz + .55, sx + .85, .6, sz + 1.05, SM.crate); box(sx + .25, .6, sz + .6, sx + .7, .8, sz + 1.0, SM.ammo); box(sx + .24, .67, sz + .65, sx + .26, .73, sz + .95, SM.band);   /* ゆかの木箱と弾薬箱 */ }
+/* ===== war_v17: 地形がまるごとちがうワールド (1〜4) ===== */
+function freeAt(x, z, rr = .6){ if (Math.abs(x) > W - 1) return false; for (const w of walls){ if (w.y1 > .5 && w.y0 < 1.6 && x > w.x0 - rr && x < w.x1 + rr && z > w.z0 - rr && z < w.z1 + rr) return false; } return true; }
+function freeNear(fx, n = 16){ let q; for (let i = 0; i < n; i++){ q = fx(); if (freeAt(q[0], q[1])) break; } return { x: q[0], z: q[1] }; }
+function inGap(b, x){ return b.gaps.find(g => x >= g[0] && x <= g[1]); }
+function gapFor(b, x, gx){ let best = b.gaps[0], bc = 1e9; for (const g of b.gaps){ const c = Math.max(0, g[0] - x, x - g[1]) + Math.max(0, g[0] - gx, gx - g[1]) * .6; if (c < bc){ bc = c; best = g; } } return best; }
+function route2(s, gx, gz){ const x = s.pos.x, z = s.pos.z, down = gz < z, cl = (g, v) => g[1] - g[0] < 1.6 ? (g[0] + g[1]) / 2 : clamp(v, g[0] + .8, g[1] - .8);   /* 帯のすき間 (道・橋・門) を通る */
+  let b = null, hd = 1e9; for (const q of BANDS){ let d; if (z > q.z1 && z < q.z0) d = 0; else if (down && z >= q.z0 && gz < q.z0) d = z - q.z0; else if (!down && z <= q.z1 && gz > q.z1) d = q.z1 - z; else continue; if (d < hd){ hd = d; b = q; } }
+  if (!b) return [gx, gz]; const inside = z > b.z1 && z < b.z0, goalIn = gz > b.z1 && gz < b.z0;
+  if (inside){ const g = inGap(b, x); if (!g){ const bk = b.bk && b.bk.find(q => Math.abs(x - q) < 4.7); if (bk !== undefined && bk !== null && !(goalIn && Math.abs(gx - bk) < 4.7)) return [bk, b.z1 - 1]; if (goalIn && !inGap(b, gx)) return [gx, gz]; return [cl(gapFor(b, x, x), x), z]; }
+    if (goalIn && (inGap(b, gx) === g || !inGap(b, gx))) return [gx, gz]; return [cl(g, x), down ? b.z1 - 1.2 : b.z0 + 1.2]; }
+  if (goalIn && !inGap(b, gx)) return [gx, gz];   /* バンカーの中へ */
+  const g = gapFor(b, x, gx), cx = cl(g, x); if (Math.abs(x - cx) > .5) return [cx, down ? b.z0 + 1.2 : b.z1 - 1.2]; return goalIn ? [cl(g, gx), gz] : [cx, down ? b.z1 - 1.2 : b.z0 + 1.2]; }
+function spawnPos2(side){ if (side === 'us'){ if (front === 0) return freeNear(() => [R(-16, 16), R(186, 196)]); const p = PTS[front - 1]; return freeNear(() => [clamp(p.x + R(-9, 9), -W + 2, W - 2), p.z + R(2, 7)]); } const p = PTS[Math.min(front, PTS.length - 1)]; return freeNear(() => [clamp(p.x + R(-16, 16), -W + 2, W - 2), p.z - R(5, 15)]); }
+function buildWorld(){ const TP = [], HANG = std({ color: 0x8a9096, roughness: .7, metalness: .2 }), TANKM = std({ color: 0xc0c4c8, roughness: .5, metalness: .4 }), TRAIN = std({ color: 0x5a2a26, roughness: .8 }), BRICK = std({ color: 0x7a4a3a, roughness: .95 }), ICE = std({ color: 0xd4e6f0, roughness: .25, metalness: .1 }), TENT = std({ color: 0x6a7048, roughness: 1 }), CAR = std({ color: 0x4a5236, roughness: .7 }), LAMP = new THREE.MeshBasicMaterial({ color: 0xffe6a0 });
+  const cyl = (x, y, z, r0, r1, h, m, n = 10) => { const o = new THREE.Mesh(new THREE.CylinderGeometry(r0, r1, h, n), m); o.position.set(x, y + h / 2, z); scene.add(o); return o; };
+  box(-W - 60, -.5, -140, W + 60, 0, 262, M.grass); surfaces.push({ x0: -W - 60, x1: W + 60, z0: -140, z1: 262, h0: 0, h1: 0 });
+  solid(-W - 1, -2, -132, -W, 6, 210, null); solid(W, -2, -132, W + 1, 6, 210, null); solid(-W, -2, -133, W, 12, -132, null); solid(-W, -2, 206, W, 6, 207, null);
+  /* row: z1〜z0 (z1 < z0) の帯。gaps = 通れる x のはんい。kind = 見た目 */
+  const row = (z1, z0, gaps, kind, o = {}) => { gaps = gaps.slice().sort((a, c) => a[0] - c[0]); BANDS.push({ z1, z0, gaps }); const segs = []; let x = -W; for (const g of gaps){ if (g[0] > x + .2) segs.push([x, g[0]]); x = g[1]; } if (x < W - .2) segs.push([x, W]);
+    if (kind === 'water'){ box(-W - 60, -.48, z1, W + 60, .02, z0, M.water); for (const [a, b] of segs) solid(a, 0, z1, b, 1.2, z0, null); for (const g of gaps){ box(g[0], .02, z1 - 1, g[1], .16, z0 + 1, M.wood); box(g[0] - .12, 0, z1, g[0], 1.2, z0, M.wood); box(g[1], 0, z1, g[1] + .12, 1.2, z0, M.wood); } return; }
+    for (const [a, b] of segs){ const n = Math.max(1, Math.round((b - a) / (o.len || (kind === 'cliff' ? 3.2 : kind === 'train' ? 13 : 9.5)))), w = (b - a) / n; for (let i = 0; i < n; i++){ const xa = a + i * w, xb = xa + w, mx = (xa + xb) / 2;
+        if (kind === 'house'){ const h = R(6.5, 10); solid(xa, 0, z1, xb, h, z0, (i + ((a * 7) | 0)) % 2 ? M.house : M.house2); box(xa - .2, h, z1 - .3, xb + .2, h + .5, z0 + .3, M.roof); for (const [zf, d] of [[z0, .04], [z1, -.04]]) for (const [wx, wy] of [[-.25, 1], [.25, 1], [-.25, 4], [.25, 4]]) box(mx + wx * w - .55, wy, Math.min(zf, zf + d), mx + wx * w + .55, wy + 1.5, Math.max(zf, zf + d), wy > 2 && (i + wx * 4) % 3 ? M.win : M.dark); }
+        else if (kind === 'wall'){ const h = o.h || 7; solid(xa, 0, z1, xb, h, z0, M.stone); if (h > 5) for (let cx = xa + .6; cx < xb - .6; cx += 2.2) box(cx, h, z1, cx + 1.1, h + .8, z0, M.stone); }
+        else if (kind === 'cliff'){ const h = R(5, 10); solid(xa, 0, z1, xb, 5, z0, null); box(xa - .15, 0, z1 - R(0, 1.2), xb + .15, h, z0 + R(0, 1.2), M.stone); }
+        else if (kind === 'thicket'){ solid(xa, 0, z1, xb, 5, z0, null); for (let tx = xa + .8; tx < xb; tx += 1.9) for (let tz = z1 + .9; tz < z0; tz += 2.1) TP.push([tx + R(-.5, .5), tz + R(-.5, .5), 0]); }
+        else if (kind === 'hangar'){ solid(xa + .3, 0, z1, xb - .3, 7.5, z0, HANG); box(xa + .1, 7.5, z1 - .3, xb - .1, 8.2, z0 + .3, M.steel); box(xa + 1.4, 0, z0, xb - 1.4, 5.6, z0 + .06, M.dark); }
+        else if (kind === 'tank'){ const rr = Math.min((z0 - z1) / 2, w / 2) - .2; solid(mx - rr * .85, 0, z1 + .3, mx + rr * .85, 7, z0 - .3, null); solid(xa, 0, z1 + 1.5, xb, 1.2, z0 - 1.5, null); cyl(mx, 0, (z1 + z0) / 2, rr, rr, 7, TANKM, 18); cyl(mx, 7, (z1 + z0) / 2, .3, rr, .9, TANKM, 18); box(xa, .5, (z1 + z0) / 2 - .15, xb, .8, (z1 + z0) / 2 + .15, M.steel); }
+        else if (kind === 'train'){ solid(xa + .3, 0, z1, xb - .3, 3.6, z0, null); box(xa + .3, .7, z1 + .2, xb - .3, 3.6, z0 - .2, i % 2 ? TRAIN : M.steel); box(xa + .8, .1, z1 + .4, xb - .8, .7, z0 - .4, M.dark); }
+        else if (kind === 'factory'){ solid(xa, 0, z1, xb, 9, z0, BRICK); for (let k = 0; k < 3; k++) box(xa + .3, 9, z1 + k * (z0 - z1) / 3, xb - .3, 10.4 - k * .01, z1 + (k + .55) * (z0 - z1) / 3, M.steel); if (i === 0) cyl(xa + 2, 9, z1 + 2, .8, 1, 9, BRICK); for (const wx of [-.25, .25]) box(mx + wx * w - .8, 3, z0, mx + wx * w + .8, 5.2, z0 + .05, M.win); }
+        else solid(xa, 0, z1, xb, 1.4, z0, M.bag); } }
+    if (kind === 'wall' && (o.h || 7) > 5) for (const g of gaps) for (const tx of [g[0] - 2, g[1]]) if (tx > -W && tx < W - 2) box(tx, 0, z1 - .6, tx + 2, 10.5, z0 + .6, M.stone); };
+  const bag = (x, z) => solid(x - 2, 0, z - .4, x + 2, 1.4, z + .4, M.bag);
+  const crate = (x, z, k = 1) => { solid(x - k, 0, z - k, x + k, 1.2 * k, z + k, SM.crate); box(x - k * .6, 1.2 * k, z - k * .6, x + k * .6, 2 * k, z + k * .6, SM.crate); };
+  const rock = (x, z, rr, m) => { const o = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), m || M.stone); o.scale.set(rr, rr * .9, rr); o.rotation.set(R(0, 3), R(0, 3), R(0, 3)); o.position.set(x, rr * .5, z); scene.add(o); walls.push({ x0: x - rr * .7, x1: x + rr * .7, z0: z - rr * .7, z1: z + rr * .7, y0: 0, y1: rr * 1.25 }); };
+  const scatter = (n, za, zb, gap, fn) => { let k = 0; for (let i = 0; i < 900 && k < n; i++){ const x = R(-W + 2, W - 2), z = R(za, zb); if (!freeAt(x, z, gap) || PTS.some(q => Math.hypot(q.x - x, q.z - z) < 5)) continue; fn(x, z); k++; } };
+  const trees = (n, za, zb) => scatter(n, za, zb, 2.4, (x, z) => { TP.push([x, z, 1]); walls.push({ x0: x - .45, x1: x + .45, z0: z - .45, z1: z + .45, y0: 0, y1: 5 }); });
+  const bks = (z, pt, ...xs) => { for (const x of xs) bunker(x, z, pt); const gaps = []; let x = -W; for (const q of xs.slice().sort((a, c) => a - c)){ gaps.push([x, q - 4.8]); x = q + 8; } gaps.push([x, W]); BANDS.push({ z1: z - 3.7, z0: z + 3.7, gaps, bk: xs }); };
+  const hq = () => { solid(-12, 0, -128, 12, 8, -119, M.stone); box(-12.4, 8, -128.4, 12.4, 8.6, -118.6, M.roof); box(-1.2, 0, -119.05, 1.2, 2.6, -119, M.dark); for (const x of [-8, -4, 4, 8]) box(x - .7, 4, -119.05, x + .7, 5.6, -119, M.win); };
+  const camp = () => { for (let i = 0; i < 7; i++){ const x = -24 + i * 8; box(x - 1.6, 0, 200, x + 1.6, 1.1, 204, TENT); const t = new THREE.Mesh(new THREE.ConeGeometry(2.4, 1.5, 4), TENT); t.rotation.y = Math.PI / 4; t.scale.z = 1.3; t.position.set(x, 1.85, 202); scene.add(t); } for (const sx of [-1, 1]){ const x = sx * 25.5; solid(x - 1.3, 0, 187, x + 1.3, 1.7, 193, CAR); box(x - 1.2, 1.7, 187.2, x + 1.2, 2.6, 189.6, CAR); for (const z of [188, 192]) for (const wx of [-1.35, 1.2]) box(x + wx, 0, z - .45, x + wx + .15, .9, z + .45, M.dark); } crate(-19, 198, .7); crate(19, 198, .7); };
+  camp(); hq();
+  if (WSEL === 1){ /* ---- 雪山のとりで ---- */
+    row(146, 154, [[-26, -20], [-6, 2], [14, 20]], 'house'); row(126, 134, [[-16, -10], [4, 10], [22, 28]], 'house'); box(-W, 0, 134, W, .03, 146, M.road); for (const [x, z] of [[-15, 143.5], [0, 136.5], [13, 143]]) bag(x, z); bks(164, 0, -14, 10);
+    box(-W, 0, 66, W, .04, 100, ICE); for (const [x, z, k] of [[-18, 92, 1.3], [-6, 76, 1.1], [16, 90, 1.4], [20, 72, 1.2], [-22, 72, 1.5], [2, 94, 1], [-12, 84, 1.2], [14, 80, 1]]) rock(x, z, k, ICE);
+    row(44, 50, [[-22, -16], [10, 16]], 'cliff'); bks(36, 2, -12); for (const [x, z] of [[8, 33], [-3, 22], [16, 24]]) bag(x, z);
+    row(-16, -15, [[-28, -24], [-4, 0], [20, 24]], 'bags'); bks(-24, 3, 12); row(-37, -36, [[-16, -12], [8, 12]], 'bags'); for (const [x, z] of [[-18, -28], [-2, -30]]) bag(x, z);
+    row(-72, -70, [[-18, -13], [13, 18]], 'wall'); for (const [x, z] of [[-10, -82], [9, -80], [-20, -98], [20, -100], [0, -92]]) bag(x, z);
+    trees(18, 158, 182); trees(34, 102, 124); trees(14, 52, 64); trees(16, -8, 18); trees(12, -66, -42);
+    for (let i = 0; i < 22; i++){ const x = R(-W + 2, W - 2), z = R(-60, 180), rr = R(.8, 1.7); if (!freeAt(x, z, 2)) continue; const d = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 5, 0, Math.PI * 2, 0, Math.PI / 2), M.grass); d.scale.set(rr, rr * .3, rr); d.position.set(x, 0, z); scene.add(d); } }
+  if (WSEL === 2){ /* ---- 砂漠の飛行場 ---- */
+    row(152, 160, [[-30, -20], [2, 10], [24, 30]], 'water'); bks(145, 0, -13); for (const [x, z] of [[14, 140], [-2, 136]]) bag(x, z);
+    row(104, 110, [[-14, -6], [16, 22]], 'cliff'); scatter(12, 114, 132, 3, (x, z) => rock(x, z, R(1, 1.6))); scatter(16, 76, 100, 3, (x, z) => rock(x, z, R(1, 1.7)));
+    row(48, 60, [[-24, -16], [-3, 3], [16, 24]], 'hangar'); box(-W, 0, 18, W, .03, 44, M.road); for (let x = -27; x < 27; x += 6) box(x, .03, 30.7, x + 3, .04, 31.3, M.bag);
+    for (const [x, z] of [[-18, 68], [4, 70], [20, 66]]){ box(x - 4.5, 1, z - .7, x + 4.5, 2.3, z + .7, HANG); box(x - 1, 1.5, z - 5.5, x + 1.2, 1.75, z + 5.5, HANG); box(x + 3.6, 2.3, z - .1, x + 4.5, 3.6, z + .1, HANG); box(x - 1, 0, z - .2, x - .7, 1, z + .2, M.dark); solid(x - 1.6, 0, z - .9, x + 1.6, 2.3, z + .9, null); }   /* とまっている飛行機 */
+    solid(24, 0, 20, 27, 9, 23, M.stone); box(23.4, 9, 19.4, 27.6, 11.4, 23.6, M.win); box(23.2, 11.4, 19.2, 27.8, 11.8, 23.8, M.roof); bks(36, 2, -14); for (const [x, z] of [[10, 24], [-4, 20]]) bag(x, z);
+    row(-14, -6, [[-28, -22], [-10, -4], [8, 14], [26, 30]], 'tank', { len: 8 }); for (const [x, z] of [[2, -24], [20, -30], [-14, -32]]) bag(x, z); crate(-22, -26); crate(24, -22, .8);
+    row(-70, -68, [[-3.5, 3.5], [22, 27]], 'wall'); row(-90, -89, [[-30, -20], [20, 30]], 'wall', { h: 3.2 }); for (const [x, z] of [[-10, -78], [9, -76], [0, -96]]) bag(x, z);
+    trees(16, 136, 150); trees(10, 162, 180); for (const [x, z, rr] of [[-150, -60, 46], [175, 30, 38], [-210, 120, 30]]){ const py = new THREE.Mesh(new THREE.ConeGeometry(rr, rr * 1.15, 4), M.stone); py.rotation.y = Math.PI / 4; py.position.set(x, rr * .575, z); scene.add(py); }   /* 遠くのピラミッド */
+    scatter(22, -60, 180, 2.5, (x, z) => { cyl(x, 0, z, .2, .25, R(2, 3.2), M.leaf); cyl(x + .5, 1.1, z, .13, .13, .9, M.leaf); cyl(x - .5, .8, z, .13, .13, 1.1, M.leaf); box(x - .5, 1.05, z - .1, x + .5, 1.25, z + .1, M.leaf); walls.push({ x0: x - .3, x1: x + .3, z0: z - .3, z1: z + .3, y0: 0, y1: 2 }); }); }   /* サボテン */
+  if (WSEL === 3){ /* ---- ジャングルの川 ---- */
+    row(150, 166, [[-13, -9], [12, 16]], 'water'); bks(144, 0, 1); for (const [x, z] of [[-18, 134], [16, 138]]) bag(x, z);
+    row(108, 120, [[-24, -19], [-2, 3], [18, 23]], 'thicket'); for (const [x, z] of [[0, 96], [14, 88], [-12, 92]]) bag(x, z);
+    for (const [x, z] of [[-20, 52], [-7, 54], [8, 51], [21, 54], [-21, 36], [9, 37], [21, 33], [-14, 23], [14, 22]]){ solid(x - 1.8, 0, z - 1.8, x + 1.8, 2.6, z + 1.8, M.house); const rf = new THREE.Mesh(new THREE.ConeGeometry(3.1, 2, 4), M.roof); rf.rotation.y = Math.PI / 4; rf.position.set(x, 3.6, z); scene.add(rf); box(x - .5, 0, z + 1.8, x + .5, 1.9, z + 1.84, M.dark); }   /* 村の小屋 */
+    for (const x of [-26, 26]){ for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(x + dx - .1, 0, 44 + dz - .1, x + dx + .1, 6, 44 + dz + .1, M.wood); box(x - 1.4, 6, 42.6, x + 1.4, 6.2, 45.4, M.wood); box(x - 1.6, 8.2, 42.4, x + 1.6, 8.5, 45.6, M.roof); solid(x - 1.1, 0, 42.9, x + 1.1, 2, 45.1, null); }   /* 見はり台 */
+    row(-8, -6, [[-20, -15], [-3, 3], [14, 19]], 'wall', { h: 3.6 }); for (let x = -22; x <= 22; x += 11) for (const z of [-16, -36]){ if (Math.hypot(x - 6, z + 28) < 5) continue; solid(x - .5, 0, z - .5, x + .5, 4.5, z + .5, M.stone); box(x - .7, 4.5, z - .7, x + .7, 4.9, z + .7, M.stone); }   /* 遺跡の柱 */
+    row(-50, -42, [[-30, -7], [7, 30]], 'wall', { h: 5, len: 14 }); box(-5, 5, -49, 5, 7.5, -43, M.stone); box(-3, 7.5, -48, 3, 9.5, -44, M.stone);   /* 神でん */
+    row(-72, -68, [[-5, 5]], 'cliff'); for (const [x, z] of [[-10, -80], [9, -78], [-20, -98], [20, -100], [0, -92]]) bag(x, z);
+    trees(26, 122, 148); trees(30, 76, 104); trees(14, 60, 72); trees(16, 4, 18); trees(20, -66, -54); trees(14, 170, 184);
+    const bI = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 7, 5), M.leaf, 160), mm = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(); let b = 0; for (let k = 0; k < 900 && b < 160; k++){ const x = R(-W + 1, W - 1), z = R(-66, 184), rr = R(.7, 1.4); if (!freeAt(x, z, 1.2) || (z > 148 && z < 168)) continue; mm.compose(v.set(x, rr * .25, z), q, sc.set(rr, rr * .5, rr)); bI.setMatrixAt(b++, mm); } bI.count = b; scene.add(bI); }   /* しげみ (見た目だけ) */
+  if (WSEL === 4){ /* ---- 夜の町 ---- */
+    row(156, 160, [[-22, -18], [-2, 2], [18, 22]], 'train'); for (const z of [156.8, 159.2]) box(-W - 40, .02, z - .1, W + 40, .14, z + .1, M.steel); box(-W, 0, 138, W, .06, 154, M.road); row(126, 134, [[-14, -8], [8, 14]], 'house'); bks(145, 0, -13); for (const [x, z] of [[10, 141], [0, 138.5]]) bag(x, z);
+    row(100, 112, [[-20, -12], [12, 20]], 'house'); box(-W, 0, 82, W, .05, 100, M.road); for (let x = -27; x < 27; x += 6) box(x, .05, 90.8, x + 3, .06, 91.2, M.bag);
+    for (const [x, z, a] of [[-20, 96, 0], [-2, 86, 1], [12, 95, 0], [22, 87, 1], [4, 97, 0], [-14, 85, 0]]){ const lx = a ? 1 : 2.1, lz = a ? 2.1 : 1; solid(x - lx, 0, z - lz, x + lx, 1.3, z + lz, CAR); box(x - lx * .6, 1.3, z - lz * .6, x + lx * .6, 1.9, z + lz * .6, M.dark); }   /* こわれた車 */
+    row(70, 82, [[-4, 4]], 'house'); solid(-2.2, 0, 44, 2.2, .9, 48.4, M.stone); box(-1.7, .9, 44.5, 1.7, 1, 47.9, M.water); cyl(0, .9, 46.2, .3, .4, 2, M.stone); solid(9, 0, 40, 10.6, 1.2, 41.6, M.stone); cyl(9.8, 1.2, 40.8, .35, .45, 2.8, M.steel); bks(22, 2, -14); for (const [x, z] of [[-8, 40], [12, 30], [2, 26]]) bag(x, z);
+    row(-16, -2, [[-26, -20], [4, 10]], 'factory'); crate(-8, -24); crate(20, -32, .8); crate(0, -34, .8); for (const [x, z] of [[14, -22], [-16, -30]]) bag(x, z);
+    row(-72, -70, [[-16, -11], [11, 16]], 'wall'); for (const [x, z] of [[-10, -82], [9, -80], [-20, -98], [20, -100], [0, -92]]) bag(x, z);
+    for (const [x, z] of [[-26, 150], [26, 150], [-26, 92], [26, 92], [-12, 56], [12, 56], [-20, 18], [20, 18], [-26, -40], [26, -40], [-8, -62], [8, -62]]){ cyl(x, 0, z, .08, .1, 5, M.steel); const lb = new THREE.Mesh(new THREE.SphereGeometry(.28, 8, 6), LAMP); lb.position.set(x, 5.1, z); scene.add(lb); }   /* 街灯 */
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(16, 16, 12), new THREE.MeshBasicMaterial({ color: 0xf4f0d8, fog: false })); moon.position.set(-150, 190, -330); scene.add(moon);
+    { const N = 500, g = new THREE.BufferGeometry(), a = new Float32Array(N * 3); for (let i = 0; i < N; i++){ const t = R(0, 6.283), u = R(.12, 1), rr = 520; a[i * 3] = Math.cos(t) * Math.sqrt(1 - u * u) * rr; a[i * 3 + 1] = u * rr; a[i * 3 + 2] = Math.sin(t) * Math.sqrt(1 - u * u) * rr + 60; } g.setAttribute('position', new THREE.BufferAttribute(a, 3)); const st = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffffff, size: 1.6, sizeAttenuation: false, fog: false })); st.frustumCulled = false; scene.add(st); }
+    const FLM = new THREE.MeshBasicMaterial({ color: 0xff9a30 }); for (const [x, z] of [[-27, 142], [27, 142], [-27, 60], [27, 60], [-27, -24], [27, -30], [-6, -66], [6, -66]]){ cyl(x, 0, z, .34, .34, .9, M.steel); const f = new THREE.Mesh(new THREE.ConeGeometry(.28, .7, 6), FLM); f.position.set(x, 1.25, z); scene.add(f); }
+    const BM = new THREE.MeshBasicMaterial({ color: 0xfff0b0, transparent: true, opacity: .1, depthWrite: false, side: THREE.DoubleSide, fog: false }); for (const sx of [-1, 1]){ const l = new THREE.Group(); l.position.set(sx * 19, 11, -71); l.userData.p = sx * 1.3; const tl = new THREE.Group(); tl.rotation.x = .2; const c = new THREE.Mesh(new THREE.ConeGeometry(7, 60, 16, 1, true), BM); c.rotation.x = -Math.PI / 2; c.position.z = 30; tl.add(c); l.add(tl); scene.add(l); WXL.push(l); } }
+  /* 木 (もみの木 / ヤシ)。TP = [x, z, 1 = ふつうの木・0 = やぶの中] */
+  if (TP.length){ const palm = WD.tree === 'palm', th = palm ? 7 : 5, tI = new THREE.InstancedMesh(new THREE.CylinderGeometry(palm ? .16 : .3, palm ? .3 : .45, th, 7), M.trunk, TP.length), lI = new THREE.InstancedMesh(palm ? new THREE.ConeGeometry(3.1, 1.5, 7) : new THREE.ConeGeometry(2.4, 6, 8), M.leaf, TP.length), mm = new THREE.Matrix4(); TP.forEach((q, i) => { mm.makeTranslation(q[0], th / 2, q[1]); tI.setMatrixAt(i, mm); mm.makeTranslation(q[0], palm ? th + .4 : 7, q[1]); lI.setMatrixAt(i, mm); }); scene.add(tI, lI); } }
 /* バンカー: 海 (+z) の方に銃の穴 (高さ 1.1〜1.7)、うしろ (-z) にとびら。中に機関銃 */
 function bunker(x, z, pt){ const x0 = x - 4, x1 = x + 4, z0 = z - 3, z1 = z + 3;
   solid(x0, 0, z1 - .5, x1, 1.1, z1, M.conc); solid(x0, 1.7, z1 - .5, x1, 3.2, z1, M.conc); solid(x0, 0, z0, x0 + .5, 3.2, z1, M.conc); solid(x1 - .5, 0, z0, x1, 3.2, z0 + 1.1, M.conc); solid(x1 - .5, 0, z0 + 2.3, x1, 3.2, z1, M.conc); box(x1 - .5, 2.1, z0 + 1.1, x1, 3.2, z0 + 2.3, M.conc); storeRoom(x1, z0);   /* war_v9: 右のかべに入口をあけて、外に小さな倉庫 */
   solid(x0, 0, z0, x - .8, 3.2, z0 + .5, M.conc); solid(x + .8, 0, z0, x1, 3.2, z0 + .5, M.conc); box(x0 - .3, 3.2, z0 - .3, x1 + .3, 3.7, z1 + .3, M.conc);
   const gun = new THREE.Group(); gun.position.set(x, 1.35, z1 - .9); const brl = new THREE.Mesh(new THREE.CylinderGeometry(.04, .05, 1.3, 8), M.steel); brl.rotation.x = Math.PI / 2; brl.position.z = .5; gun.add(brl); const bd = new THREE.Mesh(new THREE.BoxGeometry(.2, .22, .5), M.steel); gun.add(bd); scene.add(gun);
   BUNKERS.push({ x, z, pt, gx: x, gz: z1 - 1.4, gun, gunner: null, playerOn: false }); }
-{ /* 地面 */
+if (!WSEL){ /* 地面 (ワールド 0 = 海岸の上陸) */
   box(-W - 60, -.5, -140, W + 60, 0, 142, M.grass); box(-W - 60, -.5, 142, W + 60, 0, 206, M.sand); surfaces.push({ x0: -W - 60, x1: W + 60, z0: -140, z1: 206, h0: 0, h1: 0 });
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(500, 300), M.water); sea.rotation.x = -Math.PI / 2; sea.position.set(0, -.35, 330); scene.add(sea); surfaces.push({ x0: -W, x1: W, z0: 206, z1: 310, h0: -1.2, h1: -1.2 });
   solid(-W - 1, -2, -132, -W, 6, 310, null); solid(W, -2, -132, W + 1, 6, 310, null); solid(-W, -2, -133, W, 12, -132, null); solid(-W, -2, 249, W, 6, 250, null);   /* war_v12: 海のおくの見えないかべは 船の手前へ (前は z 309 にあって 兵士控え室を横切っていた) */
@@ -314,7 +418,7 @@ function bunker(x, z, pt){ const x0 = x - 4, x1 = x + 4, z0 = z - 3, z1 = z + 3;
     for (const z of [351, 359]){ const fn = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 3, 11, 14), M.dark); fn.position.set(0, T + 14.5, z); scene.add(fn); }
     const ms = new THREE.Mesh(new THREE.CylinderGeometry(.25, .35, 15, 8), M.steel); ms.position.set(0, T + 23, 334); scene.add(ms); box(-5, T + 26, 333.9, 5, T + 26.3, 334.1, M.steel); }
 
-}
+} else buildWorld();   /* war_v17 */
 const GRID = 4, grid = new Map();
 const gk = (i, j) => (i + 200) * 1000 + (j + 200);
 for (const w of walls){
@@ -672,8 +776,15 @@ const LOOKS = {
   'そら': { hat: 'cap', hatColor: 0x1e5aa8, shirt: 0xe8e2d0, pants: 0x4e5a3a, hairColor: 0x1a1210 },
 };
 const HAIRS = [0x1a1210,0x2a1a10,0x3b2a1a,0x0f0f0f,0x5a3a20];
-scene.add(new THREE.HemisphereLight(0xdde4ee, 0x5a5a48, 1.25)); scene.add(new THREE.AmbientLight(0xffffff, .3));
-const sun = new THREE.DirectionalLight(0xfff0dc, 1.2); sun.position.set(60, 120, 80); scene.add(sun);
+const HL = new THREE.HemisphereLight(WD.hemi[0], WD.hemi[1], WD.hemi[2]); scene.add(HL); scene.add(new THREE.AmbientLight(0xffffff, WD.amb));
+const sun = new THREE.DirectionalLight(WD.sun[0], WD.sun[1]); sun.position.set(60, 120, 80); scene.add(sun);
+/* war_v17: 天気 (雪・雨・砂ぼこり)。カメラのまわりだけに ふらせる */
+function wxInit(){ if (!WD.wx) return; const N = WD.wx === 'dust' ? 500 : 1800, g = new THREE.BufferGeometry(), a = new Float32Array(N * 3); for (let i = 0; i < N; i++){ a[i * 3] = R(-30, 30); a[i * 3 + 1] = R(0, 22); a[i * 3 + 2] = R(-30, 30); } g.setAttribute('position', new THREE.BufferAttribute(a, 3));
+  WX = new THREE.Points(g, new THREE.PointsMaterial({ color: WD.wx === 'snow' ? 0xffffff : WD.wx === 'rain' ? 0xa8c4d8 : 0xd8c090, size: WD.wx === 'snow' ? .16 : WD.wx === 'rain' ? .09 : .12, transparent: true, opacity: WD.wx === 'dust' ? .5 : .85, depthWrite: false })); WX.frustumCulled = false; scene.add(WX); }
+function wxTick(){ const now = performance.now(), dt = Math.min(.1, (now - WXT) / 1000); WXT = now; SHIPIN.visible = !WSEL && camera.position.z > 262 && camera.position.y < 9;
+  if (WX){ const a = WX.geometry.attributes.position.array, v = WD.wx === 'snow' ? 2.2 : WD.wx === 'rain' ? 16 : .4, wv = WD.wx === 'dust' ? 5 : WD.wx === 'snow' ? .8 : 0; for (let i = 0; i < a.length; i += 3){ a[i + 1] -= v * dt; a[i] += wv * dt; if (a[i + 1] < 0) a[i + 1] += 22; if (a[i] > 30) a[i] -= 60; } WX.geometry.attributes.position.needsUpdate = true; WX.position.set(camera.position.x, Math.max(0, camera.position.y - 8), camera.position.z); }
+  for (const l of WXL) l.rotation.y = Math.sin(now / 1000 * .4 + l.userData.p) * .9; }
+wxInit();
 
 // ===================== 兵士・船・箱 =====================
 let soldiers = [], boats = [], boxes = [], blasts = [], tracers = [], flags = [], bags = [];   /* bags: 回復兵が置く回復バッグ (war_v2) */
@@ -695,19 +806,19 @@ function dropBag(s){ const g = new THREE.Group(); g.position.set(s.pos.x, 0, s.p
 const nearBag = (s, d) => { let best = null, bd = d; for (const q of bags){ if (q.side !== s.side) continue; const dd = Math.hypot(q.x - s.pos.x, q.z - s.pos.z); if (dd < bd){ bd = dd; best = q; } } return best; };
 function takeHelmet(s, b){ if (b.n <= 0 || s.helmet) return false; b.n--; b.hs[b.n].visible = false; setHelmet(s, true); if (b.n <= 0) setTimeout(() => { scene.remove(b.g); boxes = boxes.filter(q => q !== b); }, 4000); return true; }
 /* 出てくる場所: アメリカ軍 = 攻略した場所のいちばん前 (はじめは海岸)。ドイツ軍 = 今まもっている場所 */
-function spawnPos(side){ if (side === 'us'){ if (front === 0) return { x: pick([-6.4, 0, 6.4]) + R(-1.8, 1.8), z: R(303, 314) };   /* war_v12: 船の兵士控え室 */ const p = PTS[front - 1]; return { x: front - 1 === 3 ? R(-4, 4) : clamp(p.x + R(-9, 9), -W + 2, W - 2), z: p.z + R(2, 7) }; } const p = PTS[Math.min(front, PTS.length - 1)]; const town = front === 3; return { x: town ? R(-4, 4) : clamp(p.x + R(-16, 16), -W + 2, W - 2), z: p.z - R(6, 12) }; }
-function placeSoldier(s){ const q = spawnPos(s.side); s.pos.set(q.x, 0, q.z); s.vy = 0; s.hp = 100; s.alive = true; s.wearCap = s.side === 'us' && !s.isPlayer && Math.random() < 1 / 6; setHelmet(s, !s.wearCap);   /* war_v16: アメリカ兵の 6人に1人は 帽子 */ s.ammo = s.C.clip; s.reloadT = 0; s.target = null; s.spot = null; s.boat = null; s.gunAt = null; s.onShip = s.side === 'us' && front === 0; s.toBoat = null; s.seated = false; s.shipT = 0; s.shipOff = R(-1.1, 1.1); s.door = s.pos.x < -3.5 ? -7 : s.pos.x > 3.5 ? 7 : 0; s.readyT = .5; s.aim = true;   /* war_v12: door = 兵士控え室から出るとびら。readyT = 控え室で待つ時間 */ if (s.m){ s.m.group.visible = true; s.m.group.rotation.set(0, 0, 0); for (const mt of s.m.mats){ mt.opacity = 1; mt.transparent = false; } for (const e of s.m.eyes) e.visible = true; for (const x of s.m.xEyes) x.visible = false; } }
+function spawnPos(side){ if (WSEL) return spawnPos2(side); if (side === 'us'){ if (front === 0) return { x: pick([-6.4, 0, 6.4]) + R(-1.8, 1.8), z: R(303, 314) };   /* war_v12: 船の兵士控え室 */ const p = PTS[front - 1]; return { x: front - 1 === 3 ? R(-4, 4) : clamp(p.x + R(-9, 9), -W + 2, W - 2), z: p.z + R(2, 7) }; } const p = PTS[Math.min(front, PTS.length - 1)]; const town = front === 3; return { x: town ? R(-4, 4) : clamp(p.x + R(-16, 16), -W + 2, W - 2), z: p.z - R(6, 12) }; }
+function placeSoldier(s){ const q = spawnPos(s.side); s.pos.set(q.x, 0, q.z); s.vy = 0; s.hp = 100; s.alive = true; s.wearCap = s.side === 'us' && !s.isPlayer && Math.random() < 1 / 6; setHelmet(s, !s.wearCap);   /* war_v16: アメリカ兵の 6人に1人は 帽子 */ s.ammo = s.C.clip; s.reloadT = 0; s.target = null; s.spot = null; s.boat = null; s.gunAt = null; s.onShip = s.side === 'us' && front === 0 && !WSEL; s.toBoat = null; s.seated = false; s.shipT = 0; s.shipOff = R(-1.1, 1.1); s.door = s.pos.x < -3.5 ? -7 : s.pos.x > 3.5 ? 7 : 0; s.readyT = .5; s.aim = true;   /* war_v12: door = 兵士控え室から出るとびら。readyT = 控え室で待つ時間 */ if (s.m){ s.m.group.visible = true; s.m.group.rotation.set(0, 0, 0); for (const mt of s.m.mats){ mt.opacity = 1; mt.transparent = false; } for (const e of s.m.eyes) e.visible = true; for (const x of s.m.xEyes) x.visible = false; } }
 function addNPC(side, cls){ const s = makeSoldier(side, cls, false); soldiers.push(s); placeSoldier(s); return s; }
 const rollCls = side => { const r = Math.random(); if (side === 'de' && r < .16) return 'gunner'; const q = Math.random(); return q < .7 ? 'assault' : q < .8 ? 'rifle' : q < .9 ? 'sniper' : q < .95 ? 'mg' : 'medic'; };   /* war_v6: アサルト7割・ライフル1割・狙撃1割・機関銃と衛生が のこり1割 */   /* ドイツ軍には バンカー兵 (16%) */
 function newGame(){
   for (const s of soldiers) if (s.m) scene.remove(s.m.group); for (const b of bags) scene.remove(b.g); bags = []; for (const b of boxes) scene.remove(b.g); for (const b of boats) scene.remove(b.g); for (const f of flags) scene.remove(f.g); for (const t of tracers) scene.remove(t.l); for (const b of blasts) scene.remove(b.m);
-  AMB = null; soldiers = []; boxes = []; boats = []; flags = []; tracers = []; blasts = []; elapsed = 0; front = 0; capP = 0; winner = ''; outT = 0; kills = 0; deaths = 0; shellT = 6; tickets = { us: SIDE.us.tickets, de: GARR[0] }; wave = { us: 2, de: 0 }; $('red').style.opacity = 0; $('feed').innerHTML = ''; $('dead').style.opacity = 0; zoom = false;
+  AMB = null; soldiers = []; boxes = []; boats = []; flags = []; tracers = []; blasts = []; elapsed = 0; front = 0; capP = 0; winner = ''; outT = 0; kills = 0; deaths = 0; shellT = 6; tickets = { us: WD.usT || SIDE.us.tickets, de: GARR[0] };   /* war_v17: usT = ワールドごとのアメリカ軍の増援 */ wave = { us: 2, de: 0 }; $('red').style.opacity = 0; $('feed').innerHTML = ''; $('dead').style.opacity = 0; zoom = false;
   /* 小さな船 4そう (超大きな船のドック → 海岸をくり返す) */
-  for (let i = 0; i < 4; i++){ const g = new THREE.Group(); const hull = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.3, 8), M.boat); hull.position.y = -.2; g.add(hull); const fl = new THREE.Mesh(new THREE.BoxGeometry(3.2, .1, 7.4), M.steel); fl.position.y = -.1; g.add(fl); const ramp = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.9, .15), M.steel); ramp.position.set(0, .7, -4); g.add(ramp); for (const sx of [-1, 1]){ const sd = new THREE.Mesh(new THREE.BoxGeometry(.15, 1.5, 8), M.boat); sd.position.set(sx * 1.75, .6, 0); g.add(sd); } for (const sx of [-1, 1]){ const bn = new THREE.Mesh(new THREE.BoxGeometry(.5, .12, 5.6), M.wood); bn.position.set(sx * 1.3, .79, -.1); g.add(bn); } scene.add(g); const bsx = -6.6 + i * 4.4; boats.push({ g, ramp, x: bsx, z: 268.3, sx: bsx, sz: 268.3, bx: -21 + i * 14, st: 'load', t: 0, wait: 0, cap: 6 + ((Math.random() * 3) | 0), riders: [] }); }   /* war_v11: 長いす 2本。ドックの中に 4そう ならぶ */
+  for (let i = 0; i < (WSEL ? 0 : 4); i++){ const g = new THREE.Group(); const hull = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.3, 8), M.boat); hull.position.y = -.2; g.add(hull); const fl = new THREE.Mesh(new THREE.BoxGeometry(3.2, .1, 7.4), M.steel); fl.position.y = -.1; g.add(fl); const ramp = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.9, .15), M.steel); ramp.position.set(0, .7, -4); g.add(ramp); for (const sx of [-1, 1]){ const sd = new THREE.Mesh(new THREE.BoxGeometry(.15, 1.5, 8), M.boat); sd.position.set(sx * 1.75, .6, 0); g.add(sd); } for (const sx of [-1, 1]){ const bn = new THREE.Mesh(new THREE.BoxGeometry(.5, .12, 5.6), M.wood); bn.position.set(sx * 1.3, .79, -.1); g.add(bn); } scene.add(g); const bsx = -6.6 + i * 4.4; boats.push({ g, ramp, x: bsx, z: 268.3, sx: bsx, sz: 268.3, bx: -21 + i * 14, st: 'load', t: 0, wait: 0, cap: 6 + ((Math.random() * 3) | 0), riders: [] }); }   /* war_v11: 長いす 2本。ドックの中に 4そう ならぶ */
   for (const p of PTS){ const g = new THREE.Group(); g.position.set(p.x + 3, 0, p.z); const pole = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 6, 6), M.steel); pole.position.y = 3; g.add(pole); const fl = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1, .04), M.flagD); fl.position.set(.85, 5.4, 0); g.add(fl); scene.add(g); flags.push({ g, fl }); }
   for (const b of BUNKERS){ b.gunner = null; b.playerOn = false; b.respT = 0; }
-  makeCrew(); spectate = mySide === 'watch'; player = makeSoldier(spectate ? 'us' : mySide, myCls, true); player.watch = spectate;
-  if (!spectate){ soldiers.push(player); if (myCls === 'helmet') giveBox(player); if (mySide === 'us'){ player.pos.set(0, 0, 312); yaw = 0; player.onShip = true; } else { placeSoldier(player); yaw = 0; } }
+  if (!WSEL) makeCrew(); spectate = mySide === 'watch'; player = makeSoldier(spectate ? 'us' : mySide, myCls, true); player.watch = spectate;
+  if (!spectate){ soldiers.push(player); if (myCls === 'helmet') giveBox(player); if (mySide === 'us' && !WSEL){ player.pos.set(0, 0, 312); yaw = 0; player.onShip = true; } else { placeSoldier(player); yaw = mySide === 'us' ? 0 : Math.PI; } }
   else { player.alive = false; gpos.set(0, 30, 215); yaw = 0; pitch = -.5; }
   for (let i = 0; i < US0 - 1; i++){ const s = addNPC('us', rollCls('us')); if (i < 3) giveBox(s); if (i < 15) tickets.us--; else { if (s.boat){ s.boat.riders = s.boat.riders.filter(q => q !== s); s.boat = null; } s.alive = false; s.deadT = 99; s.lie = 0; s.m.group.visible = false; } }   /* war_v2: はじめの組は 15人。のこりは次の組 (10〜15人) で出てくる */
   wave.us = 4;
@@ -738,8 +849,8 @@ function playerShoot(){ const C = player.gunAt ? CLS.bunker : player.C; if (play
 function reload(){ if (player.reloadT > 0 || player.gunAt || player.ammo >= player.C.clip) return; player.reloadT = player.C.reload; beep(300, .06, .1); }
 /* ---------- 兵士の動き ---------- */
 const enemyOf = side => side === 'us' ? 'de' : 'us';
-function findTarget(s){ let best = null, bd = s.C.range; for (const t of soldiers){ if (!t.alive || t.side === s.side || t.onShip || (t.amb && t.amb < 4)) continue; const d = Math.hypot(t.pos.x - s.pos.x, t.pos.z - s.pos.z); if (d >= bd) continue; if (t.boat && t.boat.st !== 'land' && d > 55) continue; if (!los(s.pos.x, s.pos.z, t.pos.x, t.pos.z, 1.3, 1.55, 0)) continue; bd = d; best = t; } return best; }
-function route(s, gx, gz){ /* 川は橋を、入口は門を、中のかべは横を通る。町は道の上 */ const z = s.pos.z; let x = gx, tz = gz;
+function findTarget(s){ let best = null, bd = s.C.range * WD.rangeK; for (const t of soldiers){ if (!t.alive || t.side === s.side || t.onShip || (t.amb && t.amb < 4)) continue; const d = Math.hypot(t.pos.x - s.pos.x, t.pos.z - s.pos.z); if (d >= bd) continue; if (t.boat && t.boat.st !== 'land' && d > 55) continue; if (!los(s.pos.x, s.pos.z, t.pos.x, t.pos.z, 1.3, 1.55, 0)) continue; bd = d; best = t; } return best; }
+function route(s, gx, gz){ if (WSEL) return route2(s, gx, gz);   /* war_v17 */ /* 川は橋を、入口は門を、中のかべは横を通る。町は道の上 */ const z = s.pos.z; let x = gx, tz = gz;
   if (z > 53 && gz < 53){ if (Math.abs(s.pos.x) > 3.4 || z > 58){ x = clamp(s.lane * .1, -3, 3); tz = 55; if (z < 62 && Math.abs(s.pos.x) < 3.6) tz = 28; } else tz = 28; } else if (z > 30 && z <= 53 && gz < 30){ x = clamp(s.pos.x, -3.4, 3.4); tz = 28; } else if (z < 31 && gz > 53){ if (z < 29 || Math.abs(s.pos.x) > 3.4){ x = clamp(s.lane * .1, -3, 3); tz = 29.5; if (z > 27 && Math.abs(s.pos.x) < 3.6) tz = 56; } else tz = 56; } else if (z >= 31 && z < 54 && gz > 53){ x = clamp(s.pos.x, -3.4, 3.4); tz = 56; }
   else if (z > -60 && gz < -62){ if (z > 19) { x = clamp(gx, -4, 4); tz = 17; } else { x = clamp(s.lane * .13, -4, 4); tz = z > -59 ? -59.5 : -66; if (Math.abs(s.pos.x) < 4.6 && z < -57) tz = -66; } } else if (z <= -60 && z > -64 && gz < -64){ x = clamp(s.pos.x, -4.4, 4.4); tz = -66; }
   else if (z > -87 && z <= -64 && gz < -89){ const sg = s.lane >= 0 ? 1 : -1; x = sg * 23; tz = Math.abs(s.pos.x) > 19.5 ? -92 : -80; }
@@ -773,7 +884,7 @@ function updateNPC(s, dt){ const C = s.C, P = PTS[Math.min(front, PTS.length - 1
       else { s.sideT += dt; const k = Math.min(1, s.sideT / .3); s.pos.x = b.x + (q.x - b.x) * k; s.pos.z = q.z; sit = k; s.speedNow = 0; s.heading = q.h; if (k >= 1) s.seated = true; } }
     else { s.pos.x = q.x; s.pos.z = q.z; s.heading = q.h; s.speedNow = 0; sit = 1; }
     s.pos.y = -.05; animModel(s, dt); s.m.group.position.y = gy + (-.48 - gy) * sit; if (sit){ s.m.legL.rotation.x = s.m.legR.rotation.x = -1.0 * sit; s.m.armL.rotation.x = s.m.armR.rotation.x = -.5 * sit; }   /* 船のゆか = -0.1、長いすの上 = 0.3 */ return; } s.crouch = false;
-  if (s.pos.z < 18.3 && s.pos.z > -60.3 && Math.abs(s.pos.x) > 4.8) s.pos.x = clamp(s.pos.x, -4.4, 4.4);   /* war_v2: 町では道の上にもどす */
+  if (!WSEL && s.pos.z < 18.3 && s.pos.z > -60.3 && Math.abs(s.pos.x) > 4.8) s.pos.x = clamp(s.pos.x, -4.4, 4.4);   /* war_v2: 町では道の上にもどす */
   s.think -= dt; if (s.think <= 0){ s.think = R(.25, .45); s.target = findTarget(s); if (!s.helmet && !s.wearCap && !s.target){ const b = boxes.find(q => q.side === s.side && q.n > 0 && Math.hypot(q.x - s.pos.x, q.z - s.pos.z) < 22); s.goBox = b || null; } else s.goBox = null;
     if (s.hasBox && !boxes.some(q => q.side === s.side && q.n > 0 && Math.hypot(q.x - s.pos.x, q.z - s.pos.z) < 25) && soldiers.some(q => q.alive && q.side === s.side && !q.helmet && !q.wearCap && Math.hypot(q.pos.x - s.pos.x, q.pos.z - s.pos.z) < 14)) dropBox(s); }
   if (s.gunAt){ s.pos.set(s.gunAt.gx, 0, s.gunAt.gz); s.speedNow = 0; if (s.target){ turnTo(s, Math.atan2(s.target.pos.x - s.pos.x, s.target.pos.z - s.pos.z), dt, 9); npcShoot(s, s.target, dt); s.gunAt.gun.rotation.y = s.heading; } animModel(s, dt); return; }
@@ -784,8 +895,8 @@ function updateNPC(s, dt){ const C = s.C, P = PTS[Math.min(front, PTS.length - 1
     const near = C === CLS.sniper ? 60 : C === CLS.mg ? 26 : 9, push = s.side === 'us' && (d > near || (t.gunAt && d > 5)); if (push) moveTo(s, t.gunAt ? t.gunAt.x + (s.lane > 0 ? 8.2 : -5.2) : P.x + s.lane * .45, t.gunAt ? t.gunAt.z - 1.5 : P.z + 1, 2.3 * C.speed, dt); else { s.speedNow = 0; moveBody(s, 0, 0, dt); } animModel(s, dt); return; }   /* アメリカ軍は うちながら前へ。バンカーは横から回りこむ */
   /* 敵が見えない: アメリカ軍は攻略する場所へ進む。ドイツ軍は まもる場所の持ち場へ */
   if (s.side === 'us'){ s.noSee = (s.noSee || 0) + dt; let hq = null; if (s.noSee > 6){ let bd = 34; for (const q of soldiers){ if (!q.alive || q.side !== 'de' || q.watch || q.amb) continue; const d = Math.hypot(q.pos.x - P.x, q.pos.z - P.z) + Math.hypot(q.pos.x - s.pos.x, q.pos.z - s.pos.z) * .3; if (d < bd){ bd = d; hq = q; } } }   /* war_v5: 6秒 敵が見えなければ、場所の近くにかくれている敵を探しに行く */
-    if (hq) moveTo(s, hq.pos.x, hq.pos.z, 3.5 * C.speed, dt); else { const gx = clamp(P.x + s.lane * .42, -W + 2, W - 2), gz = P.z + (C === CLS.sniper && s.noSee < 6 ? 16 : (s.lane % 7) - 3); moveTo(s, gx, gz, 3.5 * C.speed, dt); } }
-  else { if (!s.spot || s.spotF !== front){ s.spotF = front; const town = front === 3; s.spot = { x: town ? R(-4, 4) : clamp(P.x + R(-20, 20), -W + 2, W - 2), z: P.z + (front === 0 ? R(-12, -4) : R(-12, 2)) }; const bk = BUNKERS.find(b => b.pt === front && !b.gunner && !b.playerOn && b.respT <= 0 && !soldiers.some(q => q.wantGun === b && q.alive)); if (bk && (s.cls === 'gunner' || ((s.cls === 'rifle' || s.cls === 'assault') && !soldiers.some(q => q.alive && q.side === 'de' && q.cls === 'gunner' && !q.gunAt && !q.wantGun)))){ s.wantGun = bk; } }   /* war_v3: バンカーの機関銃は バンカー兵がうつ (いなければライフル兵) */
+    if (hq) moveTo(s, hq.pos.x, hq.pos.z, 3.5 * C.speed, dt); else { const gx = clamp(P.x + s.lane * .42, -W + 2, W - 2), gz = P.z + (C === CLS.sniper && s.noSee < 6 ? 16 : (s.lane % 7) - 3); if (WSEL && s.gF !== front){ s.gF = front; s.gOk = freeAt(gx, gz); } if (WSEL && !s.gOk) moveTo(s, P.x, P.z, 3.5 * C.speed, dt); else moveTo(s, gx, gz, 3.5 * C.speed, dt); } }
+  else { if (!s.spot || s.spotF !== front){ s.spotF = front; const town = front === 3 && !WSEL; s.spot = WSEL ? freeNear(() => [clamp(P.x + R(-20, 20), -W + 2, W - 2), P.z + R(-12, 2)]) : { x: town ? R(-4, 4) : clamp(P.x + R(-20, 20), -W + 2, W - 2), z: P.z + (front === 0 ? R(-12, -4) : R(-12, 2)) }; const bk = BUNKERS.find(b => b.pt === front && !b.gunner && !b.playerOn && b.respT <= 0 && !soldiers.some(q => q.wantGun === b && q.alive)); if (bk && (s.cls === 'gunner' || ((s.cls === 'rifle' || s.cls === 'assault') && !soldiers.some(q => q.alive && q.side === 'de' && q.cls === 'gunner' && !q.gunAt && !q.wantGun)))){ s.wantGun = bk; } }   /* war_v3: バンカーの機関銃は バンカー兵がうつ (いなければライフル兵) */
     if (s.wantGun){ const b = s.wantGun; if (b.gunner || b.playerOn || b.pt !== front){ s.wantGun = null; } else if (Math.hypot(b.gx - s.pos.x, b.gz - s.pos.z) < 1.3){ b.gunner = s; s.gunAt = b; s.wantGun = null; s.C = CLS.bunker; s.heading = 0; } else { if (Math.abs(s.pos.x - b.x) > .6 && s.pos.z > b.z - 3.6) moveTo(s, b.x, b.z - 4.2, 3.6, dt); else moveTo(s, b.gx, b.gz, 3.6, dt); animModel(s, dt); return; } }
     const arrived = moveTo(s, s.spot.x, s.spot.z, 3.6 * C.speed, dt); if (arrived) turnTo(s, 0, dt, 4); }
   animModel(s, dt); }
@@ -820,18 +931,18 @@ function update(dt){
   updateBoats(dt);
   /* 増援 (6秒ごと) */
   for (const side of ['us', 'de']){ wave[side] -= dt; if (wave[side] <= 0){ wave[side] = side === 'us' && front === 0 ? 2 : 5; let n = soldiers.filter(s => s.side === side && s.alive && !s.isPlayer).length; let dead = soldiers.filter(s => s.side === side && !s.alive && !s.isPlayer && !s.amb && s.deadT > 2.5);
-    if (side === 'us'){ const free = Math.min(dead.length, (front === 0 ? US0 : SIDE.us.max) - 1 - n); if (free < 10 && tickets.us >= 10) dead = []; else dead = dead.slice(0, Math.max(0, Math.min(free, 10 + ((Math.random() * 6) | 0)))); }   /* war_v2: アメリカ軍は 10〜15人ずつ出てくる (増援ののこりが 10人より少ないときは のこり全部) */ for (const s of dead){ if (n >= (side === 'de' && front >= PTS.length - 1 ? 30 : side === 'us' && front === 0 ? US0 : SIDE[side].max) - 1 || tickets[side] <= 0) break; tickets[side]--; n++; s.cls = rollCls(side); s.C = CLS[s.cls]; placeSoldier(s); s.lane = R(-W + 4, W - 4); if (!s.hasBox && s.carrier && Math.random() < .35){ s.hasBox = true; if (s.boxMesh) s.boxMesh.visible = true; } }
+    if (side === 'us'){ const free = Math.min(dead.length, (front === 0 && !WSEL ? US0 : SIDE.us.max) - 1 - n); if (free < 10 && tickets.us >= 10) dead = []; else dead = dead.slice(0, Math.max(0, Math.min(free, 10 + ((Math.random() * 6) | 0)))); }   /* war_v2: アメリカ軍は 10〜15人ずつ出てくる (増援ののこりが 10人より少ないときは のこり全部) */ for (const s of dead){ if (n >= (side === 'de' && front >= PTS.length - 1 ? 30 : side === 'us' && front === 0 && !WSEL ? US0 : SIDE[side].max) - 1 || tickets[side] <= 0) break; tickets[side]--; n++; s.cls = rollCls(side); s.C = CLS[s.cls]; placeSoldier(s); s.lane = R(-W + 4, W - 4); if (!s.hasBox && s.carrier && Math.random() < .35){ s.hasBox = true; if (s.boxMesh) s.boxMesh.visible = true; } }
     if (side === 'de' && front >= PTS.length - 1){ let k = 0; while (n < 29 && tickets.de > 0 && k < 4){ addNPC('de', rollCls('de')); tickets.de--; n++; k++; } }   /* 最後の入口: ドイツ兵がたくさん */ } }
   for (const b of BUNKERS) if (b.respT > 0) b.respT -= dt;
   for (const s of soldiers){ if (s.isPlayer) continue; if (s.alive) updateNPC(s, dt); else { s.deadT += dt; if (s.m){ const k = Math.min(1, s.deadT / .5), e = k * k; s.m.group.rotation.set(-e * Math.PI / 2, s.lie, 0, 'YXZ'); s.m.group.position.set(s.pos.x, s.pos.y + .14 * e, s.pos.z); if (s.deadT > 5) s.m.group.visible = false; } } }
   /* 爆風 (ドイツ軍の迫撃砲は アメリカ軍のいる所へ、船の大砲は ドイツ軍のまもる所へ) */
-  shellT -= dt; if (shellT <= 0){ shellT = R(3.5, 7); const usSide = Math.random() < .55; const pool = soldiers.filter(s => s.alive && !s.boat && !s.onShip && s.side === (usSide ? 'us' : 'de') && !s.gunAt); if (pool.length){ const t = pick(pool), x = clamp(t.pos.x + R(-7, 7), -W + 1, W - 1), z = t.pos.z + R(-7, 7); if (!(z < 19 && z > -60 && Math.abs(x) > 5)) setTimeout(() => { if (state === 'play') blastAt(x, z); }, 900); } }
+  shellT -= dt; if (shellT <= 0){ shellT = R(3.5, 7); const usSide = Math.random() < .55; const pool = soldiers.filter(s => s.alive && !s.boat && !s.onShip && s.side === (usSide ? 'us' : 'de') && !s.gunAt); if (pool.length){ const t = pick(pool), x = clamp(t.pos.x + R(-7, 7), -W + 1, W - 1), z = t.pos.z + R(-7, 7); if (WSEL || !(z < 19 && z > -60 && Math.abs(x) > 5)) setTimeout(() => { if (state === 'play') blastAt(x, z); }, 900); } }
   for (let i = blasts.length - 1; i >= 0; i--){ const b = blasts[i]; b.t += dt; b.m.scale.setScalar(1 + b.t * 9); b.m.material.opacity = Math.max(0, .9 - b.t * 2.2); if (b.t > .45){ scene.remove(b.m); blasts.splice(i, 1); } }
   for (let i = tracers.length - 1; i >= 0; i--){ const t = tracers[i]; t.t -= dt; if (t.t <= 0){ scene.remove(t.l); t.l.geometry.dispose(); tracers.splice(i, 1); } }
   /* 攻略 */
   if (!winner){ let us = 0, de = 0; for (const s of soldiers){ if (!s.alive || s.boat || s.onShip) continue; if (Math.hypot(s.pos.x - P.x, s.pos.z - P.z) < CAP_R){ if (s.side === 'us') us++; else de++; } }
     if ((us >= 3 || (us >= 1 && de === 0 && tickets.de <= 0)) && us > de) capP += dt / CAP_T * Math.min(1.6, .5 + (us - de) * .25); else if (de > us) capP -= dt / CAP_T * .5; capP = clamp(capP, 0, 1);
-    if (capP >= 1){ flags[front].fl.material = M.flagU; feed('アメリカ軍が「' + P.name + '」を攻略した！'); showMsg('「' + P.name + '」を攻略！', 3); beep(990, .15, .3); front++; capP = 0; tickets.de = GARR[front] || 0; if (front === 1) startAmbush(); if (front === PTS.length - 1){ lastStand(); feed('さいごの入口：ドイツ軍は もう復活しない'); } for (const s of soldiers){ s.spot = null; if (s.gunAt){ s.gunAt.gunner = null; s.gunAt = null; s.C = CLS[s.cls]; } s.wantGun = null; } if (front >= PTS.length){ winner = 'us'; finish(); return; } }
+    if (capP >= 1){ flags[front].fl.material = M.flagU; feed('アメリカ軍が「' + P.name + '」を攻略した！'); showMsg('「' + P.name + '」を攻略！', 3); beep(990, .15, .3); front++; capP = 0; tickets.de = GARR[front] || 0; if (front === 1 && BUNKERS.some(b => b.pt === 0)) startAmbush(); if (front === PTS.length - 1){ lastStand(); feed('さいごの入口：ドイツ軍は もう復活しない'); } for (const s of soldiers){ s.spot = null; if (s.gunAt){ s.gunAt.gunner = null; s.gunAt = null; s.C = CLS[s.cls]; } s.wantGun = null; } if (front >= PTS.length){ winner = 'us'; finish(); return; } }
     if (tickets.us <= 0){ outT = (outT || 0) + dt; if (soldiers.filter(s => s.side === 'us' && s.alive).length < 6 || outT > 100){ winner = 'de'; finish(); return; } } else outT = 0; }   /* 増援がつきて、のこり2人以下になったら ドイツ軍の勝ち */
   updatePlayer(dt);
   if (msgT > 0){ msgT -= dt; if (msgT <= 0) $('msg').style.opacity = 0; }
@@ -872,11 +983,13 @@ function finish(quit){ if (state !== 'play') return; state = 'over'; if (documen
   if (won && window.ACH) ACH.clear('war'); $('hud').style.display = 'none'; $('result').classList.add('on'); }
 
 // ===================== 操作 =====================
-function drawPick(){ $('pickSide').innerHTML = [['us', 'アメリカ軍（攻める）', '超大きな船の中から小さな船に乗って上陸'], ['de', 'ドイツ軍（まもる）', 'バンカーや持ち場でむかえうつ'], ['watch', '観戦モード', '参加しないで空から見る']].map(([k, n, d]) => `<button data-s="${k}" class="${k === mySide ? 'sel' : ''}">${n}<small>${d}</small></button>`).join('');
+function drawPick(){ $('pickWorld').innerHTML = WORLDS.map((w, i) => `<button data-w="${i}" class="${i === WSEL ? 'sel' : ''}">${w.name}<small>${w.desc}</small></button>`).join(''); $('pickWorld').querySelectorAll('button').forEach(b => b.onclick = () => { const i = +b.dataset.w; if (i === WSEL) return; try { sessionStorage.setItem('war_pick', JSON.stringify({ s: mySide, c: myCls })); } catch (e){} const u = new URL(location.href); u.searchParams.set('w', i); location.href = u.href; });   /* war_v17 */
+  $('pickSide').innerHTML = [['us', 'アメリカ軍（攻める）', '超大きな船の中から小さな船に乗って上陸'], ['de', 'ドイツ軍（まもる）', 'バンカーや持ち場でむかえうつ'], ['watch', '観戦モード', '参加しないで空から見る']].map(([k, n, d]) => `<button data-s="${k}" class="${k === mySide ? 'sel' : ''}">${n}<small>${d}</small></button>`).join('');
   $('pickCls').innerHTML = ['rifle', 'assault', 'mg', 'sniper', 'medic', 'helmet'].map(k => `<button data-c="${k}" class="${k === myCls ? 'sel' : ''}">${CLS[k].name}<small>${CLS[k].note}</small></button>`).join('');
   $('pickSide').querySelectorAll('button').forEach(b => b.onclick = () => { mySide = b.dataset.s; drawPick(); }); $('pickCls').querySelectorAll('button').forEach(b => b.onclick = () => { myCls = b.dataset.c; drawPick(); }); }
+try { const q = JSON.parse(sessionStorage.getItem('war_pick') || 'null'); if (q && ['us', 'de', 'watch'].includes(q.s) && CLS[q.c]){ mySide = q.s; myCls = q.c; } } catch (e){}   /* war_v17: ワールドをかえても えらんだ軍と兵士はそのまま */
 drawPick();
-function startGame(){ initAudio(); newGame(); state = 'play'; paused = false; for (const id of ['title', 'result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); showMsg(spectate ? '観戦モード。空から戦場を見よう' : mySide === 'us' ? '船の兵士控え室だ。とびらを出て、前の小さな船まで歩いて乗れ（E）' : 'ドイツ軍だ。持ち場でアメリカ軍をむかえうて', 4); }
+function startGame(){ initAudio(); newGame(); feed('ワールド：' + WD.name); state = 'play'; paused = false; for (const id of ['title', 'result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); showMsg(spectate ? '観戦モード。空から戦場を見よう' : mySide === 'us' ? (WSEL ? '基地キャンプだ。前へ進んで ①「' + PTS[0].name + '」を攻略せよ' : '船の兵士控え室だ。とびらを出て、前の小さな船まで歩いて乗れ（E）') : 'ドイツ軍だ。持ち場でアメリカ軍をむかえうて', 4); }
 function toTitle(){ state = 'title'; paused = false; for (const id of ['result', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'none'; $('title').classList.add('on'); }
 $('startBtn').onclick = startGame; $('retryBtn').onclick = startGame;
 let lockFailed = false;
@@ -906,9 +1019,9 @@ setInterval(() => { if (performance.now() - lastTick > 120) tick(); }, 33);
 function tick(){ lastTick = performance.now(); const real = Math.min(.25, clock.getDelta()), steps = Math.max(1, Math.ceil(real / .04)), dt = real / steps;
   for (let i = 0; i < steps; i++){ if (state === 'play' && !paused) update(dt); }
   if (state === 'title'){ titleT += real; camera.position.set(Math.sin(titleT * .08) * 20, 16, 222 + Math.sin(titleT * .1) * 6); camera.lookAt(0, 2, 150); }
-  SHIPIN.visible = camera.position.z > 262 && camera.position.y < 9; renderer.render(scene, camera); }   /* war_v12 */
+  wxTick(); renderer.render(scene, camera); }   /* war_v12・war_v17: 船の中の表示・天気 */
 window.__ready = true;
-window.__game = { get state(){ return state; }, get amb(){ return AMB; }, get ship(){ return SHIP; }, get shipIn(){ return SHIPIN; }, get soldiers(){ return soldiers; }, get player(){ return player; }, get front(){ return front; }, get tickets(){ return tickets; }, get capP(){ return capP; }, get winner(){ return winner; }, get boats(){ return boats; }, get boxes(){ return boxes; }, get elapsed(){ return elapsed; }, keys, BUNKERS, PTS, set side(v){ mySide = v; }, set cls(v){ myCls = v; }, setView(y, p){ yaw = y; pitch = p; }, playerShoot, finish, get camera(){ return camera; }, get renderer(){ return renderer; }, get scene(){ return scene; },
+window.__game = { get state(){ return state; }, get amb(){ return AMB; }, get ship(){ return SHIP; }, get world(){ return WSEL; }, get WD(){ return WD; }, get BANDS(){ return BANDS; }, freeAt, get shipIn(){ return SHIPIN; }, get soldiers(){ return soldiers; }, get player(){ return player; }, get front(){ return front; }, get tickets(){ return tickets; }, get capP(){ return capP; }, get winner(){ return winner; }, get boats(){ return boats; }, get boxes(){ return boxes; }, get elapsed(){ return elapsed; }, keys, BUNKERS, PTS, set side(v){ mySide = v; }, set cls(v){ myCls = v; }, setView(y, p){ yaw = y; pitch = p; }, playerShoot, finish, get camera(){ return camera; }, get renderer(){ return renderer; }, get scene(){ return scene; },
   sim(sec, render = true){ const n = Math.round(sec * 30); for (let i = 0; i < n; i++){ if (state === 'play') update(1 / 30); } if (render) renderer.render(scene, camera); } };
 loop();
 </script>
