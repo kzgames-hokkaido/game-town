@@ -84,13 +84,13 @@ a.sub{text-align:center;text-decoration:none}
   <p>夕方6時の街。街のあちこちに、いろいろなゲームの<b>会場</b>がある。</p>
   <ul>
     <li>会場の前に置いてある<b>スマホ</b>に向かって <kbd>E</kbd> を押すと、そのゲームに参加できる</li>
-    <li>会場には<b>A〜Z・AA〜AK</b>の地点の名前がついている。左上の地図で場所がわかる</li>
+    <li>会場には<b>A〜Z・AA〜AL</b>の地点の名前がついている。左上の地図で場所がわかる</li>
     <li><kbd>I</kbd> で<b>持ち物</b>と<b>スキン</b>（自分の見た目）。ゲームを<b>クリアすると 5000円チケット</b>がもらえる。<b>AD地点の「みらいモール」</b>で、そのお金で買い物や食事ができる</li>
     <li><b>Z地点の「何でも豆知識屋」</b>に入ると、NPCの名前と顔や、ゲームの攻略、豆知識がわかる</li>
     <li><b>Y地点の「最新コーナー」</b>に入ると、新しいゲームや変わったところ、ゲームができた順番がわかる</li>
     <li>ゲームのタイトル画面の「街へもどる」で、この街に帰ってこられる（さっきの会場の前にもどる）</li>
   </ul>
-  <p class="keys"><b>A</b> 熱湯スタジアム脱出　<b>B</b> L字マンション鬼ごっこ　<b>C</b> 首輪マーク当てゲーム　<b>D</b> 地下ブラックジャック　<b>E</b> トンネル逃亡ゲーム　<b>F</b> ぶら下がり耐久　<b>G</b> おみくじデスゲーム　<b>H</b> 巨大草園かくれんぼ　<b>I</b> 猛獣ハンター　<b>J</b> 缶蹴り　<b>K</b> ドローンレーザー　<b>L</b> 二択問題　<b>M</b> 雪合戦（魔女狩り）　<b>N</b> アンケート　<b>O</b> 東京ビンゴタワー　<b>P</b> 足跡かくれんぼ　<b>Q</b> 買い物競争　<b>R</b> てんびん　<b>S</b> 自然災害　<b>T</b> ラビリンス　<b>U</b> バトルロワイアル　<b>V</b> ロープ　<b>W</b> ビル　<b>X</b> 鉄骨渡り　<b>Y</b> 最新コーナー　<b>Z</b> 何でも豆知識屋　<b>AA</b> 実験ゲーム　<b>AB</b> ミニゲームホール　<b>AC</b> 空中ケンパ　<b>AD</b> みらいモール　<b>AE</b> 豪華客船　<b>AF</b> 人生のレール　<b>AG</b> 多数派ゲーム　<b>AH</b> 裏カジノ　<b>AI</b> ドリル戦車　<b>AJ</b> 四つの試練　<b>AK</b> 回転寿司サバイバル（街の南に1列広がった）</p>
+  <p class="keys"><b>A</b> 熱湯スタジアム脱出　<b>B</b> L字マンション鬼ごっこ　<b>C</b> 首輪マーク当てゲーム　<b>D</b> 地下ブラックジャック　<b>E</b> トンネル逃亡ゲーム　<b>F</b> ぶら下がり耐久　<b>G</b> おみくじデスゲーム　<b>H</b> 巨大草園かくれんぼ　<b>I</b> 猛獣ハンター　<b>J</b> 缶蹴り　<b>K</b> ドローンレーザー　<b>L</b> 二択問題　<b>M</b> 雪合戦（魔女狩り）　<b>N</b> アンケート　<b>O</b> 東京ビンゴタワー　<b>P</b> 足跡かくれんぼ　<b>Q</b> 買い物競争　<b>R</b> てんびん　<b>S</b> 自然災害　<b>T</b> ラビリンス　<b>U</b> バトルロワイアル　<b>V</b> ロープ　<b>W</b> ビル　<b>X</b> 鉄骨渡り　<b>Y</b> 最新コーナー　<b>Z</b> 何でも豆知識屋　<b>AA</b> 実験ゲーム　<b>AB</b> ミニゲームホール　<b>AC</b> 空中ケンパ　<b>AD</b> みらいモール　<b>AE</b> 豪華客船　<b>AF</b> 人生のレール　<b>AG</b> 多数派ゲーム　<b>AH</b> 裏カジノ　<b>AI</b> ドリル戦車　<b>AJ</b> 四つの試練　<b>AK</b> 回転寿司サバイバル　<b>AL</b> 上陸作戦（街の南に1列広がった）</p>
   <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：移動　マウス：見回す（動かないときはドラッグ）　<kbd>シフト</kbd>：走る　<kbd>E</kbd>：スマホで参加　<kbd>M</kbd>：ワープ（会場の前へ）　<kbd>エスケープ</kbd>／<kbd>P</kbd>：一時停止</div>
   <button class="big" id="startBtn">街を歩く</button>
   <a class="sub" href="サバイバル.html">サバイバルを始める（この街で鬼から逃げる）</a>
@@ -302,6 +302,7 @@ const VENUES = [
   { id: 'tank',     L: 'AI', name: 'ドリル戦車',            file: 'ドリル戦車.html',         bi: 3, bj: 5, kind: 'tank', sub: '広いスーパーで吹っ飛ばす', verb: '乗る' },
   { id: 'quad',     L: 'AJ', name: '四つの試練',            file: '四つの試練.html',         bi: 1, bj: 5, kind: 'quad', sub: '4つのゲームで賞金3万円' },
   { id: 'sushi',    L: 'AK', name: '回転寿司サバイバル',    file: '回転寿司サバイバル.html', bi: 2, bj: 6, kind: 'sushi', sub: '寿司になって箸から逃げろ' },
+  { id: 'war',      L: 'AL', name: '上陸作戦',              file: '上陸作戦.html',           bi: 3, bj: 6, kind: 'war', sub: 'アメリカ軍 対 ドイツ軍' },
 ];
 for (const v of VENUES){ v.bi = v.bi * 2 + 1; v.bj = v.bj * 2 + 1; }   /* hub_tokyo: 会場は1つおきの区画へ (あいだはビル街) */
 const VMATS = (() => {
@@ -577,6 +578,14 @@ function buildVenue(V, x0, z0){
       addBox('vBlue', x0 + 1, .02, f + 2, cx - 1, .05, z0 + 36); addBox('vRed', cx + 1, .02, f + 2, x0 + 39, .05, z0 + 36); addBox('vWhite', cx - 1, .02, f + 2, cx + 1, .05, z0 + 36);
       wall('vDark', cx - 14, 0, z0 + 36, cx + 14, 12, z0 + 39); addBox('vScreen', cx - 12, 3, z0 + 35.9, cx + 12, 11, z0 + 36); for (const s of [-1, 1]){ vcyl('vMetal', cx + s * 16, 0, f + 10, .15, 7, 8); vball('vLantern', cx + s * 16, 7.3, f + 10, .4); }
       signMesh(signCanvas([['多数派ゲーム', 60, '#ffe14d'], ['700人・二択で多数派だけ進む', 30, '#ffffff']], 512, 150, '#202030'), 12, 3.5, cx, 7.2, z0 + 35.8);
+    } break;
+    case 'war': { // 上陸作戦: 砂の地面に コンクリートのバンカー (銃の穴)、土のう、小さな上陸用の船、旗
+      addBox('vGravel', x0 + .5, .02, z0 + .5, x0 + 39.5, .05, z0 + 39.5);
+      wall('vGray', x0 + 8, 0, f + 16, x0 + 32, 5, z0 + 36); addBox('vDark', x0 + 10, 2.2, f + 15.9, x0 + 30, 3.0, f + 16.05); addBox('vGray2', x0 + 7.4, 5, f + 15.4, x0 + 32.6, 5.8, z0 + 36.6);
+      for (const xx of [x0 + 4, x0 + 22]) addBox('vWood', xx, 0, f + 9, xx + 6, 1.2, f + 10);
+      addBox('vMetal', x0 + 12, .2, f + 3, x0 + 16, 1.6, f + 11); addBox('vMetal', x0 + 12, .2, f + 2.8, x0 + 16, 2.4, f + 3);
+      vcyl('vMetal', x0 + 34, 0, f + 12, .1, 9, 8); addBox('vBlue', x0 + 34.1, 7.6, f + 11.95, x0 + 36.4, 9, f + 12.05);
+      signMesh(signCanvas([['上陸作戦', 100, '#ffffff'], ['アメリカ軍 対 ドイツ軍', 40, '#ffe14d']], 512, 190, '#3a4a2a'), 12, 4.4, cx, 8.6, f + 15.6);
     } break;
     case 'sushi': { // 回転寿司: 白いかべに 黒い屋根、赤い看板「回転寿司」、ガラスの入口、のれん
       addBox('vAsph', x0 + .5, .02, z0 + .5, x0 + 39.5, .05, f + 10);
@@ -3237,6 +3246,7 @@ function tokyoBlock(bx0, bz0, bi, bj){ if ((bi * 7 + bj * 3) % 8 === 0) return f
   const cx = bx0 + 20, cz = bz0 + 20, dc = Math.hypot(cx - lines[6], cz - lines[6]), tall = Math.max(0, 1 - dc / 330);
   if (bi === 6 && bj === 6){ /* 駅 (スクランブル交差点の南東): 横に長い低い建物と、うしろの高いビル */ wall('tkTower0', bx0 + 2, 0, bz0 + 3, bx0 + 38, 15, bz0 + 22); addBox('tkScreen', bx0 + 1.9, .3, bz0 + 2.9, bx0 + 38.1, 4, bz0 + 22.1); wall('tkTower2', bx0 + 6, 0, bz0 + 24, bx0 + 34, 150, bz0 + 38); addBox('tkConc', bx0 + 10, 150, bz0 + 27, bx0 + 30, 158, bz0 + 35);
     setTimeout(() => { for (const ry of [Math.PI, 0]) signMesh(signCanvas([['渋谷駅', 110, '#ffffff']], 512, 170, '#1a3a2a'), 14, 4.6, cx, 11.5, bz0 + (ry ? 2.85 : 2.85), Math.PI); }, 0); return true; }
+  { const hsh = (bi * 5 + bj * 11) % 9; if (dc > 120 && (hsh === 1 || hsh === 2)){ tokyoDanchi(bx0, bz0, bi + bj * 3); return true; } if (dc > 100 && (hsh === 3 || hsh === 4)){ tokyoApart(bx0, bz0); return true; } }   /* 団地・アパート街 (2026-11-12) */
   const cols = Math.random() < .45 ? 3 : 2, rows = Math.random() < .4 ? 3 : 2, gap = 2.4, m = 1.4, lw = (40 - 2 * m - (cols - 1) * gap) / cols, ld = (40 - 2 * m - (rows - 1) * gap) / rows;
   for (let a = 0; a < cols; a++) for (let c = 0; c < rows; c++){ const x0 = bx0 + m + a * (lw + gap) + R(0, 1.2), z0 = bz0 + m + c * (ld + gap) + R(0, 1.2), x1 = bx0 + m + a * (lw + gap) + lw - R(0, 1.2), z1 = bz0 + m + c * (ld + gap) + ld - R(0, 1.2);
     let h = R(20, 46) + tall * R(10, 60); if (Math.random() < .14 + tall * .2) h += R(50, 130); const key = h < 50 ? 'tkTower0' : h < 110 ? 'tkTower1' : 'tkTower2';
@@ -3244,12 +3254,53 @@ function tokyoBlock(bx0, bz0, bi, bj){ if ((bi * 7 + bj * 3) % 8 === 0) return f
     if (Math.random() < .6) addBox('tkConc', x0 + (x1 - x0) * .25, h, z0 + (z1 - z0) * .25, x0 + (x1 - x0) * .65, h + R(2, 5), z0 + (z1 - z0) * .65);   /* 屋上の小屋 */
     if (Math.random() < .28) addBox('tkScreen', x0 + .4, h + .5, z0 + .2, x1 - .4, h + R(4, 8), z0 + .6);   /* 屋上の看板 (消えている) */
     if (Math.random() < .2) addBox('tkPole', (x0 + x1) / 2 - .15, h, (z0 + z1) / 2 - .15, (x0 + x1) / 2 + .15, h + R(8, 22), (z0 + z1) / 2 + .15);   /* アンテナ */ }
+  /* 路地裏: ビルのあいだのすき間に、室外機・ゴミ箱・木箱・配管・自転車 */
+  for (let a = 0; a < cols - 1; a++){ const gx = bx0 + m + (a + 1) * (lw + gap) - gap; alleyStuff(gx + .1, bz0 + m + 1, gx + gap - .1, bz0 + 40 - m - 1, true); }
+  for (let c = 0; c < rows - 1; c++){ const gz = bz0 + m + (c + 1) * (ld + gap) - gap; alleyStuff(bx0 + m + 1, gz + .1, bx0 + 40 - m - 1, gz + gap - .1, false); }
   return true; }
+function alleyStuff(x0, z0, x1, z1, alongZ){ const len = alongZ ? z1 - z0 : x1 - x0, n = 5 + ((Math.random() * 5) | 0);
+  for (let k = 0; k < n; k++){ const t = R(0, len), side = Math.random() < .5, kind = (Math.random() * 6) | 0; const along = (alongZ ? z0 : x0) + t, edge = alongZ ? (side ? x0 : x1) : (side ? z0 : z1), sgn = side ? 1 : -1;
+    const bx = (w, h, d, y, key, off = 0) => { const a0 = along - w / 2, a1 = along + w / 2, e0 = edge + sgn * off, e1 = edge + sgn * (off + d), lo = Math.min(e0, e1), hi = Math.max(e0, e1); if (alongZ) addBox(key, lo, y, a0, hi, y + h, a1); else addBox(key, a0, y, lo, a1, y + h, hi); };
+    if (kind === 0){ bx(.8, .6, .32, R(.2, 2.6), 'tkAC'); }                                  /* 室外機 (かべに) */
+    else if (kind === 1){ bx(.55, .95, .55, 0, 'tkBin'); if (Math.random() < .5) bx(.55, .95, .55, 0, 'tkGuard', .6); }   /* ゴミ箱 */
+    else if (kind === 2){ bx(.7, .5, .6, 0, 'tkWoodD'); bx(.6, .45, .5, .5, 'tkWoodD', .05); }   /* 木箱をつんである */
+    else if (kind === 3){ bx(.09, R(8, 18), .09, 0, 'tkPole'); }                              /* 配管 */
+    else if (kind === 4){ bx(1.5, .95, .08, 0, 'tkPole', .12); bx(.5, .05, .3, .9, 'tkBin', .0); }   /* 自転車 */
+    else { bx(1.1, .25, .5, 2.3, 'tkScreen'); }                                              /* 消えた小さな看板 */ } }
+/* 団地: 5階だての同じ形の棟が3つならぶ。南がわにベランダ、北がわに階段室、屋上に貯水タンク、棟の番号。棟のあいだに 小さな公園 (すべり台・砂場・ベンチ) と植えこみ */
+function tokyoDanchi(bx0, bz0, n){ const H = 15;
+  for (let k = 0; k < 3; k++){ const x0 = bx0 + 3, x1 = bx0 + 37, z0 = bz0 + 2.5 + k * 13, z1 = z0 + 7.5;
+    wall('tkDanchi', x0, 0, z0, x1, H, z1); addBox('tkConc', x0 - .2, H, z0 - .2, x1 + .2, H + .5, z1 + .2);
+    for (let f = 1; f < 5; f++){ addBox('tkConc', x0, f * 3 - .15, z1, x1, f * 3, z1 + 1.1); addBox('tkRail', x0, f * 3, z1 + 1.0, x1, f * 3 + 1.0, z1 + 1.1); }   /* ベランダ */
+    addBox('tkRail', x0, 0, z1 + 1.0, x1, 1.0, z1 + 1.1);
+    for (const sx of [5, 15.8, 26.6]){ wall('tkConc', x0 + sx, 0, z0 - 1.6, x0 + sx + 2.4, H + 1.2, z0); addBox('tkScreen', x0 + sx + .6, 0, z0 - 1.66, x0 + sx + 1.8, 2.2, z0 - 1.6); }   /* 階段室 (北がわ) */
+    addBox('tkPole', x0 + 16, H + .5, z0 + 2.6, x0 + 18, H + 1.3, z0 + 4.6); addBox('tkRail', x0 + 15.8, H + 1.3, z0 + 2.4, x0 + 18.2, H + 3.3, z0 + 4.8);   /* 貯水タンク */
+    signMesh(signCanvas([[((n * 3 + k) % 28 + 1) + '号棟', 96, '#2a2a2a']], 256, 128, '#d8d4c8'), 2.6, 1.3, x0 - .06, 12.4, z0 + 3.75, -Math.PI / 2); }
+  /* 棟のあいだ: 植えこみ・公園 */
+  for (let k = 0; k < 2; k++){ const z = bz0 + 2.5 + k * 13 + 9.3; addBox('tkHedge', bx0 + 4, 0, z, bx0 + 14, .8, z + .9); addBox('tkHedge', bx0 + 26, 0, z, bx0 + 36, .8, z + .9); }
+  { const z = bz0 + 12, x = bx0 + 18; addBox('tkSandB', x, 0, z, x + 3, .12, z + 2.4); addBox('tkRail', x + 3.6, 0, z + .4, x + 3.9, 1.6, z + .7); addBox('tkBin', x + 3.6, 1.5, z + .2, x + 5.4, 1.62, z + .9); addBox('tkBin', x + 5.2, .0, z + .2, x + 6.6, 1.5, z + .9);   /* 砂場・すべり台 */
+    addBox('tkWoodD', x - 4, .4, z + 3.2, x - 2.2, .5, z + 3.7); addBox('tkPole', x - 3.9, 0, z + 3.3, x - 3.8, .4, z + 3.6); addBox('tkPole', x - 2.4, 0, z + 3.3, x - 2.3, .4, z + 3.6); }   /* ベンチ */
+  for (const [px, pz] of [[2, 1.2], [38, 1.2], [2, 38.6], [38, 38.6]]){ wall('tkPole', bx0 + px - .12, 0, bz0 + pz - .12, bx0 + px + .12, 8.5, bz0 + pz + .12); }   /* 電柱 */
+  addBox('tkPole', bx0 + 2, 8.2, bz0 + 1.17, bx0 + 38, 8.24, bz0 + 1.23); addBox('tkPole', bx0 + 2, 8.2, bz0 + 38.57, bx0 + 38, 8.24, bz0 + 38.63); }
+/* アパート街: 2階だての木造アパート (外の階段と外ろうか、とびらがならぶ) が 2列×3だん。あいだは はば 2m ほどの路地 (電柱・電線・自転車・ゴミ置き場・室外機) */
+function tokyoApart(bx0, bz0){
+  for (let a = 0; a < 2; a++) for (let c = 0; c < 3; c++){ const x0 = bx0 + 2 + a * 19, x1 = x0 + 15.5, z0 = bz0 + 2 + c * 12.6, z1 = z0 + 6, key = (a + c) % 2 ? 'tkApt' : 'tkApt2';
+    wall(key, x0, 0, z0, x1, 5.6, z1); addBox('tkRoofT', x0 - .4, 5.6, z0 - .4, x1 + .4, 5.95, z1 + 1.6); addBox('tkRoofT', x0 + 1, 5.95, z0 + 1, x1 - 1, 6.5, z1 - 1);   /* 屋根 */
+    addBox('tkConc', x0, 2.72, z1, x1, 2.85, z1 + 1.3); addBox('tkRail', x0, 2.85, z1 + 1.22, x1, 3.85, z1 + 1.3);   /* 2階の外ろうか */
+    for (let i = 0; i < 4; i++){ const dx = x0 + 1.2 + i * 3.7; addBox('tkWoodD', dx, 0, z1, dx + .9, 2.0, z1 + .06); addBox('tkWoodD', dx, 2.85, z1, dx + .9, 4.85, z1 + .06); addBox('tkScreen', dx + 1.3, 1.0, z1, dx + 2.5, 2.0, z1 + .05); addBox('tkScreen', dx + 1.3, 3.85, z1, dx + 2.5, 4.85, z1 + .05); if (i % 2 === 0) addBox('tkAC', dx + 2.7, .1, z1 + .05, dx + 3.4, .7, z1 + .4); }   /* とびら・まど・室外機 */
+    for (let i = 0; i < 9; i++) addBox('tkRail', x1 + .1 + i * .3, i * .3, z1 + .1, x1 + .4 + i * .3, i * .3 + .3, z1 + 1.2);   /* 外の階段 (東がわ) */
+    addBox('tkRail', x1 + .1, 0, z1 + 1.14, x1 + 2.8, 3.7, z1 + 1.2);
+    if (Math.random() < .7) addBox('tkPole', x0 + R(1, 12), 0, z1 + 1.5, x0 + R(1, 12) + .08, 1.0, z1 + 3.0);   /* 自転車 */
+    if (Math.random() < .5){ const gx = x0 + R(2, 10); addBox('tkBin', gx, 0, z1 + 2.2, gx + 1.6, .9, z1 + 3.2); }   /* ゴミ置き場 */ }
+  /* 路地の電柱と電線 */
+  for (let c = 0; c < 4; c++){ const z = bz0 + 1 + c * 12.6; if (c > 0) for (const x of [bx0 + 1, bx0 + 18.4, bx0 + 38.6]) wall('tkPole', x - .12, 0, z - .5 - .12, x + .12, 8.5, z - .5 + .12); if (c > 0) addBox('tkPole', bx0 + 1, 8.1, z - .53, bx0 + 38.6, 8.14, z - .47); }
+  addBox('tkPole', bx0 + 18.37, 8.1, bz0 + 12, bx0 + 18.43, 8.14, bz0 + 39); addBox('tkHedge', bx0 + .6, 0, bz0 + .6, bx0 + 39.4, .5, bz0 + 1.2); }
 const TOKYO = { blink: [], t: 0 };
 const TOKYO_MATS = (() => { const win = (lit) => { const [c, g] = mk(64, 128); g.fillStyle = '#0b0d13'; g.fillRect(0, 0, 64, 128); for (let y = 3; y < 128; y += 8) for (let x = 3; x < 64; x += 8){ g.fillStyle = Math.random() < lit ? '#d8c080' : '#141926'; g.fillRect(x, y, 5, 5); } return tx(c); };
   const tw = (rep, lit) => { const t = win(lit); t.repeat.set(rep[0], rep[1]); return std({ color: 0x8a90a0, map: t, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: .55, roughness: .5, metalness: .3 }); };
   return { tkTower0: tw([3, 5], .006), tkTower1: tw([3, 8], .004), tkTower2: tw([4, 12], .003),   /* 電気はほとんど消えている (光るのは会場だけ) */ tkConc: std({ color: 0x3a3c42, roughness: .95 }), tkDeck: std({ color: 0x2c2e34, roughness: .9 }), tkTrain: std({ color: 0xb4b8c0, metalness: .5, roughness: .4 }), tkTrainG: std({ color: 0x3a9a4a, roughness: .6 }),
-    tkScreen: new THREE.MeshBasicMaterial({ color: 0x0b1120 }), tkPole: std({ color: 0x40444c, metalness: .4, roughness: .5 }), tkBus: std({ color: 0x7a2424, metalness: .3, roughness: .5 }), tkTaxi: std({ color: 0xc8a820, metalness: .4, roughness: .4 }), tkBronze: std({ color: 0x6a4a2a, metalness: .7, roughness: .4 }), tkGuard: std({ color: 0xc8c8c8, roughness: .6 }) }; })();
+    tkScreen: new THREE.MeshBasicMaterial({ color: 0x0b1120 }), tkPole: std({ color: 0x40444c, metalness: .4, roughness: .5 }), tkBus: std({ color: 0x7a2424, metalness: .3, roughness: .5 }), tkTaxi: std({ color: 0xc8a820, metalness: .4, roughness: .4 }), tkBronze: std({ color: 0x6a4a2a, metalness: .7, roughness: .4 }), tkGuard: std({ color: 0xc8c8c8, roughness: .6 }),
+    tkDanchi: (() => { const m = tw([9, 5], .012); m.color.set(0xd0ccc0); return m; })(), tkApt: std({ color: 0x8a7a62, roughness: .9 }), tkApt2: std({ color: 0x6a7480, roughness: .9 }), tkRoofT: std({ color: 0x34363e, roughness: .8 }), tkRail: std({ color: 0xa8aab0, roughness: .6 }), tkWoodD: std({ color: 0x3a2a1c, roughness: .9 }), tkBin: std({ color: 0x2a4a7a, roughness: .7 }), tkAC: std({ color: 0xb0b4b8, roughness: .5, metalness: .3 }), tkHedge: std({ color: 0x1c3420, roughness: 1 }), tkSandB: std({ color: 0x8a7a58, roughness: 1 }) }; })();
 const tkSign = (tex, w, h, x, y, z, ry = 0) => { for (const r of [ry, ry + Math.PI]){ const m = signMesh(tex, w, h, x, y, z, r); m.material.side = THREE.FrontSide; } };   /* 表と裏の両方から正しく読める標識 */
 { /* 1. まわりの高層ビル (さくの外) */
   const inTown = (x, z) => Math.abs(x) < C + 20 && z > -C - 20 && z < C + P + 20; const tops = [];
@@ -4101,7 +4152,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi', 'war'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
