@@ -84,13 +84,13 @@ a.sub{text-align:center;text-decoration:none}
   <p>夕方6時の街。街のあちこちに、いろいろなゲームの<b>会場</b>がある。</p>
   <ul>
     <li>会場の前に置いてある<b>スマホ</b>に向かって <kbd>E</kbd> を押すと、そのゲームに参加できる</li>
-    <li>会場には<b>A〜Z・AA〜AL</b>の地点の名前がついている。左上の地図で場所がわかる</li>
+    <li>会場には<b>A〜Z・AA〜AN</b>の地点の名前がついている。左上の地図で場所がわかる</li>
     <li><kbd>I</kbd> で<b>持ち物</b>と<b>スキン</b>（自分の見た目）。ゲームを<b>クリアすると 5000円チケット</b>がもらえる。<b>AD地点の「みらいモール」</b>で、そのお金で買い物や食事ができる</li>
     <li><b>Z地点の「何でも豆知識屋」</b>に入ると、NPCの名前と顔や、ゲームの攻略、豆知識がわかる</li>
     <li><b>Y地点の「最新コーナー」</b>に入ると、新しいゲームや変わったところ、ゲームができた順番がわかる</li>
     <li>ゲームのタイトル画面の「街へもどる」で、この街に帰ってこられる（さっきの会場の前にもどる）</li>
   </ul>
-  <p class="keys"><b>A</b> 熱湯スタジアム脱出　<b>B</b> L字マンション鬼ごっこ　<b>C</b> 首輪マーク当てゲーム　<b>D</b> 地下ブラックジャック　<b>E</b> トンネル逃亡ゲーム　<b>F</b> ぶら下がり耐久　<b>G</b> おみくじデスゲーム　<b>H</b> 巨大草園かくれんぼ　<b>I</b> 猛獣ハンター　<b>J</b> 缶蹴り　<b>K</b> ドローンレーザー　<b>L</b> 二択問題　<b>M</b> 雪合戦（魔女狩り）　<b>N</b> アンケート　<b>O</b> 東京ビンゴタワー　<b>P</b> 足跡かくれんぼ　<b>Q</b> 買い物競争　<b>R</b> てんびん　<b>S</b> 自然災害　<b>T</b> ラビリンス　<b>U</b> バトルロワイアル　<b>V</b> ロープ　<b>W</b> ビル　<b>X</b> 鉄骨渡り　<b>Y</b> 最新コーナー　<b>Z</b> 何でも豆知識屋　<b>AA</b> 実験ゲーム　<b>AB</b> ミニゲームホール　<b>AC</b> 空中ケンパ　<b>AD</b> みらいモール　<b>AE</b> 豪華客船　<b>AF</b> 人生のレール　<b>AG</b> 多数派ゲーム　<b>AH</b> 裏カジノ　<b>AI</b> ドリル戦車　<b>AJ</b> 四つの試練　<b>AK</b> 回転寿司サバイバル　<b>AL</b> 上陸作戦（街の南に1列広がった）</p>
+  <p class="keys"><b>A</b> 熱湯スタジアム脱出　<b>B</b> L字マンション鬼ごっこ　<b>C</b> 首輪マーク当てゲーム　<b>D</b> 地下ブラックジャック　<b>E</b> トンネル逃亡ゲーム　<b>F</b> ぶら下がり耐久　<b>G</b> おみくじデスゲーム　<b>H</b> 巨大草園かくれんぼ　<b>I</b> 猛獣ハンター　<b>J</b> 缶蹴り　<b>K</b> ドローンレーザー　<b>L</b> 二択問題　<b>M</b> 雪合戦（魔女狩り）　<b>N</b> アンケート　<b>O</b> 東京ビンゴタワー　<b>P</b> 足跡かくれんぼ　<b>Q</b> 買い物競争　<b>R</b> てんびん　<b>S</b> 自然災害　<b>T</b> ラビリンス　<b>U</b> バトルロワイアル　<b>V</b> ロープ　<b>W</b> ビル　<b>X</b> 鉄骨渡り　<b>Y</b> 最新コーナー　<b>Z</b> 何でも豆知識屋　<b>AA</b> 実験ゲーム　<b>AB</b> ミニゲームホール　<b>AC</b> 空中ケンパ　<b>AD</b> みらいモール　<b>AE</b> 豪華客船　<b>AF</b> 人生のレール　<b>AG</b> 多数派ゲーム　<b>AH</b> 裏カジノ　<b>AI</b> ドリル戦車　<b>AJ</b> 四つの試練　<b>AK</b> 回転寿司サバイバル　<b>AL</b> 上陸作戦　<b>AM</b> 緑のタイル　<b>AN</b> 映画館（街の南に1列広がった）</p>
   <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：移動　マウス：見回す（動かないときはドラッグ）　<kbd>シフト</kbd>：走る　<kbd>E</kbd>：スマホで参加　<kbd>M</kbd>：ワープ（会場の前へ）　<kbd>エスケープ</kbd>／<kbd>P</kbd>：一時停止</div>
   <button class="big" id="startBtn">街を歩く</button>
   <a class="sub" href="サバイバル.html">サバイバルを始める（この街で鬼から逃げる）</a>
@@ -303,6 +303,8 @@ const VENUES = [
   { id: 'quad',     L: 'AJ', name: '四つの試練',            file: '四つの試練.html',         bi: 1, bj: 5, kind: 'quad', sub: '4つのゲームで賞金3万円' },
   { id: 'sushi',    L: 'AK', name: '回転寿司サバイバル',    file: '回転寿司サバイバル.html', bi: 2, bj: 6, kind: 'sushi', sub: '寿司になって箸から逃げろ' },
   { id: 'war',      L: 'AL', name: '上陸作戦',              file: '上陸作戦.html',           bi: 3, bj: 6, kind: 'war', sub: 'アメリカ軍 対 ドイツ軍' },
+  { id: 'metro',    L: 'AM', name: '緑のタイル',            file: '緑のタイル.html',         bi: 4, bj: 6, kind: 'metro', sub: '地下鉄・怪物から生き残れ' },
+  { id: 'cinema',   L: 'AN', name: '映画館',                file: '映画館.html',             bi: 5, bj: 6, kind: 'cinema', verb: '入る', sub: 'ゲームの映画 5本' },
 ];
 for (const v of VENUES){ v.bi = v.bi * 2 + 1; v.bj = v.bj * 2 + 1; }   /* hub_tokyo: 会場は1つおきの区画へ (あいだはビル街) */
 const VMATS = (() => {
@@ -611,6 +613,24 @@ function buildVenue(V, x0, z0){
       addBox('vAsph', cx - 2.2, .02, f + 2, cx + 2.2, .05, z0 + 36); for (const zz of [f + 8, f + 18, f + 28]){ vcyl('vMetal', cx - 1.9, 0, zz, .08, 4, 6); vball('vLantern', cx - 1.9, 4.2, zz, .25); }
       addBox('vDark', cx - 2.2, 0, z0 + 36, cx + 2.2, 4, z0 + 39.5); addBox('vNeon', cx - .5, 2.4, z0 + 35.9, cx + .5, 3.4, z0 + 36);
       signMesh(signCanvas([['裏', 90, '#ff60c0']], 128, 128, '#000'), 1.0, 1.0, cx, 2.9, z0 + 35.85);
+    } break;
+    case 'metro': { // 緑のタイル: 地下鉄の入口。コンクリートのかこい、下りの階段 (黒い穴)、屋根、「地下鉄」の看板、足もとに緑のタイル
+      addBox('vAsph', x0 + .5, .02, z0 + .5, x0 + 39.5, .05, z0 + 39.5);
+      wall('vGray', cx - 5, 0, f + 12, cx - 4.4, 1.2, f + 24); wall('vGray', cx + 4.4, 0, f + 12, cx + 5, 1.2, f + 24); wall('vGray', cx - 5, 0, f + 23.4, cx + 5, 3.4, f + 24);
+      addBox('vBlack', cx - 4.4, .03, f + 12.6, cx + 4.4, .07, f + 23.4); for (let i = 0; i < 7; i++) addBox('vGray2', cx - 4.4, .07, f + 12.6 + i * 1.5, cx + 4.4, .09, f + 12.75 + i * 1.5);
+      for (const s of [-1, 1]) for (const zz of [f + 12.3, f + 23.7]) vcyl('vMetal', cx + s * 4.7, 0, zz, .12, 4.2, 8);
+      addBox('vDarkRoof', cx - 5.6, 4.2, f + 11.6, cx + 5.6, 4.6, f + 24.4);
+      addBox('vGreen', cx - 1.5, .06, f + 8, cx + 1.5, .1, f + 11);
+      signMesh(signCanvas([['地下鉄', 96, '#ffffff'], ['緑のタイル', 50, '#7dff9a']], 512, 190, '#14301e'), 10, 3.7, cx, 6.6, f + 11.5);
+    } break;
+    case 'cinema': { // 映画館: 茶色のかべ、赤いひさしに電球、大きな看板「映画館」、左右にポスター、ガラスの入口
+      addBox('vAsph', x0 + .5, .02, z0 + .5, x0 + 39.5, .05, f + 10);
+      wall('vBrown', x0 + 5, 0, f + 10, x0 + 35, 9, z0 + 38); addBox('vDarkRoof', x0 + 4.4, 9, f + 9.4, x0 + 35.6, 9.7, z0 + 38.6);
+      addBox('vRed', cx - 8, 3.4, f + 6.5, cx + 8, 4.0, f + 10); addBox('vYellow', cx - 8.1, 3.3, f + 6.4, cx + 8.1, 3.4, f + 6.6);
+      for (let i = -7; i <= 7; i += 2) vball('vLantern', cx + i, 3.22, f + 6.5, .16);
+      addBox('vGlassB', cx - 3, .1, f + 9.9, cx + 3, 3.0, f + 10);
+      for (const s of [-1, 1]) signMesh(signCanvas([['上映中', 44, '#ffd24a'], ['ゲームの', 40, '#ffffff'], ['映画', 40, '#ffffff'], ['5本', 70, '#ffe14d']], 256, 330, '#3a0c10'), 2.6, 3.3, cx + s * 6.5, 1.9, f + 9.6);
+      signMesh(signCanvas([['映画館', 110, '#ffe14d'], ['ゲームの街の映画 5本', 40, '#ffffff']], 512, 200, '#7a1018'), 13, 5, cx, 6.8, f + 9.6);
     } break;
     case 'maze': { // 巨大な壁にかこまれた巨大迷路
       const X0 = x0 + 2, X1 = x0 + 38, Z0 = f + 2, Z1 = z0 + 39, H = 13;
@@ -4152,7 +4172,7 @@ loop();
     { id: '10', name: 'やらかしくん', how: 'L字マンション鬼ごっこで、3回エレベーターを落とす' },
     { id: '11', name: '連帯責任', how: 'L字マンション鬼ごっこで、自分でグループを作り、仲間が1人以上欠けた状態で死亡する' }
   ];
-  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi', 'war'];
+  var GAMES = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'hunter', 'kankeri', 'drone', 'quiz', 'snow', 'survey', 'tower', 'footprint', 'shopping', 'balance', 'disaster', 'labyrinth', 'survival', 'royale', 'rope', 'hotel', 'steel', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi', 'war', 'metro'];
   function fresh(){ return { unlocked: {}, clears: {}, stats: {} }; }
   function load(){ try { var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.unlocked) return d; } catch (e){} return fresh(); }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e){} }
