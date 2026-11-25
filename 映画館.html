@@ -80,15 +80,16 @@ a.sub{text-align:center;text-decoration:none}
 
 <div class="screen on" id="title"><div class="panel">
   <h1><small>ゲームの街</small>映画館</h1>
-  <p>ゲームの街の<b>ゲームについての映画</b>と、<b>新作の映画</b>を上映している映画館。ロビーの<b>ポスター</b>の前で映画をえらぶと、客席にすわって大きなスクリーンで見られる。映画は<b>6本</b>で、<b>ぜんぶ無料</b>。</p>
+  <p>ゲームの街の<b>ゲームについての映画</b>と、<b>新作の映画</b>を上映している映画館。ロビーの<b>ポスター</b>の前で映画をえらぶと、客席にすわって大きなスクリーンで見られる。映画は<b>6本</b>で、<b>ぜんぶ無料</b>。見るのをやめる時は、<kbd>E</kbd> を<b>長おし</b>する。</p>
   <ul class="films" id="filmList"></ul>
   <p style="font-size:13px">映画の中では、人が<b>たおれる・落ちる</b>場面が出る。とちゅうでやめられる。</p>
   <p style="margin:8px 0 0;font-weight:800;font-size:14px">こわい表現（映画「24の逃走所」で、かまれた時）</p>
   <div class="pick" id="pickGore"></div>
   <p style="font-size:13px;margin:6px 0" id="recInfo"></p>
+  <p style="font-size:13px;margin:6px 0">ロビーの売店で、<b>ポップコーン</b>が<b>無料</b>でもらえる。<kbd>Q</kbd> で1つぶずつ食べられる（映画を見ながらでも食べられる）。</p>
   <div class="vol">音の大きさ　<input type="range" id="volIn" min="0" max="100" value="50"> <span id="volTx">50</span></div>
-  <div class="keys"><b>キーボード</b>：<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：歩く　<kbd>シフト</kbd>：走る　マウス：見回す　<kbd>E</kbd>：映画をえらぶ／見るのをやめる／街へもどる</div>
-  <div class="keys"><b>コントローラー</b>：左スティック 歩く（押しこむか ZL で走る）　右スティック 見回す　<kbd>A</kbd> 映画をえらぶ／見るのをやめる／街へもどる　<kbd>＋</kbd> ポーズ</div>
+  <div class="keys"><b>キーボード</b>：<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：歩く　<kbd>シフト</kbd>：走る　マウス：見回す　<kbd>E</kbd>：映画をえらぶ／ポップコーンをもらう／街へもどる　<kbd>E</kbd> を長おし：映画を見るのをやめる　<kbd>Q</kbd>：ポップコーンを1つぶ食べる</div>
+  <div class="keys"><b>コントローラー</b>：左スティック 歩く（押しこむか ZL で走る）　右スティック 見回す　<kbd>A</kbd> 映画をえらぶ／ポップコーンをもらう／街へもどる　<kbd>A</kbd> を長おし 映画を見るのをやめる　<kbd>Y</kbd> ポップコーンを1つぶ食べる　<kbd>＋</kbd> ポーズ</div>
   <button class="big" id="startBtn">入る</button>
   <a class="sub" href="街.html">街へもどる</a>
 </div></div>
@@ -110,7 +111,9 @@ const $ = id => document.getElementById(id);
 const R = (a, b) => a + (b - a) * Math.random();
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const pick = a => a[(Math.random() * a.length) | 0];
-/* cinema_v5 (2026-11-25): 脱落者の顔ぶれは いつも同じランダム (遊んだ記録では入れかえない)。
+/* cinema_v7 (2026-11-25): 見るのをやめるは E の長おし 0.8秒・映画の間は バケツを下のはしまで下げる。
+   cinema_v6 (2026-11-25): ロビーの売店で ポップコーンを無料でもらう・Q で 1つぶずつ食べる (POP)。
+   cinema_v5 (2026-11-25): 脱落者の顔ぶれは いつも同じランダム (遊んだ記録では入れかえない)。
    cinema_v4 (2026-11-25): 遊んだ記録がないゲームは、脱落した人を ランダムで決めて出す (GEN・genEntry。たねはファイル名なので 毎回同じ)。
    cinema_v3 (2026-11-25): 映画「さよならの記録」の後半に、遊んだゲームで本当に脱落した人を 名前つきで出す (記録 sayonara_log_v1。名前を出すのは この映画だけ)。
    cinema_v2 (2026-11-25): 6本目の映画「24の逃走所」(CLIPS.escape・14場面)・ポスター 6まい・こわい表現の切りかえ・ぜんぶ無料の案内。
@@ -180,7 +183,8 @@ const POSTX = [-6.9, -4.14, -1.38, 1.38, 4.14, 6.9], posters = [];
   for (const x of [-7, -3.5, 0, 3.5, 7]) for (const z of [13, 17, 21]) box(x - .5, HLB - .06, z - .5, x + .5, HLB - .01, z + .5, M.lamp);
   /* ロビー: ポスター 5まい (あとで絵を入れる)・売店・ベンチ・出口 */
   POSTX.forEach((x, i) => { box(x - 1.2, .5, ZW + .2, x + 1.2, 3.9, ZW + .26, M.gold); const cv = document.createElement('canvas'); cv.width = 512; cv.height = 736; const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; const p = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 3.2), new THREE.MeshBasicMaterial({ map: t })); p.position.set(x, 2.2, ZW + .28); scene.add(p); posters.push({ x, cv, t }); });
-  solid(-9.6, 0, 19.2, -6.2, 1.1, 20.4, M.wood); box(-9.7, 1.1, 19.1, -6.1, 1.16, 20.5, M.gold); solid(-9.4, 0, 21.6, -8.2, 2.1, 23.4, M.red); box(-9.3, 1.1, 21.7, -8.3, 2.0, 23.3, M.glass); box(-9.2, 1.1, 21.8, -8.4, 1.6, 23.2, M.pop); sign('ポップコーン', -8.15, 2.5, 22.5, 1.9, .42, '#c0281e', '#fff', Math.PI / 2);
+  solid(-9.6, 0, 19.2, -6.2, 1.1, 20.4, M.wood); box(-9.7, 1.1, 19.1, -6.1, 1.16, 20.5, M.gold); solid(-9.4, 0, 21.6, -8.2, 2.15, 23.4, null); box(-9.4, 0, 21.6, -8.2, 1.05, 23.4, M.red); box(-9.43, 1.05, 21.57, -8.17, 1.1, 23.43, M.gold); box(-9.43, 2.0, 21.57, -8.17, 2.15, 23.43, M.red); box(-9.4, 1.1, 21.6, -9.36, 2.0, 23.4, M.red);
+  for (const z of [21.6, 23.36]){ box(-8.24, 1.1, z, -8.2, 2.0, z + .04, M.gold); box(-9.36, 1.1, z + (z < 22 ? 0 : .02), -8.24, 2.0, z + (z < 22 ? .02 : .04), M.glass); } box(-8.22, 1.1, 21.64, -8.2, 2.0, 23.36, M.glass); sign('ポップコーン', -8.15, 2.5, 22.5, 1.9, .42, '#c0281e', '#fff', Math.PI / 2);
   for (const z of [13.5, 16.5]) solid(8.3, 0, z - 1, 9.2, .45, z + 1, M.seat);
   solid(-1.7, 0, ZL - .12, 1.7, 2.7, ZL, M.glass); box(-1.85, 0, ZL - .16, -1.7, 2.8, ZL, M.gold); box(1.7, 0, ZL - .16, 1.85, 2.8, ZL, M.gold); box(-1.85, 2.7, ZL - .16, 1.85, 2.85, ZL, M.gold); sign('出口（ゲームの街）', 0, 3.25, ZL - .03, 3.2, .5, '#101014', '#7dff9a', Math.PI);
   sign('上映中の映画（ぜんぶ無料）', 0, 4.25, ZW + .23, 5.6, .42, '#101014', '#ffd24a');
@@ -578,6 +582,34 @@ let mus = null;
 function playTune(k){ mus = AX ? { k, T: TUNES[k], next: 0, t0: AX.currentTime + .15 } : null; }
 function tickTune(){ if (!mus || !AX) return; const T = mus.T; while (mus.t0 + mus.next * T.step < AX.currentTime + .3){ const s = mus.next % T.len, t = mus.t0 + mus.next * T.step; for (const e of T.ev) if (e[0] === s){ if (e[1] < 0) drumHit(t, e[1]); else tone(e[1], t, e[2] * T.step, e[3], e[4]); } mus.next++; } }
 function stopTune(){ mus = null; }
+function crunch(){ if (!AX) return; const t = AX.currentTime; [0, .08, .17].forEach((d, i) => { const sc = AX.createBufferSource(), f = AX.createBiquadFilter(), g = AX.createGain(); sc.buffer = nbuf; f.type = 'bandpass'; f.frequency.value = 2600 + i * 500; f.Q.value = 1.2; g.gain.setValueAtTime(.3 - i * .07, t + d); g.gain.exponentialRampToValueAtTime(.0001, t + d + .05); sc.connect(f).connect(g).connect(mg); sc.start(t + d, Math.random() * .5); sc.stop(t + d + .07); }); }   /* カリッ (ポップコーンを かむ音) */
+function scoop(){ if (!AX) return; const t = AX.currentTime; for (let i = 0; i < 9; i++){ const sc = AX.createBufferSource(), f = AX.createBiquadFilter(), g = AX.createGain(), d = i * .055; sc.buffer = nbuf; f.type = 'bandpass'; f.frequency.value = 1500 + (i % 3) * 400; g.gain.setValueAtTime(.13, t + d); g.gain.exponentialRampToValueAtTime(.0001, t + d + .05); sc.connect(f).connect(g).connect(mg); sc.start(t + d, Math.random() * .5); sc.stop(t + d + .07); } }   /* ザザッ (バケツに入れる音) */
+
+// ===================== ポップコーン (cinema_v6: 売店で無料でもらう・Q で 1つぶずつ食べる) =====================
+const POP = (() => { const N0 = 60, rnd = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }, sm = x => { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); };
+  /* つぶ: 丸を でこぼこにした形。1つずつ 向き・大きさ・色が少しちがう */
+  const kg = new THREE.IcosahedronGeometry(.5, 1), pa = kg.attributes.position; for (let i = 0; i < pa.count; i++){ const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i), n = 1 + .38 * Math.sin(x * 9.1 + y * 5.3) * Math.cos(z * 7.7 + x * 3.1) + .22 * Math.sin(y * 13 + z * 4); pa.setXYZ(i, x * n, y * n * .85, z * n); } kg.computeVertexNormals();
+  const kmat = std({ color: 0xffffff, roughness: .9, emissive: 0x6a5220, emissiveIntensity: .6 }), _c = new THREE.Color();
+  function pile(n, rad, h, sc){ const m = new THREE.InstancedMesh(kg, kmat, n), M4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sv = new THREE.Vector3(); for (let i = 0; i < n; i++){ const a = rnd(i) * 6.283, rr = Math.sqrt(rnd(i + 3)) * rad, k = sc * (.8 + rnd(i + 6) * .5); e.set(rnd(i + 1) * 6, rnd(i + 2) * 6, rnd(i + 4) * 6); q.setFromEuler(e); M4.compose(v.set(Math.cos(a) * rr, h * (1 - rr / rad * .8) * (.55 + rnd(i + 7) * .45), Math.sin(a) * rr), q, sv.set(k, k, k)); m.setMatrixAt(i, M4); m.setColorAt(i, _c.setHSL(.12 + rnd(i) * .025, .75 + rnd(i + 5) * .2, .68 + rnd(i + 9) * .16)); } m.frustumCulled = false; return m; }
+  /* 紙のバケツ (赤と白のしま) */
+  const stripe = ctex(256, 64, c => { for (let i = 0; i < 16; i++){ c.fillStyle = i % 2 ? '#f4f0e6' : '#c8201c'; c.fillRect(i * 16, 0, 16, 64); } }), bmat = std({ map: stripe, roughness: .7, emissive: 0xffffff, emissiveMap: stripe, emissiveIntensity: .2, side: THREE.DoubleSide }), wmat = std({ color: 0xf4f0e6, roughness: .7, emissive: 0x555555, emissiveIntensity: .3 });
+  function bucket(){ const g = new THREE.Group(), b = new THREE.Mesh(new THREE.CylinderGeometry(.1, .072, .2, 24, 1, true), bmat); b.position.y = .1; g.add(b); const bt = new THREE.Mesh(new THREE.CylinderGeometry(.072, .072, .006, 24), wmat); bt.position.y = .003; g.add(bt); const rim = new THREE.Mesh(new THREE.TorusGeometry(.1, .006, 6, 24), wmat); rim.rotation.x = Math.PI / 2; rim.position.y = .2; g.add(rim); return g; }
+  /* 売店: ケースの中の山・なべ・あたためる明かり・たなのバケツ */
+  { const sp = pile(280, .5, .42, .07); sp.position.set(-8.8, 1.12, 22.5); sp.scale.set(.95, 1, 1.6); scene.add(sp); const kt = new THREE.Mesh(new THREE.CylinderGeometry(.2, .17, .22, 16), M.gold); kt.position.set(-8.8, 1.86, 22.5); scene.add(kt); const pl = new THREE.PointLight(0xffc070, 2.4, 5, 1.6); pl.position.set(-8.5, 1.8, 22.5); scene.add(pl);
+    box(-8.2, 1.0, 21.95, -7.84, 1.05, 23.05, M.gold); for (let i = 0; i < 4; i++){ const b = bucket(); b.position.set(-8.02, 1.05 + i * .045, 22.22); scene.add(b); } const full = bucket(), fp = pile(26, .085, .06, .03); fp.position.y = .16; full.add(fp); full.position.set(-8.02, 1.05, 22.78); scene.add(full); sign('1こ 無料', -7.83, .62, 22.5, 1.0, .3, '#f4f0e6', '#c8201c', Math.PI / 2); }
+  /* 手もとのバケツ と つまむ手 (カメラに付ける) */
+  const hold = new THREE.Group(), hb = bucket(), hp = pile(30, .085, .06, .03); hb.add(hp); hold.add(hb); hold.visible = false; camera.add(hold);
+  const hand = new THREE.Group(), smat = std({ color: 0xf2cdb0, roughness: .8, emissive: 0x4a3a30, emissiveIntensity: .5 }); for (const [x, y, z, w, h, d] of [[0, 0, 0, .075, .028, .09], [-.03, -.012, -.055, .016, .016, .05], [.012, -.012, -.06, .016, .016, .055], [.035, -.008, -.02, .018, .018, .05], [0, .004, .09, .06, .035, .1]]){ const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), smat); m.position.set(x, y, z); hand.add(m); }
+  const hk = new THREE.Mesh(kg, kmat); hk.scale.setScalar(.03); hk.position.set(-.008, -.03, -.085); hand.add(hk); hand.visible = false; camera.add(hand);
+  let n = 0, have = false, eat = 0, bit = false, bob = 0, lowK = 0; const HB = [-.3, -.33, -.6];   /* 左手で持つ (右下は 手もとのスマホ) */
+  function get(){ have = true; n = N0; scoop(); showMsg('ポップコーンをもらった（無料）。Q で 1つぶずつ食べられる', 3.5); }
+  function bite(){ if (!have) return false; if (n <= 0){ showMsg('ポップコーンは からっぽ。ロビーの売店で また もらえる（無料）', 2.8); return false; } if (eat > 0) return false; eat = .0001; bit = false; return true; }
+  function tick(dt, moving, low){ hold.visible = have; lowK += ((low ? 1 : 0) - lowK) * Math.min(1, dt * 5); if (!have){ hand.visible = false; return; } const k = Math.tan(camera.fov * Math.PI / 360) / Math.tan(35 * Math.PI / 180); bob += dt * (moving ? 9 : 0);
+    const hy = HB[1] - lowK * .26, hx = -Math.min(.42, .42 * camera.aspect - .13);   /* 映画の間は 下のはしまで下げる (字幕にかぶらない)。横は 画面の左はし寄り (まん中の案内の文字にかぶらない) */ hold.position.set(hx * k, (hy + Math.sin(bob) * .008) * k, HB[2]); hold.scale.setScalar(k); hold.rotation.set(.3, .35, -.06); hp.count = Math.max(0, Math.min(30, n)); hp.position.y = .08 + .08 * Math.min(1, n / 36);
+    if (eat > 0){ eat += dt / .5; const t = eat, A = [.5, -.58, -.45], B = [hx + .05, hy + .3, HB[2] + .05], C = [.03, -.2, -.3]; let P, Q, q; if (t < .35){ P = A; Q = B; q = sm(t / .35); } else if (t < .8){ P = B; Q = C; q = sm((t - .35) / .45); } else { P = C; Q = [.2, -.6, -.4]; q = sm((t - .8) / .2); }
+      hand.visible = true; hand.position.set((P[0] + (Q[0] - P[0]) * q) * k, (P[1] + (Q[1] - P[1]) * q + (t >= .35 && t < .8 ? Math.sin(q * Math.PI) * .04 : 0)) * k, P[2] + (Q[2] - P[2]) * q); hand.scale.setScalar(k); hand.rotation.set(t < .35 ? -.9 : -.9 + sm((t - .35) / .45) * 1.5, .25, 0); hk.visible = t > .33 && t < .8;
+      if (t >= .8 && !bit){ bit = true; n--; crunch(); } if (t >= 1){ eat = 0; hand.visible = false; } } else hand.visible = false; }
+  return { get, bite, tick, N0, get n(){ return n; }, get have(){ return have; }, set n(v){ n = v; have = true; } }; })();
 
 // ===================== 映画 (別の場面 MS を RT に描いて、スクリーンにはる) =====================
 const CINE = (() => {
@@ -977,25 +1009,25 @@ player = { pos: new THREE.Vector3(0, 0, 21), vy: 0, radius: .3, spd: 0 };
 const SEAT = { x: 0, r: 2 };   /* 見る時は 3列目のまん中 (通路) から見る */
 let padC = -1e9, padV = false;
 function padOn(){ const n = performance.now(); if (n - padC > 800){ padC = n; try { padV = !!(navigator.getGamepads && [...navigator.getGamepads()].some(Boolean)); } catch (e){ padV = false; } } return padV; }
-function padText(t){ if (!t || !padOn()) return t; return t.replace(/(^|[\s　])E：/g, '$1A ボタン：'); }
+function padText(t){ if (!t || !padOn()) return t; return t.replace(/(^|[\s　])E：/g, '$1A ボタン：').replace(/(^|[\s　])Q：/g, '$1Y ボタン：'); }
 function showMsg(t, dur){ $('msg').textContent = padText(t); $('msg').style.opacity = 1; msgT = dur; }
 function setPr(t){ const pr = $('prompt'); pr.style.display = t ? 'block' : 'none'; pr.textContent = padText(t); }
-function startFilm(i){ const f = CINE.FILMS[i]; if (f.live){ f.segs = f.build(); f.total = f.segs.reduce((a, q) => a + q.d, 0); } film = { f, i, t: 0 };   /* live = 上映のたびに作り直す (記録が ふえるので) */ audio(); playTune(f.tune); player.pos.set(SEAT.x, rowH(SEAT.r), rowZ(SEAT.r) - .35); lookY = 0; lookP = 0; showMsg('「' + f.title + '」が始まる', 2.5); }
+function startFilm(i){ const f = CINE.FILMS[i]; if (f.live){ f.segs = f.build(); f.total = f.segs.reduce((a, q) => a + q.d, 0); } film = { f, i, t: 0 };   /* live = 上映のたびに作り直す (記録が ふえるので) */ audio(); playTune(f.tune); player.pos.set(SEAT.x, rowH(SEAT.r), rowZ(SEAT.r) - .35); lookY = 0; lookP = 0; stopT = 0; stopArm = false; showMsg('「' + f.title + '」が始まる', 2.5); }
 function stopFilm(done){ if (!film) return; stopTune(); film = null; CINE.idle(); CINE.render(); camera.fov = 70; camera.updateProjectionMatrix(); yaw = 0; pitch = 0; showMsg(done ? '映画が終わった。ロビーのポスターで、ほかの映画もえらべる' : '見るのをやめた', 3.5); }
 function nearPoster(){ const p = player.pos; if (p.z < ZW || p.z > ZW + 2.6) return -1; let b = -1, bd = 1.3; POSTX.forEach((x, i) => { const d = Math.abs(p.x - x); if (d < bd){ bd = d; b = i; } }); return b; }
-let eDown = false;
-function update(dt){ if (msgT > 0 && (msgT -= dt) <= 0) $('msg').style.opacity = 0; const eNow = !!keys.KeyE, ePress = eNow && !eDown; eDown = eNow;
-  house += ((film ? .07 : 1) - house) * Math.min(1, dt * 1.6); $('cross').style.display = film ? 'none' : ''; HL.intensity = 1.15 * house; AL.intensity = .3 * house; M.lamp.color.setScalar(.25 + .75 * house); SL.intensity = film ? 26 : 0;
+let eDown = false, qDown = false, stopT = 0, stopArm = false;   /* stopT = 見るのをやめる E を おしている秒。stopArm = 映画が始まってから 一度 E をはなした */
+function update(dt){ if (msgT > 0 && (msgT -= dt) <= 0) $('msg').style.opacity = 0; const eNow = !!keys.KeyE, ePress = eNow && !eDown; eDown = eNow; const qNow = !!keys.KeyQ, qPress = qNow && !qDown; qDown = qNow; if (qPress) POP.bite(); POP.tick(dt, !film && player.spd > .5, !!film);
+  house += ((film ? .07 : 1) - house) * Math.min(1, dt * 1.6); $('cross').style.display = film ? 'none' : ''; { const ph = $('phoneHud'); if (ph) ph.style.visibility = film ? 'hidden' : ''; }   /* 映画の間は 手もとのスマホも かくす (字幕の右はしに かぶるので) */ HL.intensity = 1.15 * house; AL.intensity = .3 * house; M.lamp.color.setScalar(.25 + .75 * house); SL.intensity = film ? 26 : 0;
   if (film){ film.t += dt; if (film.t >= film.f.total){ stopFilm(true); return; } { const q = film.f.segs[CINE.frame(film.f, film.t)], tk = q.tune || film.f.tune; if (AX && (!mus || mus.k !== tk)) playTune(tk); } CINE.render(); tickTune();
     const ex = SEAT.x, ey = rowH(SEAT.r) + 1.16, ezz = rowZ(SEAT.r) + .38; camera.position.set(ex, ey, ezz); camera.rotation.set(Math.atan2(SCR.y - ey, ezz - SCR.z) + lookP, lookY, 0); { const dist = ezz - SCR.z, need = Math.max(2 * Math.atan((SCR.h / 2 + .7) / dist), 2 * Math.atan((SCR.w / 2 + .4) / dist / camera.aspect)) * 180 / Math.PI; if (Math.abs(camera.fov - need) > .01){ camera.fov = need; camera.updateProjectionMatrix(); } }   /* スクリーン全体が 画面におさまる広さで見る */
-    const r = film.f.total - film.t; $('timer').textContent = '上映中「' + film.f.title + '」'; $('obj').textContent = padText('あと ' + Math.floor(r / 60) + '分' + String(Math.floor(r % 60)).padStart(2, '0') + '秒　E：見るのをやめる'); $('obj').style.color = '#cfd6e4'; setPr(''); if (ePress) stopFilm(false); return; }
+    const r = film.f.total - film.t; $('timer').textContent = '上映中「' + film.f.title + '」'; $('obj').textContent = padText('あと ' + Math.floor(r / 60) + '分' + String(Math.floor(r % 60)).padStart(2, '0') + '秒　E：長おしで見るのをやめる' + (stopT > 0 ? ' ' + '■'.repeat(Math.min(4, 1 + Math.floor(stopT / .2))) + '□'.repeat(Math.max(0, 3 - Math.floor(stopT / .2))) : '') + (POP.have ? '　Q：ポップコーンを1つぶ食べる（のこり ' + POP.n + '）' : '')); $('obj').style.color = '#cfd6e4'; setPr(''); if (!eNow) stopArm = true; stopT = eNow && stopArm ? stopT + dt : 0; if (stopT >= .8) stopFilm(false); return; }
   const p = player, f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), sd = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), dx = -Math.sin(yaw) * f + Math.cos(yaw) * sd, dz = -Math.cos(yaw) * f - Math.sin(yaw) * sd, len = Math.hypot(dx, dz), sp = len ? ((keys.ShiftLeft || keys.ShiftRight) ? 5.5 : 3.2) : 0;
   p.spd += (sp - p.spd) * Math.min(1, dt * 9); if (len) moveBody(p, dx / len * p.spd * dt, dz / len * p.spd * dt, dt); else moveBody(p, 0, 0, dt); bob += p.spd * dt * 2.6;
   camera.position.set(p.pos.x, p.pos.y + 1.6 + Math.sin(bob) * (p.spd > .5 ? .03 : 0), p.pos.z); camera.rotation.set(pitch, yaw, 0);
   const inA = p.pos.z < ZW; $('timer').textContent = inA ? '客席' : 'ロビー'; $('obj').textContent = inA ? '映画は、ロビーのポスターの前でえらぶ' : 'ポスターの前で、見たい映画をえらぼう'; $('obj').style.color = '#cfd6e4';
-  const np = nearPoster(), ex = !inA && p.pos.z > ZL - 2 && Math.abs(p.pos.x) < 2.2;
-  if (np >= 0){ const fl = CINE.FILMS[np]; setPr('E：「' + fl.title + '」を見る（' + mins(fl) + '）'); if (ePress) startFilm(np); } else if (ex){ setPr('E：街へもどる'); if (ePress) location.href = '街.html'; } else setPr('');
-  const lg = $('padLg'), on = padOn(); if (on && !lg.innerHTML) lg.innerHTML = '<b>コントローラー</b><br>左スティック：歩く<br>ZL（か 左スティックを押しこむ）：走る<br>右スティック：見回す<br>A：映画をえらぶ／見るのをやめる／街へもどる<br>＋：ポーズ'; lg.style.display = on ? 'block' : 'none'; }
+  const np = nearPoster(), ex = !inA && p.pos.z > ZL - 2 && Math.abs(p.pos.x) < 2.2, ns = !inA && Math.hypot(p.pos.x + 7.7, p.pos.z - 22.5) < 1.8;
+  if (np >= 0){ const fl = CINE.FILMS[np]; setPr('E：「' + fl.title + '」を見る（' + mins(fl) + '）'); if (ePress) startFilm(np); } else if (ns){ if (POP.n >= POP.N0) setPr('ポップコーンは まだ いっぱい入っている　Q：1つぶ食べる'); else { setPr('E：ポップコーンをもらう（無料）'); if (ePress) POP.get(); } } else if (ex){ setPr('E：街へもどる'); if (ePress) location.href = '街.html'; } else setPr(POP.have ? 'Q：ポップコーンを1つぶ食べる（のこり ' + POP.n + 'つぶ）' : '');
+  const lg = $('padLg'), on = padOn(); if (on && !lg.innerHTML) lg.innerHTML = '<b>コントローラー</b><br>左スティック：歩く<br>ZL（か 左スティックを押しこむ）：走る<br>右スティック：見回す<br>A：映画をえらぶ／ポップコーンをもらう／街へもどる<br>A を長おし：映画を見るのをやめる<br>Y：ポップコーンを1つぶ食べる<br>＋：ポーズ'; lg.style.display = on ? 'block' : 'none'; }
 function startGame(){ if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); audio(); state = 'play'; paused = false; for (const id of ['title', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); showMsg('ロビーのポスターの前で、見たい映画をえらぼう', 4); }
 function toTitle(){ if (film) stopFilm(false); state = 'title'; paused = false; $('pause').classList.remove('on'); $('hud').style.display = 'none'; $('title').classList.add('on'); }
 $('startBtn').onclick = startGame;
@@ -1028,7 +1060,7 @@ function tick(){ lastTick = performance.now(); const real = Math.min(.25, clock.
   if (state === 'title'){ titleT += real; camera.fov = 70; camera.position.set(Math.sin(titleT * .15) * 4, 1.7, 21.5); camera.rotation.set(.04, Math.sin(titleT * .15) * .35, 0); camera.updateProjectionMatrix(); }
   renderer.render(scene, camera); }
 CINE.idle(); CINE.render();
-window.__cine = { set gore(v){ gore = v; }, get gore(){ return gore; }, get state(){ return state; }, get film(){ return film; }, CINE, player, keys, startFilm, stopFilm, update, posters, aud, renderer, scene, camera, setView(y, p){ yaw = y; pitch = p; }, seek(t){ if (film) film.t = t; }, get tune(){ return mus; }, rowZ, rowH };
+window.__cine = { POP, set gore(v){ gore = v; }, get gore(){ return gore; }, get state(){ return state; }, get film(){ return film; }, CINE, player, keys, startFilm, stopFilm, update, posters, aud, renderer, scene, camera, setView(y, p){ yaw = y; pitch = p; }, seek(t){ if (film) film.t = t; }, get tune(){ return mus; }, rowZ, rowH };
 window.__ready = true;
 loop();
 </script>
