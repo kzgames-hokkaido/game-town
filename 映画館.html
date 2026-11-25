@@ -58,6 +58,9 @@ a.sub{text-align:center;text-decoration:none}
 .vol input{width:220px;vertical-align:middle}
 .films{margin:8px 0;padding:0;list-style:none;text-align:left;font-size:14px;line-height:1.7}
 .films b{color:#ffd24a}
+.pick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.pick button{pointer-events:auto;font-family:inherit;font-size:13px;font-weight:800;padding:5px 10px;min-width:104px;border-radius:9px;border:2px solid rgba(255,255,255,.3);background:#262a38;color:#fff;cursor:pointer}
+.pick button.sel{border-color:#ffd24a;background:#5a4a10}
 </style>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
@@ -77,9 +80,12 @@ a.sub{text-align:center;text-decoration:none}
 
 <div class="screen on" id="title"><div class="panel">
   <h1><small>ゲームの街</small>映画館</h1>
-  <p>ゲームの街の<b>ゲームについての映画だけ</b>を上映している映画館。ロビーの<b>ポスター</b>の前で映画をえらぶと、客席にすわって大きなスクリーンで見られる。映画は<b>5本</b>。</p>
+  <p>ゲームの街の<b>ゲームについての映画</b>と、<b>新作の映画</b>を上映している映画館。ロビーの<b>ポスター</b>の前で映画をえらぶと、客席にすわって大きなスクリーンで見られる。映画は<b>6本</b>で、<b>ぜんぶ無料</b>。</p>
   <ul class="films" id="filmList"></ul>
-  <p style="font-size:13px">映画の中では、参加者が<b>たおれる・落ちる</b>場面が出る（血は出ない）。とちゅうでやめられる。</p>
+  <p style="font-size:13px">映画の中では、人が<b>たおれる・落ちる</b>場面が出る。とちゅうでやめられる。</p>
+  <p style="margin:8px 0 0;font-weight:800;font-size:14px">こわい表現（映画「24の逃走所」で、かまれた時）</p>
+  <div class="pick" id="pickGore"></div>
+  <p style="font-size:13px;margin:6px 0" id="recInfo"></p>
   <div class="vol">音の大きさ　<input type="range" id="volIn" min="0" max="100" value="50"> <span id="volTx">50</span></div>
   <div class="keys"><b>キーボード</b>：<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：歩く　<kbd>シフト</kbd>：走る　マウス：見回す　<kbd>E</kbd>：映画をえらぶ／見るのをやめる／街へもどる</div>
   <div class="keys"><b>コントローラー</b>：左スティック 歩く（押しこむか ZL で走る）　右スティック 見回す　<kbd>A</kbd> 映画をえらぶ／見るのをやめる／街へもどる　<kbd>＋</kbd> ポーズ</div>
@@ -104,7 +110,11 @@ const $ = id => document.getElementById(id);
 const R = (a, b) => a + (b - a) * Math.random();
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const pick = a => a[(Math.random() * a.length) | 0];
-/* 映画館 (2026-11-24 弟君の注文「みらいモール以外に映画館を追加。オープニング → やられる瞬間や どうやったらやられるのか が 短い時間で全ゲーム回想っぽく流れる (悲しそうな曲)。
+/* cinema_v5 (2026-11-25): 脱落者の顔ぶれは いつも同じランダム (遊んだ記録では入れかえない)。
+   cinema_v4 (2026-11-25): 遊んだ記録がないゲームは、脱落した人を ランダムで決めて出す (GEN・genEntry。たねはファイル名なので 毎回同じ)。
+   cinema_v3 (2026-11-25): 映画「さよならの記録」の後半に、遊んだゲームで本当に脱落した人を 名前つきで出す (記録 sayonara_log_v1。名前を出すのは この映画だけ)。
+   cinema_v2 (2026-11-25): 6本目の映画「24の逃走所」(CLIPS.escape・14場面)・ポスター 6まい・こわい表現の切りかえ・ぜんぶ無料の案内。
+   映画館 (2026-11-24 弟君の注文「みらいモール以外に映画館を追加。オープニング → やられる瞬間や どうやったらやられるのか が 短い時間で全ゲーム回想っぽく流れる (悲しそうな曲)。
    ほかにも ゲームに関する映画のみを 4つほど」)。ロビーのポスターで映画をえらぶ → 客席にすわる → スクリーン (別の場面 MS を RT に描いて はる) に映る。
    映画は 5本: さよならの記録 (回想・悲しい曲)・生きのこる方法・敵たちの図鑑・予告編・街ができるまで。場面 CLIPS は 全38ゲーム分 (1ゲーム 1場面。u = 0〜1 で動く) */
 let player = null;
@@ -156,7 +166,7 @@ const M = { carpet: std({ map: ctex(128, 128, c => { c.fillStyle = '#7a1a22'; c.
 function box(x0, y0, z0, x1, y1, z1, mat){ const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), mat); m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); scene.add(m); return m; }
 function solid(x0, y0, z0, x1, y1, z1, mat){ walls.push({ x0, x1, z0, z1, y0, y1 }); return mat ? box(x0, y0, z0, x1, y1, z1, mat) : null; }
 function sign(txt, x, y, z, w, h, bg, fg, ry = 0){ const t = ctex(256, Math.round(256 * h / w), (c, W, H) => { c.fillStyle = bg; c.fillRect(0, 0, W, H); c.fillStyle = fg; c.font = '900 ' + Math.round(H * .6) + 'px "BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, W / 2, H / 2 + 2, W - 12); }); const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t })); p.position.set(x, y, z); p.rotation.y = ry; scene.add(p); return p; }
-const POSTX = [-6.6, -3.3, 0, 3.3, 6.6], posters = [];
+const POSTX = [-6.9, -4.14, -1.38, 1.38, 4.14, 6.9], posters = [];
 { /* ゆか */
   surfaces.push({ x0: -AXW, x1: AXW, z0: 7.05, z1: ZL, h0: 0, h1: 0 }); { const t = M.carpet.map.clone(); t.repeat.set(10, 8.5); t.needsUpdate = true; const f = new THREE.Mesh(new THREE.PlaneGeometry(20, 17), std({ map: t, roughness: .95 })); f.rotation.x = -Math.PI / 2; f.position.set(0, 0, 15.5); scene.add(f); }
   for (let r = 0; r < NROW; r++){ const z = rowZ(r), h = rowH(r); surfaces.push({ x0: -8.4, x1: 8.4, z0: z - .85, z1: z + .85, h0: h, h1: h }); box(-8.4, FRONT - .3, z - .85, 8.4, h, z + .85, M.step); box(-8.4, h - .02, z - .85, 8.4, h + .005, z - .8, M.stepL); }
@@ -173,7 +183,7 @@ const POSTX = [-6.6, -3.3, 0, 3.3, 6.6], posters = [];
   solid(-9.6, 0, 19.2, -6.2, 1.1, 20.4, M.wood); box(-9.7, 1.1, 19.1, -6.1, 1.16, 20.5, M.gold); solid(-9.4, 0, 21.6, -8.2, 2.1, 23.4, M.red); box(-9.3, 1.1, 21.7, -8.3, 2.0, 23.3, M.glass); box(-9.2, 1.1, 21.8, -8.4, 1.6, 23.2, M.pop); sign('ポップコーン', -8.15, 2.5, 22.5, 1.9, .42, '#c0281e', '#fff', Math.PI / 2);
   for (const z of [13.5, 16.5]) solid(8.3, 0, z - 1, 9.2, .45, z + 1, M.seat);
   solid(-1.7, 0, ZL - .12, 1.7, 2.7, ZL, M.glass); box(-1.85, 0, ZL - .16, -1.7, 2.8, ZL, M.gold); box(1.7, 0, ZL - .16, 1.85, 2.8, ZL, M.gold); box(-1.85, 2.7, ZL - .16, 1.85, 2.85, ZL, M.gold); sign('出口（ゲームの街）', 0, 3.25, ZL - .03, 3.2, .5, '#101014', '#7dff9a', Math.PI);
-  sign('上映中の映画', 0, 4.25, ZW + .23, 4.2, .42, '#101014', '#ffd24a');
+  sign('上映中の映画（ぜんぶ無料）', 0, 4.25, ZW + .23, 5.6, .42, '#101014', '#ffd24a');
   /* 客席: いす (1列 12こ。まん中は通路)・スクリーン・幕 */
   const seatN = NROW * 12, iS = new THREE.InstancedMesh(new THREE.BoxGeometry(1.05, .16, .55), M.seat, seatN), iB = new THREE.InstancedMesh(new THREE.BoxGeometry(1.05, .75, .14), M.seat, seatN), iA = new THREE.InstancedMesh(new THREE.BoxGeometry(.1, .5, .6), M.dark, seatN * 2), mm = new THREE.Matrix4(); let n = 0;
   for (let r = 0; r < NROW; r++){ const z = rowZ(r), h = rowH(r); for (const s of [-1, 1]){ solid(s < 0 ? -8.25 : .95, h, z + .12, s < 0 ? -.95 : 8.25, h + 1.05, z + .8, null); for (let k = 0; k < 6; k++){ const x = s * (1.55 + k * 1.3); mm.makeTranslation(x, h + .42, z + .4); iS.setMatrixAt(n, mm); mm.makeTranslation(x, h + .72, z + .72); iB.setMatrixAt(n, mm); mm.makeTranslation(x - .58, h + .45, z + .4); iA.setMatrixAt(n * 2, mm); mm.makeTranslation(x + .58, h + .45, z + .4); iA.setMatrixAt(n * 2 + 1, mm); n++; } } }
@@ -547,7 +557,7 @@ const aud = [];
     m.group.position.set(x, rowH(r) - .34, rowZ(r) + .42); m.group.rotation.set(0, Math.PI, 0); m.legL.rotation.x = m.legR.rotation.x = -1.5; m.armL.rotation.x = m.armR.rotation.x = -.5; aud.push(m); } }
 
 // ===================== 音 (この映画館だけの音。風の音は出さない) =====================
-let AX = null, mg = null, nbuf = null, vol = .5;
+let AX = null, mg = null, nbuf = null, vol = .5, gore = 1;   /* gore: こわい表現 (0 なし / 1 ひかえめ / 2 あり)。cinema_v2 */
 function audio(){ if (AX){ AX.resume(); return; } AX = new (window.AudioContext || window.webkitAudioContext)(); mg = AX.createGain(); mg.gain.value = vol; mg.connect(AX.destination); nbuf = AX.createBuffer(1, AX.sampleRate, AX.sampleRate); const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
 function tone(m, t, dur, v, type = 'triangle'){ const o = AX.createOscillator(), g = AX.createGain(); o.type = type; o.frequency.value = 440 * 2 ** ((m - 69) / 12); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(g).connect(mg); o.start(t); o.stop(t + dur + .05); }
 function drumHit(t, k){ if (k === -1){ const o = AX.createOscillator(), g = AX.createGain(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(42, t + .16); g.gain.setValueAtTime(.3, t); g.gain.exponentialRampToValueAtTime(.0001, t + .22); o.connect(g).connect(mg); o.start(t); o.stop(t + .25); }
@@ -562,9 +572,10 @@ const TUNES = (() => { const T = {};
   { const ev = []; for (let s = 0; s < 32; s++){ ev.push([s, 40, .7, .09, 'triangle']); if (s % 4 === 0) ev.push([s, -1]); if (s % 8 === 4) ev.push([s, -2]); } [[52, 55, 59], [48, 52, 55], [50, 54, 57], [47, 51, 54]].forEach((c, b) => c.forEach(m => ev.push([b * 8, m, 7, .04, 'triangle']))); [[0, 64], [8, 67], [16, 69], [24, 71]].forEach(([s, m]) => ev.push([s, m + 12, 6, .05, 'triangle'])); T.trailer = { step: .214, len: 32, ev }; }
   { const ev = [], ch = [[43, 59, 62], [38, 57, 62], [40, 59, 64], [36, 60, 64]]; ch.forEach((c, b) => { ev.push([b * 6, c[0], 3, .07, 'sine']); ev.push([b * 6 + 2, c[1], 1.5, .035, 'sine']); ev.push([b * 6 + 4, c[2], 1.5, .035, 'sine']); });
     for (const [s, m] of [[0, 79], [3, 83], [4, 86], [6, 81], [9, 78], [10, 81], [12, 83], [15, 79], [16, 76], [18, 76], [21, 79], [22, 84], [23, 83]]) ev.push([s, m, 2, .06, 'sine']); T.history = { step: .3, len: 24, ev }; }
+  { const ev = []; for (let q = 0; q < 32; q++){ ev.push([q, [38, 38, 34, 36][(q / 8) | 0], .6, .085, 'triangle']); if (q % 4 === 0) ev.push([q, -1]); if (q % 8 === 6) ev.push([q, -2]); } [[62, 65, 69], [58, 62, 65], [55, 58, 62], [57, 61, 64]].forEach((c, b) => c.forEach(m => ev.push([b * 8, m, 7.5, .035, 'sine']))); for (const [q, m] of [[0, 74], [3, 72], [4, 69], [8, 70], [11, 69], [12, 65], [16, 67], [19, 70], [20, 74], [24, 73], [28, 76]]) ev.push([q, m, 2.5, .05, 'triangle']); T.escape = { step: .24, len: 32, ev }; }
   return T; })();
 let mus = null;
-function playTune(k){ mus = AX ? { T: TUNES[k], next: 0, t0: AX.currentTime + .15 } : null; }
+function playTune(k){ mus = AX ? { k, T: TUNES[k], next: 0, t0: AX.currentTime + .15 } : null; }
 function tickTune(){ if (!mus || !AX) return; const T = mus.T; while (mus.t0 + mus.next * T.step < AX.currentTime + .3){ const s = mus.next % T.len, t = mus.t0 + mus.next * T.step; for (const e of T.ev) if (e[0] === s){ if (e[1] < 0) drumHit(t, e[1]); else tone(e[1], t, e[2] * T.step, e[3], e[4]); } mus.next++; } }
 function stopTune(){ mus = null; }
 
@@ -595,7 +606,7 @@ const CINE = (() => {
   const rr = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const LP = (a, b, p) => a + (b - a) * p, sat = x => x < 0 ? 0 : x > 1 ? 1 : x, sg = (u, a, b) => sat((u - a) / (b - a)), ez = x => { x = sat(x); return x * x * (3 - 2 * x); };
   /* 人 (ほかのゲームと同じ形の人。名前はない) */
-  function actor(g, shirt, pants, o = {}){ const m = makePerson({ skin: o.skin || SKIN[(shirt >> 3) % 4], pants, hair: o.hair || 0x1a1210, shirt, oni: o.oni, look: o.look || { plain: true }, scale: o.scale }); g.add(m.group); return { m }; }
+  function actor(g, shirt, pants, o = {}){ const m = makePerson({ skin: o.skin || SKIN[(shirt >> 3) % 4], pants, hair: o.hair || 0x1a1210, shirt, oni: o.oni, look: 'look' in o ? o.look : { plain: true }, scale: o.scale }); g.add(m.group); return { m }; }
   const hero = g => actor(g, 0xe67e22, 0x2c3e50, { skin: 0xf2cdb0 });
   function pose(a, x, y, z, h, o = {}){ const G = a.m.group, s = Math.sin(o.ph || 0) * (o.amp ?? 0); G.position.set(x, y, z); G.rotation.set(o.rx || 0, h, o.rz || 0, 'YXZ'); a.m.legL.rotation.x = s + (o.legs || 0); a.m.legR.rotation.x = -s + (o.legs || 0); a.m.armL.rotation.x = o.armL ?? -s * .8; a.m.armR.rotation.x = o.armR ?? s * .8; a.m.armL.rotation.z = -(o.out ?? .16); a.m.armR.rotation.z = o.out ?? .16; }
   function path(a, p, pts, o = {}){ let tot = 0; const ls = []; for (let i = 1; i < pts.length; i++){ const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); ls.push(d); tot += d; } p = sat(p); let d = p * tot, i = 0; while (i < ls.length - 1 && d > ls[i]){ d -= ls[i]; i++; } const q = ls[i] ? d / ls[i] : 0, A = pts[i], B = pts[i + 1]; pose(a, LP(A[0], B[0], q), o.y || 0, LP(A[1], B[1], q), o.h ?? Math.atan2(B[0] - A[0], B[1] - A[1]), { ph: p * tot * 3.2, amp: p > 0 && p < 1 ? .8 : 0, ...o }); }
@@ -770,11 +781,134 @@ const CINE = (() => {
       const s = { h: hero(g), o: actor(g, 0x34495e, 0x222222), rd: bx(g, 0, 2.5, 3.5, 30, 6, .05, 0xff2010, .22), mo: grp(g), sg2: [] }; for (let i = 0; i < 8; i++) s.sg2.push(sp(g, 0, 0, 0, .8 - i * .06, 0x1a1420)); sp(s.mo, 0, 0, 0, .95, 0x1a1420); for (let i = 0; i < 8; i++){ const a = i / 8 * Math.PI * 2, t = co(s.mo, -.75, Math.sin(a) * .5, Math.cos(a) * .5, .09, .4, 0xf4f0e0); t.rotation.z = Math.PI / 2; } for (const z of [-.4, .4]) sp(s.mo, -.45, .55, z, .12, 0xff2020, 1); s.threat = s.mo; return s; },
     anim(s, u){ pose(s.o, -1.5, 0, 0, Math.PI / 2, { armL: -1.3, armR: -1.3 }); if (u < .3) run(s.h, u, 0, .3, 4, .6, -.5, .1, {}); else pose(s.h, -.5 - Math.sin(u * 30) * .06, 0, .1, -Math.PI / 2, { armL: -1.45, armR: -1.45 }); s.rd.visible = u > .55; const p = sg(u, .56, .8), mx = LP(15, .3, ez(p)); s.mo.position.set(mx, 1.2 + Math.sin(u * 20) * .2, .1); s.sg2.forEach((m, i) => { m.position.set(mx + .9 + i * .9, 1.2 + Math.sin(u * 20 - i * .7) * .3, .1 + Math.sin(u * 9 + i) * .3); }); s.h.m.group.scale.setScalar(Math.max(.001, 1 - sg(u, .78, .86))); } },
   };
+  /* ===== 映画「24の逃走所」(cinema_v2)。1つの場面の中に 14場面。U の整数部 = 場面の番号、小数部 = その場面の進み ===== */
+  const ESC_D = [9, 9, 7, 9, 8, 8, 6, 11, 8, 9, 7, 10, 9, 7];   /* 場面の秒数 */
+  const ESC_ENV = [
+    { sky: 0x1a1c2a, fog: [18, 75], amb: .95, cam: [-1, 3.4, 13.5, -1, 1.2, 0], c2: [.43, .92, 5.5, 1.9, 6.5, 2.5, 1.1, 0] }, { sky: 0x1a1c2a, fog: [25, 90], amb: 1, cam: [-3, 6.5, 17, -2, 1, 0], c2: [.72, 1, 1, 2.4, 11.5, 0, 1, 4.6] },
+    { sky: 0x232838, fog: [25, 80], amb: 1, cam: [-3, 3.8, 14.5, -3, 1.4, 0] }, { sky: 0x232838, fog: [25, 80], amb: 1, cam: [-6, 4.2, 15.5, -6, 1.4, 0] }, { sky: 0x232838, fog: [25, 80], amb: 1, cam: [0, 3.8, 14.5, 0, 1.4, 1] },
+    { sky: 0x101216, amb: 1.15, cam: [1.5, 3.6, 11.5, 1.5, 1.2, -1], c2: [.2, .8, 5.4, 2, 6.5, 5.4, 1.2, 1.2] }, { sky: 0x101216, amb: 1.15, cam: [4, 2.9, 9, 4.2, 1.2, -1] },
+    { sky: 0x12141c, fog: [30, 90], amb: 1, cam: [0, 6.5, 17.5, 0, 1, -1], c2: [.5, 1, 9, 2.4, 9, 0, 1.5, 0] }, { sky: 0x12141c, fog: [30, 90], amb: 1, cam: [-8, 4.2, 13, -9.5, 1.2, 0] },
+    { sky: 0x1a1c2a, fog: [25, 90], amb: 1, cam: [-3, 6, 16, -1, 1, 0], c2: [.34, .6, -6, 2.4, 6.5, -3, 1.3, 0] }, { sky: 0x2a3040, fog: [25, 80], amb: 1.05, cam: [-2, 3.8, 13.5, -2, 1.4, 0] },
+    { sky: 0x8a94a0, fog: [35, 130], amb: 1.25, cam: [3, 6.5, 17.5, 4, 1, 0], c2: [.36, .52, -5, 2.6, 8, -4, 1, 1.5] }, { sky: 0xf2c8a0, fog: [40, 160], amb: 1.4, cam: [0, 3.2, 12.5, 0, 1.3, 0], c2: [.44, .92, 0, 1.9, 5.5, .2, 1.2, .3] }, { sky: 0xf2c8a0, fog: [40, 160], amb: 1.4, cam: [3.5, 2.8, 8.5, 3.6, 3, -20] } ];
+  CLIPS.escape = { n: '24の逃走所', dyn: U => { const k = Math.min(13, Math.floor(U)), e = ESC_ENV[k], u = U - k; return e.c2 && u > e.c2[0] && u < e.c2[1] ? { ...e, cam: e.c2.slice(2) } : e; },
+    build(g){ const s = { sv: [], inf: [], sw: [], big: [], cars: [], E: {}, fl: [], tr: [], gas: [], bl: [], mv: [], bn: 0 };
+      const SH = [0xd9534f, 0x5bc0de, 0xf0ad4e, 0x5cb85c, 0x9b59b6, 0xecf0f1, 0xe67e22, 0x1abc9c, 0xf06292, 0x8d6e63, 0x3f51b5, 0xc0ca33, 0x26a69a, 0xef5350, 0x7e57c2, 0xffb74d, 0x4db6ac, 0xa1887f, 0x90a4ae, 0xff8a65, 0x64b5f6, 0xaed581, 0xba68c8, 0xfff176], PN = [0x2c3e50, 0x34495e, 0x4e342e, 0x263238, 0x37474f, 0x1a237e], HR = [0x1a1210, 0x2a1a10, 0x3b2a1a, 0x0f0f0f, 0x5a3a20];
+      const eyes = (a, rd = .028) => { a.ey = [-.05, .05].map(x => sp(a.m.group, x, 1.75, .135, rd, 0xff2020, 1)); return a; };
+      /* 生存者 24人 (8番 と 3番は あとで感染者だと分かる)・感染者 18・スワット 20・特殊感染者 4 */
+      for (let i = 0; i < 24; i++){ const a = actor(g, SH[i], PN[i % 6], { skin: SKIN[i % 4], hair: HR[i % 5], look: undefined }); if (i === 8 || i === 3){ eyes(a); a.sk = a.m.mats[0].color.getHex(); } s.sv.push(a); }
+      for (let i = 0; i < 18; i++) s.inf.push(eyes(actor(g, [0x4a4a3a, 0x5a4a4a, 0x3a4a4a, 0x4a3a2a][i % 4], 0x2a2a2a, { skin: 0x8aa890, hair: 0x2a2a22 })));
+      for (let i = 0; i < 20; i++){ const a = actor(g, 0x1a1e26, 0x15171a, { look: { hat: 'helmet', hatColor: 0x15171a } }); bx(a.m.armR, 0, -.62, .16, .05, .08, .5, 0x111111); s.sw.push(a); }
+      for (let i = 0; i < 4; i++) s.big.push(eyes(actor(g, 0x2a1414, 0x1a1010, { skin: 0x7a2a2a, hair: 0x100808, scale: 1.55 }), .04));
+      s.all = [...s.sv, ...s.inf, ...s.sw, ...s.big];
+      /* 車 4台 (荷台に人が乗るトラック) */
+      for (const col of [0xb03030, 0x2a5ab0, 0xe8e8e0, 0x3a8a4a]){ const c = grp(g); bx(c, -.4, .75, 0, 6.4, .4, 2.4, 0x2a2a2e); bx(c, 1.9, 1.55, 0, 1.9, 1.2, 2.3, col); bx(c, 1.9, 1.75, 0, 1.94, .55, 2.1, 0x1a2430); bx(c, 3.15, 1.15, 0, .7, .45, 2.3, col); for (const z of [-1.15, 1.15]) bx(c, -1.6, 1.2, z, 4, .5, .1, col); bx(c, -3.6, 1.2, 0, .1, .5, 2.4, col); for (const x of [-2.4, 2.2]) for (const z of [-1.25, 1.25]){ const w = cy(c, x, .45, z, .45, .3, 0x111111); w.rotation.x = Math.PI / 2; } for (const z of [-.8, .8]) sp(c, 3.5, 1.15, z, .14, 0xfff2c0, 1); s.cars.push({ g: c }); }
+      for (let i = 0; i < 10; i++) s.fl.push(sp(g, 0, 0, 0, .22, 0xffe08a, 1)); for (let i = 0; i < 8; i++) s.tr.push(bx(g, 0, 0, 0, 1, 1, 1, 0xffe08a, 1)); for (let i = 0; i < 12; i++) s.gas.push(sp(g, 0, 0, 0, 1, 0x7adf5a, .28)); for (let i = 0; i < 12; i++) s.bl.push(sp(g, 0, 0, 0, .05, 0xb01818));
+      /* 場所: 町・ちゅう車場・道・基地の中・基地の庭・町のさかい・となり町 */
+      const T = s.E.town = grp(g); bx(T, 0, -.05, 0, 90, .1, 34, 0x2e2e34); [[-15, 9], [-8, 12], [0, 8], [8, 13], [16, 10]].forEach(([x, h]) => win(T, x, h / 2, -8, 6, h, 5, 0x3a3e48)); bx(T, 11, .7, 3.6, 4, 1.4, 1.8, 0x5a5e66); for (const x of [-10, 0, 10]){ cy(T, x, 2.5, -4.6, .08, 5, 0x55585e); sp(T, x, 5, -4.4, .25, 0xffe2a8, 1); }
+      const L = s.E.lot = grp(g); bx(L, 0, -.05, 0, 110, .1, 44, 0x33343a); for (let i = -4; i <= 4; i++) bx(L, 1, .01, i * 1.6, 8, .02, .1, 0xe8e8e8); win(L, -25, 4, -2, 6, 8, 26, 0x4a4e58); for (const z of [-8, 8]){ cy(L, 8, 3, z, .1, 6, 0x55585e); sp(L, 8, 6, z, .3, 0xffe2a8, 1); }
+      const Rd = s.E.road = grp(g); bx(Rd, 0, -.08, 0, 300, .1, 140, 0x3a4a34); bx(Rd, 0, -.04, 2, 300, .1, 10, 0x2e2e34); const mover = (m, x0) => { m.userData.x0 = x0; s.mv.push(m); return m; };
+      for (let i = 0; i < 12; i++) mover(bx(Rd, 0, .02, 2, 3, .02, .2, 0xf0f0f0), i * 10); for (let i = 0; i < 10; i++){ const t = mover(grp(Rd, 0, 0, -7 - rr(i) * 5), i * 12 + rr(i + 3) * 6); cy(t, 0, 1.5, 0, .22, 3, 0x3a2a1c); sp(t, 0, 4, 0, 1.6, 0x2a4a2a); }
+      for (let i = 0; i < 3; i++){ const h = mover(grp(Rd, 0, 0, -14), 20 + i * 40); bx(h, 0, 1.5, 0, 5, 3, 4, 0x5a5048); const rf = co(h, 0, 3.8, 0, 3.6, 1.6, 0x3a2a26); rf.rotation.y = .785; } for (let i = 0; i < 12; i++) mover(bx(Rd, 0, .4, 7.4, .15, .8, .15, 0xb0b4ba), i * 10 + 5);
+      const Hh = s.E.hall = grp(g); bx(Hh, 0, -.05, 0, 34, .1, 18, 0x55585e); bx(Hh, 0, 3, -6.2, 34, 6, .3, 0x3a3e46); for (const x of [-17, 17]) bx(Hh, x, 3, 0, .3, 6, 18, 0x3a3e46); bx(Hh, 0, 6.05, 0, 34, .1, 18, 0x2a2c32); label(Hh, 'スワット基地', 0, 4.6, -6, 6, .9, '#fff', '#1a1e26'); for (let x = -12; x <= 12; x += 6) bx(Hh, x, 5.9, 0, 2.4, .06, .3, 0xf2f5ff, 1); for (const x of [-15.5, -14, 14, 15.5]) bx(Hh, x, 1, -5.6, 1.2, 2, .7, 0x4a5a6a);
+      const Y = s.E.yard = grp(g); bx(Y, 0, -.05, 0, 60, .1, 34, 0x4a4a48); bx(Y, -6, 2.5, -9.2, 42, 5, .5, 0x5a5e62); bx(Y, -19, 3, -5, 6, 6, 8, 0x3a3e46); bx(Y, -16, 1.2, -5.5, .2, 2.4, 2, 0xffe2a8, 1); bx(Y, -22, 4, -8.6, 2, 8, 2, 0x4a4e56); bx(Y, -22, 8.4, -8.6, 3, .8, 3, 0x3a3e46); for (const [x, z] of [[-4, 4.5], [2, 5], [8, 4.2], [-9, -3.6], [5, -4]]) bx(Y, x, .35, z, 2.6, .7, .8, 0x8a7a5a);
+      for (const [x, rz] of [[15.5, .9], [17.5, -1.1]]){ const gt = bx(Y, x, 1, -8, .3, 4.6, 5, 0x6a6e74); gt.rotation.z = rz; } sp(Y, -22, 9.2, -7, .5, 0xfff2c0, 1); s.can = bx(Y, -10, .16, 1.6, .25, .32, .25, 0x8a8f96);
+      const B = s.E.border = grp(g); bx(B, -40, -.08, 0, 100, .1, 80, 0x4a4a40); bx(B, 58, -.08, 0, 100, .1, 80, 0x5a8a4a); bx(B, 0, -.04, 0, 200, .1, 9, 0x2e2e34); bx(B, 8, .02, 0, .5, .02, 9, 0xf2c230); for (const z of [-5.4, 5.4]){ bx(B, -40, 1.1, z, 96, .08, .08, 0x8a8f96); for (let x = -86; x <= 8; x += 4) bx(B, x, .7, z, .12, 1.4, .12, 0x8a8f96); cy(B, 8, 2.6, z, .18, 5.2, 0xf2c230); } bx(B, 8, 5.2, 0, .3, .3, 11, 0xf2c230);
+      label(B, 'ここから となり町', 14, 3.4, -6.4, 7, 1.2, '#fff', '#2a8a4a'); for (const x of [13, 17]) cy(B, x, 1.4, -6.5, .1, 2.8, 0x8a8f96); for (const [x, c] of [[20, 0xe8e0d0], [28, 0xd8c8a8], [36, 0xe0d0c0]]){ bx(B, x, 1.5, -9, 5, 3, 4, c); const rf = co(B, x, 3.8, -9, 3.7, 1.6, 0x8a3a2a); rf.rotation.y = .785; }
+      const Dn = s.E.dawn = grp(g); bx(Dn, 0, -.08, 0, 200, .1, 120, 0x5a8a4a); bx(Dn, 0, -.04, 0, 200, .1, 8, 0x3a3a40); for (const z of [-5, 5]) bx(Dn, 0, .02, z, 200, .1, 2, 0xb8b0a0); [[-10, 0xe8e0d0], [-2, 0xd8c8a8], [6, 0xe0d0c0], [14, 0xc8d8e0]].forEach(([x, c]) => { bx(Dn, x, 1.6, -9.5, 5.5, 3.2, 4.5, c); const rf = co(Dn, x, 4.1, -9.5, 4.1, 1.8, 0x8a3a2a); rf.rotation.y = .785; bx(Dn, x, 1, -7.2, 1, 2, .1, 0x6a4a2e); }); for (const x of [-14, -6, 2, 10, 18]){ cy(Dn, x, 1.4, -6.2, .2, 2.8, 0x5a3a20); sp(Dn, x, 3.6, -6.2, 1.5, 0x3f9a3f); } sp(Dn, 4, 7, -70, 7, 0xffe8b0, 1);
+      return s; },
+    anim(s, U){ const k = Math.min(13, Math.floor(U)), u = sat(U - k), PI = Math.PI, H = PI / 2, D = ESC_D[k], Z = { armL: -1.4, armR: -1.4, rx: .16 };
+      for (const a of s.all) a.m.group.visible = false; for (const c of s.cars) c.g.visible = false; for (const e in s.E) s.E[e].visible = false; for (const l of [s.fl, s.tr, s.gas, s.bl]) for (const m of l) m.visible = false; s.bn = 0; s.can.visible = k === 8 && u > .18;
+      const on = (...l) => l.flat().forEach(a => { a.m.group.visible = true; }), env = n => { s.E[n].visible = true; };
+      const turn = (a, t) => { a.ey.forEach(e => { e.visible = t; }); a.m.mats[0].color.setHex(t ? 0x8aa890 : a.sk); }; turn(s.sv[8], k > 5 || (k === 5 && u > .25)); turn(s.sv[3], k > 12 || (k === 12 && u > .55));
+      const bite = (x, y, z, t0) => { if (!gore || u < t0 || u > t0 + .07) return; const p = (u - t0) / .07; for (let i = 0; i < (gore === 2 ? 6 : 2); i++){ const m = s.bl[s.bn++ % 12]; m.visible = true; m.position.set(x + Math.cos(i * 2.4) * p * .5, y + p * .5 - p * p * .6, z + Math.sin(i * 2.4) * p * .5); } };
+      const car = (i, x, y, z, ry = 0, rz = 0) => { const c = s.cars[i]; c.g.visible = true; c.g.position.set(x, y, z); c.g.rotation.set(0, ry, rz); return c; };
+      const ride = (a, c, q, o) => pose(a, c.g.position.x + .3 - (q >> 1), c.g.position.y + .62, c.g.position.z + (q & 1 ? .55 : -.55), H, { legs: -1.5, armL: -.5, armR: -.5, ...o });
+      const lie = (a, x, z, h = H, dir = -1) => { pose(a, x, 0, z, h); down(a, 1, dir); };
+      const road = () => { const d = u * D * 15; for (const m of s.mv) m.position.x = (((m.userData.x0 - d) % 120) + 120) % 120 - 60; return d; };
+      const off = (a, c, q, t0, side) => { if (u < t0){ ride(a, c, q); return; } const cx = c.g.position.x + .3 - (q >> 1), p = sg(u, t0, t0 + .1), back = Math.max(0, u - t0 - .1) * D * 15; pose(a, LP(cx, cx - 3.5, p) - back, LP(1.57, .13, p * p) + Math.sin(p * PI) * .5, c.g.position.z + side * p, H, { armL: -2.8, armR: -2.8, rx: -p * 1.5 }); };   /* 走る車から落ちる */
+      const CAR = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13], [14, 15, 16, 17]];
+      if (k === 0){ /* 1. 4人が感染者に近づいて かまれる (24 → 20) */ env('town'); on(s.sv, s.inf.slice(0, 6)); const back = ez(sg(u, .58, 1)) * 6, td = [.55, .66, .74, .82];
+        for (let i = 0; i < 20; i++) pose(s.sv[i], -9.5 + (i % 5) * 1.2 - back, 0, -2.2 + ((i / 5) | 0) * 1.3, back > 0 ? -H : H, { ph: u * 40 + i, amp: back > 0 && u < 1 ? .7 : 0 });
+        pose(s.inf[0], 5 - sg(u, .45, .55), 0, 0, u < .43 ? H : -H, Z);
+        for (let j = 0; j < 4; j++){ const a = s.sv[20 + j], z = -1.2 + j * .8, x1 = 3.9 - j * .6; if (u < .5 || j === 0) run(a, u, 0, .42, -3.5, z, x1, z); else run(a, u, .5, td[j], x1, z, x1 - 2 - j * .4, z + .3); if (u > td[j]) down(a, sg(u, td[j], td[j] + .1), j ? 1 : -1); bite(a.m.group.position.x, 1.3, z, td[j]); }
+        for (let i = 1; i < 6; i++){ const j = (i - 1) % 4, z = -1.2 + j * .8; run(s.inf[i], u, .36, td[j] + (i > 4 ? .08 : 0), 9 + i, -5.5, (j ? 3.9 - j * .6 - 2 - j * .4 : 3.9) + .7, z + (i > 4 ? .8 : .1), Z); } }
+      else if (k === 1){ /* 2. 車で逃げる。2人が乗りおくれる (20 → 18) */ env('lot'); on(s.sv.slice(0, 20), s.inf.slice(0, 8)); const CZ = [-4.8, -1.6, 1.6, 4.8], dep = [.5, .56, .62, .68];
+        CAR.forEach((Ls, c) => { const p = sg(u, dep[c], 1), cc = car(c, 2 + p * p * 44, 0, CZ[c]); Ls.forEach((i, q) => { const t1 = .26 + q * .04 + c * .02; if (u < t1) run(s.sv[i], u, 0, t1, -17 - (i % 4) * 1.3, CZ[c] + ((i % 3) - 1) * .9, -1.9, CZ[c]); else ride(s.sv[i], cc, q); }); });
+        [18, 19].forEach((i, j) => { const a = s.sv[i], t2 = .8 + j * .09; run(a, u, .24 + j * .04, t2, -17.5, 5.2 + j, 1 + j * 1.2, 4.8 + j * .6); if (u > t2) down(a, sg(u, t2, t2 + .08), 1); bite(a.m.group.position.x, 1.2, 4.8 + j * .6, t2); });
+        for (let i = 0; i < 8; i++) run(s.inf[i], u, .34 + (i % 3) * .03, .8 + (i % 2) * .09 + (i > 1 ? .08 : 0), -19 - i, -3 + i * 1.3, (i % 2 ? 2.2 : 1) - .8 - (i >> 1) * .5, 4.8 + (i % 2) * .6 + ((i >> 1) - 1.5) * .5, Z); }
+      else if (k === 2){ /* 3. 車から 1人が落ちる (18 → 17) */ env('road'); const d = road(); on(s.sv.slice(0, 18), s.inf.slice(0, 6)); const X = [9, 2.5, -4, -10.5];
+        CAR.forEach((Ls, c) => { const cc = car(c, X[c], Math.abs(Math.sin(u * 50 + c)) * .04 + (c === 3 ? Math.sin(sg(u, .38, .48) * PI) * .28 : 0), 0); Ls.forEach((i, q) => { if (i === 17) off(s.sv[17], cc, 7, .42, 1.2); else ride(s.sv[i], cc, q); }); });
+        for (let i = 0; i < 4; i++) pose(s.inf[i], 40 + i * 28 - d, 0, -4.6, .4, Z); const b = s.sv[17].m.group.position;
+        for (let i = 4; i < 6; i++){ s.inf[i].m.group.visible = u > .52; pose(s.inf[i], b.x + (i - 4.5) * 1.6 + (1 - sg(u, .55, .9)) * 5, 0, LP(-5, b.z + .3, sg(u, .55, .9)), 0, { ...Z, ph: u * 40, amp: .6 }); } }
+      else if (k === 3){ /* 4. 4台のうち1台がおそわれる (17 → 14) */ env('road'); const d = road(), d0 = .42 * D * 15, p = sg(u, .42, 1); on(s.sv.slice(0, 17), s.inf.slice(0, 8)); const X = [9, 2.5, -4];
+        CAR.slice(0, 3).forEach((Ls, c) => { const cc = car(c, X[c], Math.abs(Math.sin(u * 50 + c)) * .04, 0); Ls.forEach((i, q) => ride(s.sv[i], cc, q)); });
+        const cd = car(3, -10.5 - p * p * 30, 0, Math.sin(u * 30) * .6 * p, Math.sin(u * 26) * .22 * p);
+        [14, 15, 16].forEach((i, j) => { const t = .47 + j * .09; ride(s.sv[i], cd, j, u > t ? { armL: -2.8, armR: -2.8, rx: -1.3 * sg(u, t, t + .08), legs: -1.5 * (1 - sg(u, t, t + .08)) } : {}); bite(cd.g.position.x + .3 - (j >> 1), 1.6, cd.g.position.z + (j & 1 ? .55 : -.55), t); });
+        for (let i = 0; i < 8; i++){ const a = s.inf[i], cx = cd.g.position.x, cz = cd.g.position.z; if (u < .42) pose(a, -12 + (i % 4) * .9 + d0 - d, 0, LP(i % 2 ? 11 : -11, i % 2 ? 1.7 : -1.7, sg(u, .08, .42)), i % 2 ? PI : 0, { ...Z, ph: u * 60 + i, amp: .8 }); else if (i < 4) pose(a, cx - 1 - (i >> 1) * 1.2, .95 + cd.g.position.y, cz + (i & 1 ? .5 : -.5), H, { ...Z, rx: .5 }); else pose(a, cx - 1 + (i - 4) * .9, 0, cz + (i & 1 ? 1.7 : -1.7), i & 1 ? PI : 0, { ...Z, ph: u * 60, amp: .6 }); } }
+      else if (k === 4){ /* 5. 車から さらに3人が落ちる (14 → 11) */ env('road'); const d = road(); on(s.sv.slice(0, 14), s.inf.slice(0, 6)); const X = [7, 0, -7], T0 = { 11: .26, 12: .48, 13: .68 };
+        CAR.slice(0, 3).forEach((Ls, c) => { const cc = car(c, X[c], Math.abs(Math.sin(u * 34 + c * 2)) * .14, Math.sin(u * 7 + c * .4) * .5, 0, Math.sin(u * 9 + c) * .07); Ls.forEach((i, q) => { if (T0[i]) off(s.sv[i], cc, q + 3, T0[i], i === 12 ? -2.2 : 2.4); else ride(s.sv[i], cc, q); }); });
+        for (let i = 0; i < 6; i++) pose(s.inf[i], 30 + i * 17 - d * .9, 0, i % 2 ? 6 : -4.5, i % 2 ? PI : 0, Z); }
+      else if (k === 5 || k === 6){ /* 6. スワット基地。仲間の1人が かくれ感染者 (11 → 9)。 7. その感染者が スワットにうたれる (9 → 8) */ env('hall'); on(s.sv.slice(0, 11), s.sw); const a8 = s.sv[8], a9 = s.sv[9], a10 = s.sv[10], flee = k === 6 ? 1 : ez(sg(u, .42, .8)), mv = flee > 0 && flee < 1;
+        for (let i = 0; i < 8; i++){ const sit = i % 2 === 0 && flee < .05; pose(s.sv[i], -4 + (i % 4) * 1.6 - flee * 4.5, sit ? -.5 : 0, -1 + ((i / 4) | 0) * 1.5, mv ? -H : (k === 6 ? H * .9 : 0), sit ? { legs: -1.5 } : { ph: u * 40 + i, amp: mv ? .7 : 0 }); }
+        s.sw.forEach((a, i) => { const act = i >= 12 && i <= 15, f = act ? (k === 6 ? 1 : ez(sg(u, .6, .9))) : 0, x = -13 + i * 1.37; pose(a, x, 0, -5 + f * 2.2, f ? Math.atan2(5.3 - x, 4.6) : 0, { armR: f > .5 ? -1.5 : 0 }); });
+        if (k === 5){ const lun = sg(u, .32, .4), l2 = sg(u, .5, .6); pose(a8, 4.5 + lun * .9 - l2 * .2 + (u < .25 ? Math.sin(u * 200) * .03 : 0), 0, 1 + l2 * .9, u < .25 ? 0 : H * .8, u > .25 ? Z : { rx: .45 });
+          pose(a9, 5.9, 0, .6, -H); if (u > .4) down(a9, sg(u, .4, .52), -1); bite(5.8, 1.4, .6, .4); pose(a10, 5.6, 0, 2.2, PI); if (u > .62) down(a10, sg(u, .62, .74), -1); bite(5.6, 1.4, 2.1, .62); }
+        else { lie(a9, 5.9, .6, -H); lie(a10, 5.6, 2.2, PI); pose(a8, 5.2 - Math.min(u, .45) * 1.6, 0, 1.9, -H, Z); const sh = u > .3 && u < .46; if (u > .45) down(a8, sg(u, .45, .58), -1); const tp = a8.m.group.position;
+          for (let i = 12; i <= 15; i++){ const gx = -13 + i * 1.37; if (sh && Math.floor(u * 120 + i) % 2){ const m = s.fl[i - 12], t = s.tr[i - 12]; m.visible = t.visible = true; m.position.set(gx + .3, 1.42, -2.2); beamTo(t, gx + .3, 1.42, -2.2, tp.x, 1.3, tp.z, .04); } } bite(tp.x, 1.3, 1.9, .36); } }
+      else if (k === 7 || k === 8){ /* 8. 特殊感染者4体 対 スワット20人。 9. 最後のスワットの毒ガスは きかない (スワット全滅) */ env('yard'); on(s.sv.slice(0, 8), s.sw, s.big);
+        const sx = i => -9 + (i % 10) * 1.9, sz = i => -2 + ((i / 10) | 0) * 3 + (i % 2) * .6, td = i => i === 10 ? 9 : i % 10 === 0 ? .93 : Math.min(.9, (13.8 - sx(i)) / 21 + ((i / 10) | 0) * .03), r = k === 8 ? ez(sg(u, .45, 1)) : 0;
+        for (let i = 0; i < 8; i++) pose(s.sv[i], -15 + (i % 4) * .8 - r * 18, r > 0 ? 0 : -.4, -6.5 + ((i / 4) | 0) * .9 + r * 4, r > 0 ? -H : H, r > 0 && r < 1 ? { ph: u * 50 + i, amp: .8 } : { legs: -1.2 });
+        if (k === 7){ s.sw.forEach((a, i) => { const t = td(i); pose(a, sx(i), 0, sz(i), H, { armR: -1.5, armL: -1.3 }); if (u > t) down(a, sg(u, t, t + .06), -1); else if (Math.floor(u * 140 + i * 7) % 6 === 0){ const m = s.fl[i % 10], tr = s.tr[i % 8], b = s.big[i % 4].m.group.position; m.visible = tr.visible = true; m.position.set(sx(i) + .75, 1.42, sz(i) + .2); beamTo(tr, sx(i) + .75, 1.42, sz(i) + .2, b.x, 1.8, b.z, .04); } });
+          s.big.forEach((a, j) => pose(a, LP(15 + j * 2.5, -6 + j * 2.2, u), 0, -1.5 + j * 1.5, -H, { ph: u * 30 + j, amp: .6, armL: -1.2 + Math.sin(u * 40 + j) * .8, armR: -1.2 - Math.sin(u * 40 + j) * .8, out: .7 })); }
+        else { s.sw.forEach((a, i) => { if (i !== 10) lie(a, sx(i), sz(i), H, -1); }); const La = s.sw[10]; pose(La, -9 - ez(sg(u, 0, .3)) * 3.5, 0, 1.6, H, { armR: u < .2 ? -1.5 : -.3, ph: u * 30, amp: u < .3 ? .5 : 0 }); if (u > .84) down(La, sg(u, .84, .94), -1);
+          const gp = sg(u, .2, .7); s.gas.forEach((m, i) => { m.visible = gp > 0; m.position.set(-10 + Math.cos(i * 1.9) * gp * (2 + i * .45), .8 + (i % 3) * .7 * gp, 1.6 + Math.sin(i * 1.9) * gp * (1.5 + i * .3)); m.scale.setScalar(.6 + gp * (2.2 + (i % 4) * .6)); });
+          s.big.forEach((a, j) => { const c = ez(sg(u, .25, .84)); pose(a, LP(-6 + j * 2.2, -11 + j * 1.1, c), 0, LP(-1.5 + j * 1.5, 1 + (j - 1.5) * .8, c), -H, { ph: u * 24 + j, amp: .5, armL: -1.2, armR: -1.2, out: .7 }); }); } }
+      else if (k === 9){ /* 10. 残った車3台のうち 2台に感染者 (8 → 7) */ env('lot'); on(s.sv.slice(0, 8), s.inf.slice(0, 4)); const CZ = [-3.2, 0, 3.2], p = sg(u, .74, 1), cA = car(0, 2, 0, CZ[0]), cB = car(1, 2, 0, CZ[1]), cC = car(2, 2 + p * p * 44, 0, CZ[2]), a7 = s.sv[7];
+        run(a7, u, 0, .38, -17, .4, -4.4, 0); if (u > .38){ pose(a7, -4.4 + sg(u, .4, .5) * .5, 0, 0, H, { armL: -2.6, armR: -2.6 }); if (u > .46) down(a7, sg(u, .46, .58), 1); } bite(-3.6, 1.5, 0, .44);
+        for (let i = 0; i < 7; i++){ const z0 = CZ[i < 2 ? 0 : i < 4 ? 1 : 2] + ((i % 2) - .5) * 1.2, t1 = .62 + i * .015; if (u < t1) path(s.sv[i], sg(u, .02 + i * .01, t1), [[-17 - (i % 3), z0], [-8, z0], [-5.2, 3.2 + ((i % 2) - .5)], [-4.3, 3.2]]); else ride(s.sv[i], cC, i); }
+        s.inf.slice(0, 4).forEach((a, i) => { const c = i < 2 ? cB : cA, t0 = i < 2 ? .38 : .5, cz = c.g.position.z + (i % 2 ? .5 : -.5), cx = -1 - (i % 2) * 1.2; a.m.group.visible = u > t0; if (u < .72) pose(a, cx, .95, cz, i < 2 ? -H : 0, Z); else run(a, u, .72, 1.3, cx - 3, cz, cx + 8, 3.2 + (i - 1.5) * .6, Z); }); }
+      else if (k === 10){ /* 11. 車から 2人が落ちる (7 → 5) */ env('road'); road(); on(s.sv.slice(0, 7), s.inf.slice(0, 6)); const cc = car(2, 2, Math.abs(Math.sin(u * 40)) * .1 + Math.sin(sg(u, .28, .36) * PI) * .3 + Math.sin(sg(u, .56, .64) * PI) * .3, 0, 0, Math.sin(u * 9) * .05);
+        for (let i = 0; i < 7; i++){ if (i === 6) off(s.sv[6], cc, 7, .32, -.6); else if (i === 5) off(s.sv[5], cc, 6, .6, .9); else ride(s.sv[i], cc, i); }
+        for (let i = 0; i < 6; i++){ const tg = i < 3 ? s.sv[6] : s.sv[5], t0 = i < 3 ? .44 : .72, b = tg.m.group.position, x = -7 - i * 1.5 - u * 9; if (u < t0 || b.x > x + 1) pose(s.inf[i], x, 0, (i % 3 - 1) * 1.1, H, { ...Z, ph: u * 60 + i, amp: .8 }); else pose(s.inf[i], b.x + (i % 3 - 1) * .9, 0, b.z + .5, H, { ...Z, rx: .6 }); } }
+      else if (k === 11){ /* 12. となり町へ。感染者は入れない。1人が群れにのまれる (5 → 4) */ env('border'); on(s.sv.slice(0, 5), s.inf.slice(0, 14)); const cxp = LP(-26, 26, sg(u, 0, .8)), cc = car(2, cxp, Math.abs(Math.sin(u * 50)) * .05, 0), tg = .4;
+        for (let i = 0; i < 5; i++){ if (i !== 4) ride(s.sv[i], cc, i); else if (u < tg) ride(s.sv[4], cc, 7, { armL: -1, armR: -1 }); else { const p = sg(u, tg, tg + .08); pose(s.sv[4], LP(-3.5, -4.2, p), LP(1.57, .13, p), LP(.55, 2, p), H, { armL: -2.8, armR: -2.8, rx: -1.5 * p }); } } bite(-4.2, .6, 2, tg + .1);
+        for (let i = 0; i < 14; i++){ const a = s.inf[i], x0 = -5 + rr(i) * 10, z0 = -2.6 + rr(i + 20) * 5.2, side = z0 < 0 ? -1 : 1, zz = z0 + side * sat(1 - Math.abs(cxp - x0) / 4) * (u < .8 ? 2.2 : 0);
+          if (i < 6){ const c = ez(sg(u, tg + .04, tg + .3)); pose(a, LP(x0, -4.2 + (i % 3 - 1) * .8, c), 0, LP(zz, 2 + ((i / 3) | 0) * .9 - .4, c), H, { ...Z, rx: .16 + c * .4, ph: u * 40 + i, amp: c > 0 && c < 1 ? .6 : .15 }); }
+          else if (i < 11){ const t0 = .5 + (i - 6) * .02, tc = t0 + .2 + (i - 6) * .03; if (u < t0) pose(a, x0, 0, zz, H, { ...Z, ph: u * 20 + i, amp: .15 }); else { run(a, u, t0, tc, x0, z0, 9 + (i - 6) * .7, z0 * .8, Z); if (u > tc) down(a, sg(u, tc, tc + .07), 1); } }
+          else { if (u < .52) pose(a, x0, 0, zz, H, { ...Z, ph: u * 20 + i, amp: .15 }); else run(a, u, .52, .78, x0, z0, 6.6 + (i - 11) * .3, z0, Z); } } }
+      else { /* 13. 町を出た。1人は感染していた (4 → 3)。 14. 生きのこったのは 3人 */ env('dawn'); const cc = car(2, -6, 0, 0), a3 = s.sv[3]; on(s.sv.slice(0, 4));
+        if (k === 12){ for (let i = 0; i < 3; i++){ const a = s.sv[i], joy = u > .4 && u < .58 && i === 0, tn = u > .6; if (u < .08) ride(a, cc, i); else if (u < .4) run(a, u, .08, .4, -9.8, (i - 1) * .9, 1.5 + i * 1.4, (i - 1) * .7); else pose(a, 1.5 + i * 1.4 + sg(u, .62, .8) * .8, 0, (i - 1) * .7, tn ? -H : H, { armL: joy ? -2.8 : tn ? -1 : 0, armR: joy ? -2.8 : tn ? -1 : 0 }); }
+          if (u < .1) ride(a3, cc, 3); else if (u < .45) run(a3, u, .1, .45, -9.8, 1.4, -1.2, .3); else { pose(a3, -1.2 + sg(u, .58, .7) * .9, 0, .3, H, u > .55 ? Z : { rx: .45 * sg(u, .45, .55) }); if (u > .72) down(a3, sg(u, .72, .88), 1); } }
+        else { for (let i = 0; i < 3; i++) pose(s.sv[i], 2.3 + i * 1.3, 0, 0, PI); lie(a3, -.3, .3, H, 1); } } } };
+  /* ===== 脱落者の記録 (cinema_v3)。ゲームに入れた記録 sayonara_log_v1 を読んで、ひな段に 12人ずつ ならべる ===== */
+  const NAMES24 = ['ゆうと', 'はると', 'そうた', 'みなと', 'あおい', 'ひなた', 'りこ', 'さくら', 'ゆい', 'こうき', 'れん', 'めい', 'たくみ', 'かいと', 'いつき', 'ことね', 'ひまり', 'そら', 'ゆうま', 'あかり', 'しょう', 'なぎさ', 'けんた', 'まお'];
+  const FILE_ORDER = ['鬼ごっこマンション', '熱湯スタジアム', '熱湯スタジアム崩壊', '首輪マーク当て', 'ブラックジャック', 'トンネル逃亡', 'ぶら下がり耐久', 'おみくじデスゲーム', '巨大草園かくれんぼ', '猛獣ハンター', '缶蹴り', 'ドローンレーザー', '二択問題', '雪合戦', '魔女狩り', 'アンケート', '東京ビンゴタワー', '足跡かくれんぼ', '買い物競争', 'てんびん', '自然災害', 'ラビリンス', 'サバイバル', 'バトルロワイアル', 'ロープ', 'ビル', '鉄骨渡り', '鉄骨渡り第一ゾーン', '実験ゲーム', 'ミニゲームホール', '空中ケンパ', '豪華客船', '人生のレール', '多数派ゲーム', '裏カジノ', 'ドリル戦車', '四つの試練', '回転寿司サバイバル', '上陸作戦', '緑のタイル'];
+  /* cinema_v4: 記録がないゲームは ランダムで決める。[ファイル, 名前, 参加者, 脱落のわりあい 下, 上, 名前のある人がいる] */
+  const GEN = [['鬼ごっこマンション', 'L字マンション鬼ごっこ', 16, .5, .8, 1], ['熱湯スタジアム', '熱湯スタジアム脱出', 17, .4, .75, 1], ['熱湯スタジアム崩壊', '熱湯スタジアム（崩壊モード）', 17, .5, .85, 1], ['首輪マーク当て', '首輪マーク当てゲーム', 20, .3, .6, 1], ['ブラックジャック', '地下ブラックジャック', 5, .5, 1, 1], ['トンネル逃亡', 'トンネル逃亡ゲーム', 20, .6, .9, 1], ['ぶら下がり耐久', 'ぶら下がり耐久', 4, .6, 1, 1], ['おみくじデスゲーム', 'おみくじデスゲーム', 25, .5, .85, 1],
+    ['巨大草園かくれんぼ', '巨大草園かくれんぼ', 4, .3, .7, 1], ['猛獣ハンター', '猛獣ハンター', 16, .4, .8, 1], ['缶蹴り', '缶蹴り', 17, .5, .9, 1], ['ドローンレーザー', 'ドローンレーザー', 36, .6, .9, 1], ['二択問題', '二択問題', 8, .5, .9, 1], ['雪合戦', '雪合戦', 66, .5, .8, 1], ['魔女狩り', '魔女狩り', 66, .3, .6, 1], ['アンケート', 'アンケート', 5, .5, 1, 1],
+    ['東京ビンゴタワー', '東京ビンゴタワー', 24, .3, .7, 1], ['足跡かくれんぼ', '足跡かくれんぼ', 12, .4, .8, 1], ['買い物競争', '買い物競争', 15, .5, .9, 1], ['てんびん', 'てんびん', 5, .7, 1, 1], ['自然災害', '自然災害', 49, .96, .98, 1], ['ラビリンス', 'ラビリンス', 12, .4, .8, 1], ['サバイバル', 'サバイバル', 97, .5, .8, 1], ['バトルロワイアル', 'バトルロワイアル', 23, .3, .7, 1],
+    ['ロープ', 'ロープ', 40, .3, .6, 0], ['ビル', 'ビル', 21, .4, .8, 0], ['鉄骨渡り', '鉄骨渡り', 10, .5, .9, 0], ['鉄骨渡り第一ゾーン', '鉄骨渡り 第一ゾーン', 60, .5, .8, 0], ['実験ゲーム', '実験ゲーム（名前はまだない）', 29, .4, .8, 0], ['ミニゲームホール', 'ミニゲームホール', 50, .97, .98, 0], ['空中ケンパ', '空中ケンパ', 76, .6, .9, 0], ['豪華客船', '豪華客船', 103, .3, .6, 1],
+    ['人生のレール', '人生のレール', 990, .5, .8, 0], ['多数派ゲーム', '多数派ゲーム', 700, .992, .993, 0], ['四つの試練', '四つの試練', 405, .85, .95, 0], ['緑のタイル', '緑のタイル', 200, .994, .995, 0]];
+  function genEntry([f, t, P, lo, hi, named]){ let h = 2166136261; for (const ch of f + '/さよなら'){ h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } const rnd = () => { h = (Math.imul(h, 1664525) + 1013904223) >>> 0; return h / 4294967296; };
+    const others = P - 1, E = Math.max(1, Math.min(others, Math.round(others * (lo + (hi - lo) * rnd())))), sh = a => { for (let i = a.length - 1; i > 0; i--){ const j = (rnd() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const cast = named ? sh(NAMES24.slice()).slice(0, Math.min(24, others)) : [], nNamed = named ? Math.min(cast.length, Math.max(1, Math.round(E * cast.length / others))) : 0, d = sh(cast.slice()).slice(0, nNamed).map(n => ({ n, x: 1 }));
+    const nums = new Set(); while (d.length + nums.size < Math.min(E, 24)) nums.add((named ? 25 : 2) + ((rnd() * (P - (named ? 24 : 1))) | 0)); [...nums].sort((a, b) => a - b).forEach(n => d.push({ n: n + '番', x: 1 })); return { f: f + '.html', t, p: 0, n: E, c: 0, d, gen: 1 }; }
+  function readLog(){ const ord = f => { const i = FILE_ORDER.indexOf(f.replace(/\.html$/, '')); return i < 0 ? 999 : i; }; return GEN.map(genEntry).sort((a, b) => ord(a.f) - ord(b.f)); }   /* cinema_v5: いつも同じランダム。遊んだ記録では変えない */
+  const ROLL = { g: null, cur: null, figs: {}, gen: [], plates: {} };
+  CLIPS.roll = { n: '脱落者の記録', sky: 0x0a0806, fog: [12, 46], amb: 1.1, cam: [.4, 2.6, 8, .4, 1.75, -.8],
+    build(g){ ROLL.g = g; bx(g, 0, -.05, -1, 34, .1, 16, 0x1a1612); bx(g, 0, .45, -1.4, 14.5, .9, 1.4, 0x2a221c); bx(g, 0, 3, -5, 34, 8, .3, 0x120e0a); for (const x of [-5, 0, 5]) sp(g, x, 5.6, 1, .25, 0xffe2a8, 1); return {}; },
+    anim(){} };
+  function rollSet(R){ if (ROLL.cur === R.key || !ROLL.g) return; ROLL.cur = R.key; const g = ROLL.g; for (const k in ROLL.figs) ROLL.figs[k].m.group.visible = false; for (const a of ROLL.gen) a.m.group.visible = false; for (const k in ROLL.plates) ROLL.plates[k].visible = false; let gi = 0;
+    R.list.forEach((e, i) => { const row = (i / 6) | 0, col = i % 6, n = Math.min(6, R.list.length - row * 6), x = (col - (n - 1) / 2) * 1.9 + (row ? .95 : 0), y = row * .9, z = -row * 1.4, idx = NAMES24.indexOf(e.n); let a;
+      if (e.n === 'あなた') a = ROLL.figs[e.n] || (ROLL.figs[e.n] = hero(g));
+      else if (idx >= 0){ const Lk = LOOKS[e.n]; a = ROLL.figs[e.n] || (ROLL.figs[e.n] = actor(g, (Lk && Lk.shirt) ?? SHIRTS[idx % SHIRTS.length], (Lk && Lk.pants) ?? PANTS[idx % PANTS.length], { skin: [0xf1c7a5, 0xe8b894, 0xd9a47f][idx % 3], hair: (Lk && Lk.hairColor) ?? HAIRS[idx % HAIRS.length], look: Lk || undefined })); }
+      else { a = ROLL.gen[gi] || (ROLL.gen[gi] = actor(g, [0x70747c, 0x5a6470, 0x8a7a6a, 0x4a5a6a, 0x6a5a6a, 0x5a6a5a][gi % 6], [0x2c3e50, 0x34495e, 0x263238][gi % 3], { skin: SKIN[gi % 4], hair: HAIRS[gi % HAIRS.length], look: undefined })); gi++; }
+      a.m.group.visible = true; pose(a, x, y, z, 0, { rx: .08 }); const tx = e.n + (e.x > 1 ? ' ×' + e.x : ''), w = Math.min(1.8, .36 + tx.length * .25); let pl = ROLL.plates[tx]; if (!pl) pl = ROLL.plates[tx] = label(g, tx, 0, 0, 0, w, .42, e.n === 'あなた' ? '#ffe14d' : '#fff', '#1a1410'); pl.visible = true; pl.position.set(x, y + 2.2, z + .05); }); }
   const IDS = ['mansion', 'stadium', 'collar', 'bj', 'tunnel', 'hang', 'omikuji', 'hide', 'beast', 'can', 'drone', 'quiz', 'snow', 'survey', 'tower', 'foot', 'shop', 'balance', 'disaster', 'maze', 'city', 'royale', 'rope', 'hotel', 'steel', 'steel1', 'ar', 'hall', 'kenpa', 'ship', 'rail', 'majority', 'casino2', 'tank', 'quad', 'sushi', 'war', 'metro'];
   const DATES = { mansion: '9月26日', stadium: '9月27日', beast: '9月28日', hide: '9月28日', can: '9月29日', quiz: '9月30日', tower: '10月1日', balance: '10月2日', disaster: '10月3日', royale: '10月5日', rope: '10月6日', steel: '10月7日', hall: '10月8日', ship: '10月29日', rail: '11月1日', casino2: '11月3日', tank: '11月5日', quad: '11月9日', sushi: '11月10日', war: '11月15日', metro: '11月18日' };
   const BUILT = {};
-  function showClip(id, u, mode, p){ for (const k in BUILT) BUILT[k].g.visible = false; const c = CLIPS[id]; let b = BUILT[id]; if (!b){ const g = new THREE.Group(); MS.add(g); b = BUILT[id] = { g, s: c.build(g) }; } b.g.visible = true; c.anim(b.s, u);
-    MS.background.setHex(c.sky); MS.fog.color.setHex(c.sky); MS.fog.near = c.fog ? c.fog[0] : 40; MS.fog.far = c.fog ? c.fog[1] : 170; mHL.intensity = c.amb ?? 1.25; mDL.intensity = (c.amb ?? 1.25) * .7; const cm = c.cam;
+  function showClip(id, u, mode, p){ for (const k in BUILT) BUILT[k].g.visible = false; const c = CLIPS[id]; let b = BUILT[id]; if (!b){ const g = new THREE.Group(); MS.add(g); b = BUILT[id] = { g, s: c.build(g) }; } b.g.visible = true; c.anim(b.s, u); const e = c.dyn ? c.dyn(u) : c;
+    MS.background.setHex(e.sky); MS.fog.color.setHex(e.sky); MS.fog.near = e.fog ? e.fog[0] : 40; MS.fog.far = e.fog ? e.fog[1] : 170; mHL.intensity = e.amb ?? 1.25; mDL.intensity = (e.amb ?? 1.25) * .7; const cm = e.cam;
     if (mode === 'orbit'){ let tx, ty, tz; const s = b.s; if (s.threat){ s.threat.getWorldPosition(_v); tx = _v.x; ty = _v.y + (c.ty ?? 1) + (s.ty0 || 0); tz = _v.z; } else [tx, ty, tz] = c.tp; const r = c.tr ?? 3.6, an = -.75 + p * 1.5; MC.position.set(tx + Math.sin(an) * r, Math.max(.4, ty + r * .22 + .2), tz + Math.cos(an) * r); MC.lookAt(tx, ty, tz); }
     else { const k = .14 * (p - .5); MC.position.set(cm[0] + (cm[3] - cm[0]) * k, cm[1] + (cm[4] - cm[1]) * k, cm[2] + (cm[5] - cm[2]) * k); MC.lookAt(cm[3], cm[4], cm[5]); } }
   function noClip(){ for (const k in BUILT) BUILT[k].g.visible = false; MS.background.setHex(0); }
@@ -783,9 +917,16 @@ const CINE = (() => {
   const card = (d, lines, bg) => ({ d, ov(c){ if (bg){ c.fillStyle = bg; c.fillRect(0, 0, 1024, 576); } const tot = lines.reduce((s, l) => s + l[1] * 1.5, 0); let y = 288 - tot / 2; for (const [t, px, col] of lines){ y += px * .75; TX(c, t, 512, y, px, col || '#fff'); y += px * .75; } } });
   const head = (c, i, n) => { const t = (i + 1) + '／' + IDS.length; c.font = '900 24px ' + FONT; const w = c.measureText(t).width; TX(c, t, 24, 34, 24, '#ffd24a', 'left'); TX(c, n, 24 + w + 18, 34, 26, '#fff', 'left'); };
   const FILMS = [
-    { key: 'memory', title: 'さよならの記録', sub: 'やられる瞬間を、全ゲームふり返る', tune: 'sad', bg: ['#2a2018', '#0c0a08'], fg: '#e8d8b8',
+    { key: 'memory', live: 1, title: 'さよならの記録', sub: 'やられる瞬間と、あなたが遊んで脱落した人の記録', tune: 'sad', bg: ['#2a2018', '#0c0a08'], fg: '#e8d8b8',
       build(){ const S = [card(3.2, [['ゲームの街', 34, '#c8b890'], ['さよならの記録', 76, '#f4e8d0']]), card(3, [['これは、ゲームの街で', 34], ['消えていった参加者たちの記録', 34]])];
         IDS.forEach((id, i) => { const c = CLIPS[id]; S.push({ d: 3.4, clip: id, u0: 0, u1: 1, slow: 1, tint: .26, xf: 1, ov(g){ head(g, i, c.n); band(g, 476, 100, .5); WR(g, c.lose, 512, 526, 30, '#f4e8d0', 960); } }); });
+        /* cinema_v3: 脱落者の記録 (あなたが遊んだゲームで 本当に脱落した人。名前を出すのは この映画だけ) */
+        const log = readLog(); S.push(card(3.6, [['脱落者の記録', 64, '#f4e8d0'], ['ゲームの街で、消えていった人たち', 28, '#c8b890']]));
+        if (!log.length) S.push(card(4.2, [['まだ、記録はない', 46, '#f4e8d0'], ['ゲームで遊ぶと、脱落した人がここに記録される', 26, '#c8b890']]));
+        let pages = 0, all = 0; for (const e of log){ all += e.n + e.c; const m = Math.max(1, Math.ceil(e.d.length / 12)), lim = pages > 90 ? 1 : Math.min(m, e.gen ? 2 : 10);
+          if (!e.d.length){ S.push(card(3.2, [[e.t, 44, '#f4e8d0'], ['名前の分からない脱落者 ' + e.c + '人', 34, '#ffb0a0']])); continue; }
+          for (let k = 0; k < lim; k++){ const list = e.d.slice(k * 12, k * 12 + 12), rest = k === lim - 1 ? (e.gen ? e.n : e.d.length) - Math.min(e.d.length, (k + 1) * 12) : 0; pages++; S.push({ d: list.length > 6 ? 3.8 : 3.2, clip: 'roll', u0: 0, u1: 1, tint: .18, xf: 1, roll: { key: e.f + '/' + k, list }, ov(g){ band(g, 0, 92, .5); TX(g, e.t, 26, 34, 34, '#f4e8d0', 'left'); TX(g, (e.gen ? 'これまでの記録' : '遊んだ回数 ' + e.p + '回') + (lim > 1 ? '　' + (k + 1) + '／' + lim + 'ページ' : ''), 26, 72, 20, '#c8b890', 'left'); TX(g, '脱落 のべ ' + e.n + '人', 998, 34, 32, '#ffb0a0', 'right'); if (e.c) TX(g, 'ほかに 名前の分からない人 ' + e.c + '人', 998, 72, 20, '#c8b890', 'right'); if (rest > 0){ band(g, 520, 56, .5); TX(g, 'ほか ' + rest + '人', 512, 548, 28, '#f4e8d0'); } } }); } }
+        if (log.length) S.push(card(3.6, [['記録された脱落者', 34, '#c8b890'], ['のべ ' + all + '人', 70, '#f4e8d0']]));
         S.push(card(3.4, [['それでも、次のゲームは始まる', 40, '#f4e8d0']]), card(3.4, [['おわり', 70, '#f4e8d0'], ['ゲームの街 映画館', 26, '#a89878']])); return S; } },
     { key: 'how', title: '生きのこる方法', sub: '全ゲームの生きのこり方を教える', tune: 'how', bg: ['#1a4a2a', '#0a1c10'], fg: '#c8ffd8',
       build(){ const S = [card(3.4, [['全38ゲーム', 34, '#7dff9a'], ['生きのこる方法', 76]])];
@@ -803,22 +944,30 @@ const CINE = (() => {
       build(){ const S = [card(3.4, [['ゲームの街', 34, '#e8d8ff'], ['街ができるまで', 76]])]; let last = '';
         IDS.forEach((id, i) => { const c = CLIPS[id], d = DATES[id] || last, nw = DATES[id] && DATES[id] !== last; if (DATES[id]) last = DATES[id]; S.push({ d: nw ? 2.3 : 1.7, clip: id, u0: .08, u1: .56, xf: 1, ov(g){ band(g, 0, 150, .5); TX(g, id === 'steel1' ? '鉄骨渡りの続き' : d, 40, 50, 42, '#ffe14d', 'left'); TX(g, (i + 1) + '本目　' + c.n, 40, 110, 32, '#fff', 'left'); if (i === 0) TX(g, 'さいしょのゲーム', 984, 50, 28, '#7dff9a', 'right'); } }); });
         S.push(card(3, [['2か月で、38本', 60, '#ffe14d']]), card(3.4, [['ゲームは、まだふえる', 48], ['おわり', 36, '#e8d8ff']])); return S; } },
+    { key: 'escape', title: '24の逃走所', sub: '感染者があふれた町から、24人が逃げる', tune: 'escape', bg: ['#243a2a', '#060a08'], fg: '#c8ffb0', neu: 1,
+      build(){ const sc = (k, cap, n0, n1, st, x = {}) => ({ d: ESC_D[k], clip: 'escape', u0: k, u1: k + .9995, st, xf: 1, tune: x.tune, ov(g, q){ const n = q ? n1 : n0; g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(16, 14, 250, 62); TX(g, '生存者', 30, 46, 26, '#c8ffb0', 'left'); TX(g, n + '人', 250, 46, 44, q && n1 !== n0 ? '#ff6a5a' : '#fff', 'right'); if (x.sw){ g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(758, 14, 250, 62); TX(g, 'スワット', 772, 46, 24, '#9ac8ff', 'left'); TX(g, x.sw[q], 994, 46, 34, q ? '#ff6a5a' : '#fff', 'right'); } band(g, 470, 106, .55); WR(g, cap, 512, 523, 30, '#fff', 960); } });
+        return [card(3.4, [['新作', 32, '#7dff9a'], ['24の逃走所', 88]], '#000'), card(4, [['町に、感染者があふれた', 40], ['生きのこったのは、24人', 46, '#ffe14d']], '#000'),
+          sc(0, '4人が感染者に近づいて、かまれた', 24, 20, .56), sc(1, '車で逃げ出す。しかし2人が、乗りおくれた', 20, 18, .82), sc(2, '走る車から、1人が落ちた', 18, 17, .46), sc(3, '4台のうち1台がおそわれて、3人がやられた', 17, 14, .52), sc(4, 'ゆれる車から、さらに3人が落ちた', 14, 11, .5),
+          sc(5, 'スワットの基地へ逃げこんだ。しかし仲間の1人は、かくれていた感染者だった', 11, 9, .46, { sw: ['20人', '20人'] }), sc(6, 'その感染者も、スワットにうたれた', 9, 8, .5, { sw: ['20人', '20人'] }),
+          sc(7, '特殊感染者が4体、基地に入ってきた。スワット20人との、激しい戦い', 8, 8, .9, { sw: ['20人', 'のこり1人'] }), sc(8, '最後のスワットが毒ガスをまいた。しかし、きかなかった', 8, 8, .86, { sw: ['のこり1人', '全滅'] }),
+          sc(9, '残った車は3台。そのうち2台には、感染者がひそんでいた', 8, 7, .48), sc(10, '逃げる車から、2人が落ちた', 7, 5, .46), sc(11, '感染者は、となり町には入れない（こえた感染者はたおれる）。しかし1人が、群れにのまれた', 5, 4, .44),
+          sc(12, 'となり町に着いた。しかし1人は、感染していた', 4, 3, .74, { tune: 'sad' }), sc(13, '24人のうち、生きのこったのは 3人だけだった', 3, 3, 0, { tune: 'sad' }), { ...card(4, [['おわり', 72], ['24の逃走所', 30, '#a8c8a0']], '#000'), tune: 'sad' }]; } },
   ];
   for (const f of FILMS){ f.segs = f.build(); f.total = f.segs.reduce((s, q) => s + q.d, 0); }
   /* 映画の t 秒目の絵を作る */
   function frame(f, t){ let i = 0, a = 0; while (i < f.segs.length - 1 && t >= a + f.segs[i].d){ a += f.segs[i].d; i++; } const q = f.segs[i], p = sat((t - a) / q.d), k = q.st && p > q.st ? 1 : 0;
-    if (q.clip){ let e = q.slow ? (p < .45 ? p * 1.25 : .5625 + (p - .45) * .795) : q.hold ? sat(p / q.hold) : p; showClip(q.clip, LP(q.u0, q.u1, e), q.mode, p); } else noClip();
+    if (q.clip){ let e = q.slow ? (p < .45 ? p * 1.25 : .5625 + (p - .45) * .795) : q.hold ? sat(p / q.hold) : p; showClip(q.clip, LP(q.u0, q.u1, e), q.mode, p); if (q.roll) rollSet(q.roll); } else noClip();
     ovSet(f.key + i + '/' + k, g => q.ov(g, k)); tint.material.opacity = q.tint || 0; const x = .28 / q.d; fade.material.opacity = q.xf || !q.clip ? Math.max(0, 1 - p / x, 1 - (1 - p) / x) * (q.clip ? .9 : .6) : 0; return i; }
   function idle(){ noClip(); ovSet('idle', c => { c.fillStyle = '#16060a'; c.fillRect(0, 0, 1024, 576); TX(c, 'ゲームの街 映画館', 512, 250, 64, '#ffd24a'); TX(c, 'ロビーのポスターで、映画をえらんでください', 512, 340, 28, '#e8e0d0'); }); tint.material.opacity = 0; fade.material.opacity = 0; }
   function render(){ renderer.setRenderTarget(RT); renderer.render(MS, MC); renderer.setRenderTarget(null); }
-  return { RT, FILMS, IDS, CLIPS, BUILT, frame, idle, render, showClip, MS, MC };
+  return { RT, FILMS, IDS, CLIPS, BUILT, frame, idle, render, showClip, MS, MC, readLog };
 })();
 const screenMesh = new THREE.Mesh(new THREE.PlaneGeometry(SCR.w, SCR.h), new THREE.MeshBasicMaterial({ map: CINE.RT.texture, toneMapped: false })); screenMesh.position.set(0, SCR.y, SCR.z); scene.add(screenMesh);
 /* ポスター */
 const mins = f => { const m = Math.floor(f.total / 60), s = Math.round(f.total % 60 / 10) * 10; return (m ? m + '分' : '') + (s ? s + '秒' : ''); };
 CINE.FILMS.forEach((f, i) => { const p = posters[i], c = p.cv.getContext('2d'), g = c.createLinearGradient(0, 0, 0, 736); g.addColorStop(0, f.bg[0]); g.addColorStop(1, f.bg[1]); c.fillStyle = g; c.fillRect(0, 0, 512, 736); c.strokeStyle = f.fg; c.lineWidth = 6; c.strokeRect(14, 14, 484, 708); c.textAlign = 'center'; c.textBaseline = 'middle'; const F = '"BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif';
   c.fillStyle = f.fg; c.font = '900 30px ' + F; c.fillText('ゲームの街 映画館', 256, 70); c.fillStyle = '#fff'; const parts = f.title.split('　'); c.font = '900 ' + (parts.some(s => s.length > 6) ? 62 : 74) + 'px ' + F; parts.forEach((s, k) => c.fillText(s, 256, 250 + (k - (parts.length - 1) / 2) * 92, 460));
-  c.fillStyle = f.fg; c.font = '800 27px ' + F; let line = '', y = 430; for (const ch of f.sub){ if (c.measureText(line + ch).width > 420){ c.fillText(line, 256, y); y += 40; line = ch; } else line += ch; } c.fillText(line, 256, y); c.fillStyle = '#fff'; c.font = '900 34px ' + F; c.fillText('上映時間 ' + mins(f), 256, 600); c.fillStyle = f.fg; c.font = '900 40px ' + F; c.fillText((i + 1) + '番スクリーン', 256, 670); p.t.needsUpdate = true; });
+  c.fillStyle = f.fg; c.font = '800 27px ' + F; let line = '', y = 430; for (const ch of f.sub){ if (c.measureText(line + ch).width > 420){ c.fillText(line, 256, y); y += 40; line = ch; } else line += ch; } c.fillText(line, 256, y); c.fillStyle = '#fff'; c.font = '900 34px ' + F; c.fillText('上映時間 ' + mins(f), 256, 600); c.fillStyle = f.fg; c.font = '900 40px ' + F; c.fillText((i + 1) + '番スクリーン　無料', 256, 670); if (f.neu){ c.save(); c.translate(418, 118); c.rotate(.3); c.fillStyle = '#e8302a'; c.fillRect(-78, -30, 156, 60); c.fillStyle = '#fff'; c.font = '900 40px ' + F; c.fillText('新作', 0, 2); c.restore(); } p.t.needsUpdate = true; });
 $('filmList').innerHTML = CINE.FILMS.map((f, i) => `<li><b>${i + 1}.「${f.title}」</b>（${mins(f)}）${f.sub}</li>`).join('');
 
 // ===================== 動かす =====================
@@ -831,13 +980,13 @@ function padOn(){ const n = performance.now(); if (n - padC > 800){ padC = n; tr
 function padText(t){ if (!t || !padOn()) return t; return t.replace(/(^|[\s　])E：/g, '$1A ボタン：'); }
 function showMsg(t, dur){ $('msg').textContent = padText(t); $('msg').style.opacity = 1; msgT = dur; }
 function setPr(t){ const pr = $('prompt'); pr.style.display = t ? 'block' : 'none'; pr.textContent = padText(t); }
-function startFilm(i){ const f = CINE.FILMS[i]; film = { f, i, t: 0 }; audio(); playTune(f.tune); player.pos.set(SEAT.x, rowH(SEAT.r), rowZ(SEAT.r) - .35); lookY = 0; lookP = 0; showMsg('「' + f.title + '」が始まる', 2.5); }
+function startFilm(i){ const f = CINE.FILMS[i]; if (f.live){ f.segs = f.build(); f.total = f.segs.reduce((a, q) => a + q.d, 0); } film = { f, i, t: 0 };   /* live = 上映のたびに作り直す (記録が ふえるので) */ audio(); playTune(f.tune); player.pos.set(SEAT.x, rowH(SEAT.r), rowZ(SEAT.r) - .35); lookY = 0; lookP = 0; showMsg('「' + f.title + '」が始まる', 2.5); }
 function stopFilm(done){ if (!film) return; stopTune(); film = null; CINE.idle(); CINE.render(); camera.fov = 70; camera.updateProjectionMatrix(); yaw = 0; pitch = 0; showMsg(done ? '映画が終わった。ロビーのポスターで、ほかの映画もえらべる' : '見るのをやめた', 3.5); }
-function nearPoster(){ const p = player.pos; if (p.z < ZW || p.z > ZW + 2.6) return -1; let b = -1, bd = 1.5; POSTX.forEach((x, i) => { const d = Math.abs(p.x - x); if (d < bd){ bd = d; b = i; } }); return b; }
+function nearPoster(){ const p = player.pos; if (p.z < ZW || p.z > ZW + 2.6) return -1; let b = -1, bd = 1.3; POSTX.forEach((x, i) => { const d = Math.abs(p.x - x); if (d < bd){ bd = d; b = i; } }); return b; }
 let eDown = false;
 function update(dt){ if (msgT > 0 && (msgT -= dt) <= 0) $('msg').style.opacity = 0; const eNow = !!keys.KeyE, ePress = eNow && !eDown; eDown = eNow;
   house += ((film ? .07 : 1) - house) * Math.min(1, dt * 1.6); $('cross').style.display = film ? 'none' : ''; HL.intensity = 1.15 * house; AL.intensity = .3 * house; M.lamp.color.setScalar(.25 + .75 * house); SL.intensity = film ? 26 : 0;
-  if (film){ film.t += dt; if (film.t >= film.f.total){ stopFilm(true); return; } CINE.frame(film.f, film.t); CINE.render(); tickTune();
+  if (film){ film.t += dt; if (film.t >= film.f.total){ stopFilm(true); return; } { const q = film.f.segs[CINE.frame(film.f, film.t)], tk = q.tune || film.f.tune; if (AX && (!mus || mus.k !== tk)) playTune(tk); } CINE.render(); tickTune();
     const ex = SEAT.x, ey = rowH(SEAT.r) + 1.16, ezz = rowZ(SEAT.r) + .38; camera.position.set(ex, ey, ezz); camera.rotation.set(Math.atan2(SCR.y - ey, ezz - SCR.z) + lookP, lookY, 0); { const dist = ezz - SCR.z, need = Math.max(2 * Math.atan((SCR.h / 2 + .7) / dist), 2 * Math.atan((SCR.w / 2 + .4) / dist / camera.aspect)) * 180 / Math.PI; if (Math.abs(camera.fov - need) > .01){ camera.fov = need; camera.updateProjectionMatrix(); } }   /* スクリーン全体が 画面におさまる広さで見る */
     const r = film.f.total - film.t; $('timer').textContent = '上映中「' + film.f.title + '」'; $('obj').textContent = padText('あと ' + Math.floor(r / 60) + '分' + String(Math.floor(r % 60)).padStart(2, '0') + '秒　E：見るのをやめる'); $('obj').style.color = '#cfd6e4'; setPr(''); if (ePress) stopFilm(false); return; }
   const p = player, f = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), sd = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), dx = -Math.sin(yaw) * f + Math.cos(yaw) * sd, dz = -Math.cos(yaw) * f - Math.sin(yaw) * sd, len = Math.hypot(dx, dz), sp = len ? ((keys.ShiftLeft || keys.ShiftRight) ? 5.5 : 3.2) : 0;
@@ -850,6 +999,11 @@ function update(dt){ if (msgT > 0 && (msgT -= dt) <= 0) $('msg').style.opacity =
 function startGame(){ if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); audio(); state = 'play'; paused = false; for (const id of ['title', 'pause']) $(id).classList.remove('on'); $('hud').style.display = 'block'; tryLock(); showMsg('ロビーのポスターの前で、見たい映画をえらぼう', 4); }
 function toTitle(){ if (film) stopFilm(false); state = 'title'; paused = false; $('pause').classList.remove('on'); $('hud').style.display = 'none'; $('title').classList.add('on'); }
 $('startBtn').onclick = startGame;
+function drawRec(){ const L = CINE.readLog(), n = L.reduce((a, e) => a + e.n, 0); $('recInfo').innerHTML = '「さよならの記録」の後半には、ゲームごとに<b>脱落した人</b>が、名前つきで出る（名前を出すのはこの映画だけ）。顔ぶれは<b>ランダムで決めてあって、どれだけ遊んでも変わらない</b>（' + L.length + 'ゲーム・のべ ' + n + '人）。'; }
+drawRec();
+function drawPick(){ $('pickGore').innerHTML = [[1, 'ひかえめ'], [2, 'あり'], [0, 'なし']].map(([k, n]) => `<button data-g="${k}" class="${k === gore ? 'sel' : ''}">${n}</button>`).join(''); $('pickGore').querySelectorAll('button').forEach(b => b.onclick = () => { gore = +b.dataset.g; try { localStorage.setItem('cinema_gore', gore); } catch (e){} drawPick(); }); }
+try { const g0 = localStorage.getItem('cinema_gore'); if (g0 !== null && [0, 1, 2].includes(+g0)) gore = +g0; } catch (e){}
+drawPick();
 $('volIn').oninput = e => { vol = e.target.value / 100; $('volTx').textContent = e.target.value; if (mg) mg.gain.value = vol; try { localStorage.setItem('cinema_vol', e.target.value); } catch (e2){} };
 try { const v = localStorage.getItem('cinema_vol'); if (v !== null && +v >= 0 && +v <= 100){ vol = +v / 100; $('volIn').value = v; $('volTx').textContent = v; } } catch (e){}
 function tryLock(){ try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => { lockFailed = true; }); } catch (e){ lockFailed = true; } }
@@ -874,7 +1028,7 @@ function tick(){ lastTick = performance.now(); const real = Math.min(.25, clock.
   if (state === 'title'){ titleT += real; camera.fov = 70; camera.position.set(Math.sin(titleT * .15) * 4, 1.7, 21.5); camera.rotation.set(.04, Math.sin(titleT * .15) * .35, 0); camera.updateProjectionMatrix(); }
   renderer.render(scene, camera); }
 CINE.idle(); CINE.render();
-window.__cine = { get state(){ return state; }, get film(){ return film; }, CINE, player, keys, startFilm, stopFilm, update, posters, aud, renderer, scene, camera, setView(y, p){ yaw = y; pitch = p; }, seek(t){ if (film) film.t = t; }, get tune(){ return mus; }, rowZ, rowH };
+window.__cine = { set gore(v){ gore = v; }, get gore(){ return gore; }, get state(){ return state; }, get film(){ return film; }, CINE, player, keys, startFilm, stopFilm, update, posters, aud, renderer, scene, camera, setView(y, p){ yaw = y; pitch = p; }, seek(t){ if (film) film.t = t; }, get tune(){ return mus; }, rowZ, rowH };
 window.__ready = true;
 loop();
 </script>

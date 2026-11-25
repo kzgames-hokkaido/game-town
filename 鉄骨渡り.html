@@ -1220,5 +1220,28 @@ R：F　L：R　ZR：マウスのクリック<br>
     var a = txt('timer'), b = txt('alive'); sc.innerHTML = '<b>' + esc(document.title) + '</b>' + esc(a) + (b ? '<br><br>' + esc(b) : ''); }, 300); })();
 </script>
 <!-- /phonehud -->
+<!-- ===== さよならの記録 (遊んだ時に脱落した人を記録する。映画館の映画「さよならの記録」が読む。2026-11-25) -->
+<script>
+/* どのゲームも window.__game に people / npcs / seats / player を出していて、脱落すると alive が false になる。
+   それを 0.4秒ごとに見て、生きていた人が脱落したら localStorage の sayonara_log_v1 に書く。
+   形: { 'ファイル名': { t: ゲームの名前, p: 遊んだ回数, n: 脱落したのべ人数, c: 名前のない脱落者の数 (数だけ分かるゲーム), d: [{ n: 名前か番号, x: 回数, w: 最後の時こく }] } } */
+(function(){
+  var KEY = 'sayonara_log_v1', file = decodeURIComponent((location.pathname.split('/').pop() || '').replace(/\+/g, ' ')), seenA = new WeakSet(), seenD = new WeakSet(), last = null, cnt0 = 0;
+  function load(){ var o; try { o = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e){ o = {}; } return o && typeof o === 'object' ? o : {}; }
+  function label(o, g, i){ var pl; try { pl = g.player; } catch (e){} if (o === pl || o.isPlayer === true || o.name === 'あなた') return 'あなた'; if (typeof o.name === 'string' && o.name) return o.name; var k = typeof o.no === 'number' ? o.no : typeof o.num === 'number' ? o.num : i + 1; return k + '番'; }
+  setInterval(function(){ var g = window.__game; if (!g) return; var st; try { st = g.state; } catch (e){ return; } var adds = [], plays = 0, cnt = -1;
+    if (st !== last){ if (st === 'play' && (last === 'title' || last === 'over' || last === null)){ plays = 1; cnt0 = 0; } last = st; }
+    var lists = []; ['people', 'npcs', 'seats', 'all'].forEach(function(k){ var a; try { a = g[k]; } catch (e){} if (Array.isArray(a)) lists.push(a); });
+    try { if (g.player && typeof g.player === 'object') lists.push([g.player]); } catch (e){}
+    lists.forEach(function(a){ for (var i = 0; i < a.length; i++){ var o = a[i]; if (!o || typeof o !== 'object') continue; var dead = o.alive === false || o.dead === true; if (!dead){ if (o.alive === true || o.dead === false) seenA.add(o); continue; } if (seenD.has(o)) continue; seenD.add(o); if (!seenA.has(o) || st === 'title') continue; adds.push(label(o, g, i)); } });
+    ['fell', 'outN'].forEach(function(k){ var v; try { v = g[k]; } catch (e){} if (typeof v === 'number' && v > cnt) cnt = v; });   /* 人数だけ分かるゲーム (人生のレール・多数派ゲームなど) */
+    var more = cnt > cnt0 ? cnt - cnt0 : 0; if (cnt >= 0) cnt0 = Math.max(cnt0, cnt);
+    if (!adds.length && !plays && !more) return;
+    var log = load(), e = log[file] || (log[file] = { t: document.title, p: 0, n: 0, c: 0, d: [] }); e.t = document.title; e.p += plays; e.c = (e.c || 0) + more; var now = Date.now();
+    adds.forEach(function(nm){ e.n++; for (var i = 0; i < e.d.length; i++) if (e.d[i].n === nm){ e.d[i].x++; e.d[i].w = now; return; } if (e.d.length < 400) e.d.push({ n: nm, x: 1, w: now }); });
+    try { localStorage.setItem(KEY, JSON.stringify(log)); } catch (er){} }, 400);
+})();
+</script>
+<!-- /sayonara -->
 </body>
 </html>

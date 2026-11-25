@@ -304,7 +304,7 @@ const VENUES = [
   { id: 'sushi',    L: 'AK', name: '回転寿司サバイバル',    file: '回転寿司サバイバル.html', bi: 2, bj: 6, kind: 'sushi', sub: '寿司になって箸から逃げろ' },
   { id: 'war',      L: 'AL', name: '上陸作戦',              file: '上陸作戦.html',           bi: 3, bj: 6, kind: 'war', sub: 'アメリカ軍 対 ドイツ軍' },
   { id: 'metro',    L: 'AM', name: '緑のタイル',            file: '緑のタイル.html',         bi: 4, bj: 6, kind: 'metro', sub: '地下鉄・怪物から生き残れ' },
-  { id: 'cinema',   L: 'AN', name: '映画館',                file: '映画館.html',             bi: 5, bj: 6, kind: 'cinema', verb: '入る', sub: 'ゲームの映画 5本' },
+  { id: 'cinema',   L: 'AN', name: '映画館',                file: '映画館.html',             bi: 5, bj: 6, kind: 'cinema', verb: '入る', sub: '映画 6本・無料' },
 ];
 for (const v of VENUES){ v.bi = v.bi * 2 + 1; v.bj = v.bj * 2 + 1; }   /* hub_tokyo: 会場は1つおきの区画へ (あいだはビル街) */
 const VMATS = (() => {
@@ -629,8 +629,8 @@ function buildVenue(V, x0, z0){
       addBox('vRed', cx - 8, 3.4, f + 6.5, cx + 8, 4.0, f + 10); addBox('vYellow', cx - 8.1, 3.3, f + 6.4, cx + 8.1, 3.4, f + 6.6);
       for (let i = -7; i <= 7; i += 2) vball('vLantern', cx + i, 3.22, f + 6.5, .16);
       addBox('vGlassB', cx - 3, .1, f + 9.9, cx + 3, 3.0, f + 10);
-      for (const s of [-1, 1]) signMesh(signCanvas([['上映中', 44, '#ffd24a'], ['ゲームの', 40, '#ffffff'], ['映画', 40, '#ffffff'], ['5本', 70, '#ffe14d']], 256, 330, '#3a0c10'), 2.6, 3.3, cx + s * 6.5, 1.9, f + 9.6);
-      signMesh(signCanvas([['映画館', 110, '#ffe14d'], ['ゲームの街の映画 5本', 40, '#ffffff']], 512, 200, '#7a1018'), 13, 5, cx, 6.8, f + 9.6);
+      for (const s of [-1, 1]) signMesh(signCanvas([['上映中', 44, '#ffd24a'], ['ゲームの', 40, '#ffffff'], ['映画', 40, '#ffffff'], ['6本', 70, '#ffe14d']], 256, 330, '#3a0c10'), 2.6, 3.3, cx + s * 6.5, 1.9, f + 9.6);
+      signMesh(signCanvas([['映画館', 110, '#ffe14d'], ['映画 6本　ぜんぶ無料', 40, '#ffffff']], 512, 200, '#7a1018'), 13, 5, cx, 6.8, f + 9.6);
     } break;
     case 'maze': { // 巨大な壁にかこまれた巨大迷路
       const X0 = x0 + 2, X1 = x0 + 38, Z0 = f + 2, Z1 = z0 + 39, H = 13;
