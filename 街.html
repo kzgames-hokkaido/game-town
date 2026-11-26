@@ -1306,9 +1306,9 @@ const PHONE = (() => {
   document.body.appendChild(box);
   const $p = id => document.getElementById(id), W = () => window.WALLET, snd = (f, d = .05, v = .07) => { try { beep(f, d, v); } catch (e){} };
   const wifi = () => !!window.__WIFI;
-  /* アプリ (type: game はミニゲーム。3こまで) */
+  /* アプリ (type: game はミニゲーム。4こまで) */
   const APPS = [
-    { id: 'shop', name: 'みらい通販', ic: '🛒', bg: '#ff8a1e', desc: 'モールのいくつかのお店の品物を、スマホから買える（Wi-Fiが必要）' },
+    { id: 'shop', name: 'みらい通販', ic: '🛒', bg: '#ff8a1e', desc: '約70この商品を、スマホから買える。分類でえらべて、検索もできる（ほぼ必ず見つかる）。買うと持ち物にとどく（Wi-Fiが必要）' },
     { id: 'album', name: '写真アルバム', ic: '📷', bg: '#3a3a44', desc: 'スマホに写っている景色を撮って、アルバムで見られる' },
     { id: 'mole', name: 'もぐらたたき', ic: '🔨', bg: '#8a5a2a', type: 'game', desc: 'ミニゲーム：出てきたもぐらをタップ。ばくだんはさわらない' },
     { id: 'fruit', name: 'フルーツキャッチ', ic: '🍎', bg: '#e84a4a', type: 'game', desc: 'ミニゲーム：かごを動かしてフルーツを集める。石はよける' },
@@ -1317,6 +1317,12 @@ const PHONE = (() => {
     { id: 'town', name: 'みらいタウン', ic: '🏡', bg: '#5ab87a', type: 'net', desc: '3Dの町でくらすゲーム。果物・つり・花・家具。番号を交換した友だちが住人（Wi-Fiが必要）' },
     { id: 'battle', name: 'ともだちバトル', ic: '🤜', bg: '#e8603a', type: 'net', desc: 'インターネットで、番号を交換した友だちと対戦（Wi-Fiが必要。圏外では遊べない）' },
     { id: 'jump', name: 'ぴょんぴょんジャンプ', ic: '🐰', bg: '#3ab84a', type: 'game', desc: 'ミニゲーム：タップでジャンプして、岩をとびこえる' },
+    /* phone_apps3 (2026-11-26) */
+    { id: 'street', name: 'みらい商店街', ic: '🏮', bg: '#c02a2a', desc: 'ラーメン高一・寿司屋良口・カツ勝の専用アプリ。3つのお店は全商品無料。お品書き・出前（持ち物にとどく）・スタンプカード・口コミ（読める・書ける）。出前はWi-Fiが必要' }   /* phone_apps4 */,
+    { id: 'tv', name: 'ミライテレビ', ic: '📺', bg: '#2a2a3a', desc: 'お店のテレビと同じ番組を、スマホで見られる。4チャンネル（Wi-Fiが必要）' },
+    { id: 'sushi', name: '寿司流し', ic: '🍣', bg: '#f0e8d8', type: 'game', desc: 'ミニゲーム：流れてくる寿司を、注文の順番どおりにタップ。まちがえると時間がへる' },
+    { id: 'draw', name: 'お絵かき', ic: '🎨', bg: '#ffffff', desc: 'マウス（指）で絵をかける。かいた絵は、写真アルバムに保存できる' },
+    { id: 'omikuji', name: '今日の占い', ic: '🔮', bg: '#6a3ac8', desc: '今日の運勢と、ラッキーなゲーム・ごはん。毎日かわる' },
   ];
   /* 最初から入っているアプリ (ホーム画面に並ぶ。けせない) */
   const BUILTIN = [
@@ -1388,11 +1394,11 @@ const PHONE = (() => {
     if (p === 'video') return video();
     if (p === 'blox') return blox();
     if (p === 'town'){ if (!wifi()) return page2('🏡 みらいタウン', '<p style="font-size:15px">📵 <b>圏外</b>なので、インターネットにつながらない。</p><p>みらいモールの<b>無料Wi-Fi</b>のところで遊んでね。</p>'); page2('🏡 みらいタウン', '<p>町に入っています…</p>'); G3D.town(() => { if (isOpen) show('home'); }); return; }
-    const fn = { battle, shop, album, mole, fruit, jump, calc, clock, memo, tel, msg, settings, cal, weather, map, music, news }[p]; fn && fn(); }
+    const fn = { battle, shop, album, mole, fruit, jump, calc, clock, memo, tel, msg, settings, cal, weather, map, music, news, street: streetApp, tv: tvApp, sushi, draw: drawApp, omikuji }[p]; fn && fn(); }
   /* ---- アプリストア */
   function store(msg){ const w = ph(), have = w.phone.apps, nGame = have.filter(id => (appOf(id) || {}).type === 'game').length;
     $p('phMain').innerHTML = '<div class="phPage"><h4>🅰️ アプリストア</h4><div class="phMsg" id="stMsg">' + (msg || (wifi() ? '無料Wi-Fiで、アプリを入れられる（ぜんぶ無料）' : 'Wi-Fiにつながっていないので、アプリを入れられない')) + '</div>'
-      + '<div style="font-size:11px;color:#777;margin-bottom:6px">ミニゲームは3こまで（同じゲームは1つだけ）　今 ' + nGame + '／3</div>'
+      + '<div style="font-size:11px;color:#777;margin-bottom:6px">ミニゲームは4こまで（同じゲームは1つだけ）　今 ' + nGame + '／4</div>'
       + APPS.map(a => { const got = have.includes(a.id); return '<div class="phRow"><div class="ic" style="background:' + a.bg + '">' + a.ic + '</div><div class="tx"><b>' + a.name + '</b><br><small>' + a.desc + '</small></div>'
         + (got ? '<button class="phBtn red" data-del="' + a.id + '">けす</button>' : '<button class="phBtn' + (wifi() ? '' : ' gray') + '" data-ins="' + a.id + '">入れる</button>') + '</div>'; }).join('')
       + '<div style="font-weight:bold;font-size:13px;margin:10px 0 4px">📱 最初から入っているアプリ</div>' + BUILTIN.concat(DOCK).filter(a => a.id !== 'store').map(a => { const got = !goneIds().includes(a.id); return '<div class="phRow"><div class="ic" style="background:' + a.bg + '">' + a.ic + '</div><div class="tx"><b>' + a.name + '</b><br><small>' + (got ? 'ホーム画面に入っている' : 'けしてある') + '</small></div>' + (got ? '<button class="phBtn red" data-del="' + a.id + '">けす</button>' : '<button class="phBtn' + (wifi() ? '' : ' gray') + '" data-ins="' + a.id + '">入れる</button>') + '</div>'; }).join('')
@@ -1400,17 +1406,43 @@ const PHONE = (() => {
   function install(id){ if (BIDS.includes(id)){ if (!wifi()){ store('Wi-Fiがないので入れられない（みらいモールの中に行こう）'); snd(200); return; } const w = ph(); w.phone.gone = (w.phone.gone || []).filter(x => x !== id); W().save(w); snd(880); store('「' + BUILTIN.concat(DOCK).find(a => a.id === id).name + '」を入れた'); return; }
     const w = ph(), a = appOf(id); if (!wifi()){ store('Wi-Fiがないので入れられない（みらいモールの中に行こう）'); snd(200); return; }
     if (w.phone.apps.includes(id)){ store('「' + a.name + '」はもう入っている'); return; }
-    if (a.type === 'game' && w.phone.apps.filter(x => (appOf(x) || {}).type === 'game').length >= 3){ store('ミニゲームは3こまで。どれかをけしてから入れよう'); snd(200); return; }
+    if (a.type === 'game' && w.phone.apps.filter(x => (appOf(x) || {}).type === 'game').length >= 4){ store('ミニゲームは4こまで。どれかをけしてから入れよう'); snd(200); return; }
     w.phone.apps.push(id); W().save(w); snd(880); setTimeout(() => snd(1175), 90); store('「' + a.name + '」を入れた！ ホーム画面に出たよ'); }
   function uninstall(id){ if (BIDS.includes(id)){ const w = ph(); w.phone.gone = (w.phone.gone || []).filter(x => x !== id).concat([id]); W().save(w); snd(300); store('「' + BUILTIN.concat(DOCK).find(a => a.id === id).name + '」をけした（ここからまた入れられる）'); return; }
     const w = ph(); w.phone.apps = w.phone.apps.filter(x => x !== id); W().save(w); snd(300); store('「' + appOf(id).name + '」をけした'); }
-  /* ---- みらい通販 (少しだけ。モールのいくつかのお店の品物) */
-  const CATALOG = [['メロンパン', 160, 'パン屋'], ['カレーパン', 180, 'パン屋'], ['ポテトチップス', 160, 'おかし'], ['チョコレート', 120, 'おかし'], ['白いTシャツ', 990, 'Tシャツ'], ['恐竜のTシャツ', 1290, 'Tシャツ'], ['まんが', 530, '本屋'], ['カードパック', 180, 'カード屋']];
+  /* ---- みらい通販 (phone_apps4): 分類 [名前, 絵文字, 持ち物に出るお店の名前, [[商品, 値段, (お店の名前)]...]]。食べ物は お店の名前を モールの食品の店と同じにしてある (持ち物で食べられる) */
+  const SHCAT = [
+    ['おかし', '🍬', 'おかし', [['ポテトチップス', 160], ['チョコレート', 120], ['グミ', 110], ['あめ玉のふくろ', 100], ['クッキーの箱', 280], ['せんべい', 150], ['ラムネ', 80], ['キャラメル', 130], ['マシュマロ', 140], ['ドーナツ6こ入り', 480]]],
+    ['パン', '🍞', 'パン屋', [['メロンパン', 160], ['カレーパン', 180], ['クロワッサン', 150], ['あんパン', 140], ['ピザパン', 220], ['サンドイッチ', 300]]],
+    ['飲み物', '🥤', '飲み物', [['りんごジュース', 130], ['オレンジジュース', 130], ['麦茶', 100], ['牛乳', 180], ['サイダー', 120], ['ココア', 150]]],
+    ['おもちゃ', '🧸', 'みらい通販', [['くまのぬいぐるみ', 1480], ['恐竜のフィギュア', 980], ['ミニカー', 380], ['けん玉', 650], ['ヨーヨー', 420], ['つみ木セット', 1280], ['水でっぽう', 550], ['シャボン玉セット', 250], ['ジグソーパズル', 880], ['ラジコンカー', 2980], ['カードパック', 180, 'カード屋']]],
+    ['文房具', '✏️', 'みらい通販', [['えんぴつ1ダース', 360], ['消しゴム', 80], ['ノート', 150], ['色えんぴつ24色', 980], ['ふでばこ', 780], ['定規', 120], ['シールのセット', 200], ['のり', 110], ['はさみ', 330], ['スケッチブック', 400]]],
+    ['服', '👕', 'みらい通販', [['白いTシャツ', 990, 'Tシャツ'], ['恐竜のTシャツ', 1290, 'Tシャツ'], ['星のくつした', 390], ['毛糸のてぶくろ', 780], ['レインコート', 1980], ['タオル', 450], ['ハンカチ', 300], ['リュックサック', 2480]]],
+    ['本', '📚', 'みらい通販', [['まんが', 530, '本屋'], ['ぬりえ', 320], ['なぞなぞカード', 450], ['世界地図のポスター', 600], ['星座の早見ばん', 700], ['自由帳', 130]]],
+    ['スポーツ', '⚽', 'みらい通販', [['サッカーボール', 1680], ['なわとび', 380], ['バドミントンセット', 1280], ['フリスビー', 450], ['水とう', 980], ['運動用のぼうし', 880], ['ドッジボール', 1180]]],
+    ['ペット', '🐶', 'みらい通販', [['犬のおやつ', 280], ['ねこじゃらし', 180], ['金魚のえさ', 220], ['ハムスターの回し車', 780], ['鳥のえさ', 250], ['ペットのベッド', 1980]]],
+    ['家の物', '🏠', 'みらい通販', [['目ざまし時計', 1280], ['かいちゅう電灯', 680], ['電池4本', 330], ['マグカップ', 480], ['おべんとう箱', 880], ['かさ', 780], ['歯ブラシ', 150], ['せっけん', 120]]] ];
+  const SH_ALL = SHCAT.flatMap(([cn, ic, sh, list]) => list.map(([n, pr, sh2]) => ({ n, pr, sh: sh2 || sh, ic, cn })));
+  /* 検索で その場で作る商品。食べ物の言葉なら 食べ物の商品 (お店は「おかし」= 持ち物で食べられる)、そのほかは グッズ */
+  const SH_FOOD = /パン|ケーキ|アイス|チョコ|あめ|グミ|クッキー|ジュース|お茶|牛乳|ラーメン|カレー|すし|寿司|肉|魚|やさい|野菜|くだもの|果物|りんご|みかん|バナナ|いちご|ぶどう|もも|おかし|お菓子|ガム|プリン|ゼリー|せんべい|ポテト|ピザ|おにぎり|べんとう|弁当|たまご|卵|チーズ|ドーナツ|まんじゅう|もち|だんご|カツ|うどん|そば|ハンバーグ/;
+  const SH_TF = [q => q, q => '大きな' + q, q => 'ミニ' + q + 'のふくろ', q => q + 'の詰め合わせ', q => 'こだわりの' + q, q => q + '味のあめ', q => q + '味のグミ', q => q + 'の形のクッキー', q => q + '味のポテトチップス', q => 'ひえひえ' + q];
+  const SH_TG = [[q => q + 'のぬいぐるみ', '🧸'], [q => q + 'のキーホルダー', '🔑'], [q => q + 'のTシャツ', '👕'], [q => q + 'のシール', '⭐'], [q => q + 'の図かん', '📚'], [q => q + 'のフィギュア', '🗿'], [q => q + 'のポスター', '🖼️'], [q => q + 'のクッション', '🛋️'], [q => q + 'のえんぴつ', '✏️'], [q => q + 'のマグカップ', '☕'], [q => q + 'のパズル', '🧩'], [q => q + 'のぼうし', '🧢'], [q => q + 'のタオル', '🧺'], [q => q + 'のノート', '📓'], [q => '大きな' + q + 'の置き物', '🏺'], [q => q + 'セット', '🎁'], [q => q + 'のカレンダー', '📅'], [q => q + 'のバッジ', '📛']];
+  let shQ = '', shCat = -1, shList = SH_ALL;
+  function shSearch(q0){ const q = String(q0 || '').replace(/[<>&"'\\`]/g, '').trim().slice(0, 16); shQ = q; shCat = -1; if (!q){ shList = SH_ALL; return shop(); }
+    shList = SH_ALL.filter(x => x.n.includes(q) || x.cn.includes(q));
+    if (q.replace(/[\s!-\/:-@\[-`{-~　！？。、・]/g, '')){ const h = hashS('通販:' + q), rd = rngOf(h), n = 6 + (h % 5), food = SH_FOOD.test(q), T0 = (food ? SH_TF.map(t => [t, '🍬']) : SH_TG).slice(); for (let i = T0.length - 1; i > 0; i--){ const j = (rd() * (i + 1)) | 0; [T0[i], T0[j]] = [T0[j], T0[i]]; }
+      for (const [t, ic] of T0.slice(0, n)){ const nm = t(q); if (shList.some(x => x.n === nm)) continue; shList.push({ n: nm, pr: (food ? 8 + ((rd() * 60) | 0) : 20 + ((rd() * 280) | 0)) * 10, sh: food ? 'おかし' : 'みらい通販', ic, cn: food ? '食べ物' : 'グッズ' }); } }
+    snd(700, .04); shop(shList.length ? '' : '見つからなかった… ちがう言葉でさがしてみてね'); }
   function shop(msg){ const M = $p('phMain');
     if (!wifi()){ M.innerHTML = '<div class="phPage"><h4>🛒 みらい通販</h4><p>Wi-Fiにつながっていないので、ひらけない。<br>みらいモールの中なら、無料Wi-Fiでつながる。</p></div>'; return; }
-    M.innerHTML = '<div class="phPage"><h4>🛒 みらい通販</h4><div>所持金 ' + W().get().yen.toLocaleString() + '円</div><div class="phMsg">' + (msg || '買うと、すぐ持ち物にとどく') + '</div>'
-      + CATALOG.map(([n, pr, sh], i) => '<div class="phRow"><div class="ic" style="background:#fff3e0">🛍️</div><div class="tx"><b>' + n + '</b><br><small>' + sh + '　' + pr.toLocaleString() + '円</small></div><button class="phBtn" data-buy="' + i + '">買う</button></div>').join('') + '</div>'; }
-  function buyCat(i){ const [n, pr, sh] = CATALOG[i]; if (!W().spend(pr, { name: n, shop: sh, t: Date.now() })){ shop('お金が足りない…'); snd(200); return; } snd(880); shop(n + 'を買った！ 持ち物にとどいた'); }
+    const list = shCat >= 0 ? SH_ALL.filter(x => x.cn === SHCAT[shCat][0]) : shList; shNow = list;
+    M.innerHTML = '<div class="phPage"><h4>🛒 みらい通販</h4><div>所持金 ' + W().get().yen.toLocaleString() + '円</div>'
+      + '<div style="display:flex;gap:4px;margin:6px 0"><input id="shQ" placeholder="商品をさがす" maxlength="16" value="' + esc(shQ) + '" style="flex:1;min-width:0;border:1px solid #ccc;border-radius:14px;padding:6px 10px;font:13px inherit"><button class="phBtn" data-st="shs" style="background:#ff8a1e">🔍</button></div>'
+      + '<div style="display:flex;gap:4px;overflow-x:auto;margin-bottom:6px;padding-bottom:2px"><button class="phBtn' + (shCat < 0 && !shQ ? '' : ' gray') + '" data-st="shc:-1" style="flex:none;font-size:11px;padding:3px 8px">すべて</button>' + SHCAT.map((c, i) => '<button class="phBtn' + (i === shCat ? '' : ' gray') + '" data-st="shc:' + i + '" style="flex:none;font-size:11px;padding:3px 8px">' + c[1] + c[0] + '</button>').join('') + '</div>'
+      + '<div class="phMsg">' + (msg || (shQ && shCat < 0 ? '「' + esc(shQ) + '」の検索結果：' + list.length + '件' : '買うと、すぐ持ち物にとどく（' + list.length + '品）')) + '</div>'
+      + list.map((x, i) => '<div class="phRow"><div class="ic" style="background:#fff3e0">' + x.ic + '</div><div class="tx"><b>' + esc(x.n) + '</b><br><small>' + x.cn + '　' + x.pr.toLocaleString() + '円</small></div><button class="phBtn" data-buy="' + i + '">買う</button></div>').join('') + '</div>'; }
+  let shNow = SH_ALL;
+  function buyCat(i){ const x = shNow[i]; if (!x) return; const M = $p('phMain'), y = M.scrollTop; if (!W().spend(x.pr, { name: x.n, shop: x.sh, t: Date.now() })){ shop('お金が足りない…'); snd(200); } else { snd(880); shop(x.n + 'を買った！ 持ち物にとどいた'); } M.scrollTop = y; }
   /* ---- 写真アルバム: カメラ (スマホに写っている部分だけを撮る) */
   let camYaw = 0;
   function album(msg){ const M = $p('phMain'), list = loadPhotos();
@@ -1540,7 +1572,7 @@ const PHONE = (() => {
   function map(){ const F = typeof MALL_SHOPS !== 'undefined' ? MALL_SHOPS : null;
     page2('🗺️ モールの地図', F ? ['1階 食品', '2階 服', '3階 フードコート', '4階 本・おもちゃ・ゲーム・映画館'].map((t, k) => '<div style="font-weight:bold;margin:8px 0 4px">' + t + '</div><div style="font-size:12px;line-height:1.7;background:#fff;border-radius:10px;padding:6px 8px">' + F[k].join('・') + '</div>').join('') + '<div style="font-size:12px;margin-top:8px">4階の西の通路に<b>カードテーブル</b>があるよ</div>'
       : '<p>みらいモールの地図。<br>くわしいお店の場所は、みらいモールの中で見られる。</p><p>1階 食品／2階 服／3階 フードコート／4階 本・おもちゃ・ゲーム・映画館</p>'); }
-  function news(){ page2('📰 ニュース', ['みらいモールに無料Wi-Fiができました', '4階の映画館で「ポコと流れ星」「星の姫と大要塞」上映中', 'フードコートのラーメンが人気', 'カードテーブルで、カードバトルがもりあがる', 'ゲームをクリアすると5000円チケット'].map((t, i) => '<div class="phRow"><div class="ic" style="background:#ddd">' + ['📶', '🎬', '🍜', '🃏', '🎫'][i] + '</div><div class="tx"><b>' + t + '</b></div></div>').join('')); }
+  function news(){ page2('📰 ニュース', ['みらいモールの外に「みらい商店街」ができました（入口を出て東がわ）', 'みらいモールに無料Wi-Fiができました', '4階の映画館で「ポコと流れ星」「星の姫と大要塞」上映中', 'フードコートのラーメンが人気', 'カードテーブルで、カードバトルがもりあがる', 'ゲームをクリアすると5000円チケット'].map((t, i) => '<div class="phRow"><div class="ic" style="background:#ddd">' + ['🏮', '📶', '🎬', '🍜', '🃏', '🎫'][i] + '</div><div class="tx"><b>' + t + '</b></div></div>').join('')); }
   const SONGS = [['きらきら星', [523, 523, 784, 784, 880, 880, 784, 0, 698, 698, 659, 659, 587, 587, 523, 0]], ['ポコのテーマ', [523, 659, 784, 659, 698, 659, 587, 0, 523, 587, 659, 523, 587, 494, 523, 0]], ['げんきマーチ', [392, 523, 523, 587, 659, 659, 587, 523, 587, 659, 784, 659, 587, 523, 587, 0]], ['自然災害 第4ゾーンの曲', 'disaster'], ['東京ビンゴタワーの曲', 'tower']];
   let songT = 0;
   /* ---- 曲のエンジン: 「自然災害 第4ゾーンの曲」(disaster) と 「東京ビンゴタワーの曲」(tower)。ゲームの中と同じ譜面 (タワーの譜面は 02_作業スクリプト/tower_score.js) */
@@ -2110,6 +2142,97 @@ const PHONE = (() => {
       setTimeout(() => { if (page !== 'blox' || !isOpen) return; bxLaunch(); }, 1200); }, 1500 + Math.random() * 1500); }
   const bxClick = k => { if (k === 's') return bxSearch(($p('bxQ') || {}).value); if (k === 'home') return blox(); if (k === 'back') return blox(true); if (k === 'play') return bxPlay();
     if (k.startsWith('d:')) return bxDetail(bxList[+k.slice(2)]); if (k.startsWith('r:')) return bxDetail(BX10[+k.slice(2)]); };
+  /* ===================== phone_apps3 (2026-11-26): みらい商店街・ミライテレビ・寿司流し・お絵かき・今日の占い ===================== */
+  /* ---- みらい商店街 (3つのお店の専用アプリ)。お品書きは みらいモール.html の MENU と同じにしておく (tvshow_part.js)。
+     2026-11-26 弟君「カツ勝とか ドリル戦車店組 全商品無料って言ったじゃん」→ 3つのお店は どこでも ぜんぶ無料 (お金はへらない。無料券は なくした) */
+  const ST_MENU = { 'ラーメン高一': ['ラーメン', 'みそラーメン', 'チャーシューメン', 'ぎょうざ'], '寿司屋良口': ['寿司（5かん）', '特上寿司（10かん）', 'いくら丼', '茶わんむし'], 'カツ勝': ['カツ丼', 'ヒレカツ定食', 'エビフライ定食', 'とん汁'] };
+  const ST_NAMES = Object.keys(ST_MENU), ST_IC = ['🍜', '🍣', '🍚'], ST_SUB = ['ラーメン屋', '寿司屋', 'カツ丼屋'];
+  const stData = () => { const w = ph(); w.phone.stamp = w.phone.stamp || {}; return w; };
+  /* お店で食べた時 (みらいモール.html の buy) と 出前の時に スタンプを1つ押す (食べた回数の記録。ごほうびは ない。ぜんぶ無料なので) */
+  window.__streetStamp = name => { if (!W()) return ''; const w = stData(); w.phone.stamp[name] = (w.phone.stamp[name] || 0) + 1; W().save(w); return 'スタンプ ' + w.phone.stamp[name] + 'こ目'; };
+  let stShop = 0;
+  function streetApp(msg){ const w = stData(), nm = ST_NAMES[stShop], d = new Date(), seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate(), rs = seed % 3, ri = (seed * 7 + 3) % 4;
+    $p('phMain').innerHTML = '<div class="phPage"><h4>🏮 みらい商店街</h4><div><b style="color:#c02a2a">3つのお店は 全商品 無料</b></div><div class="phMsg">' + (typeof msg === 'string' ? msg : wifi() ? '出前をたのむと、すぐ持ち物にとどく（無料）' : 'Wi-Fiがないので、今は見るだけ（出前は みらいモールか商店街で）') + '</div>'
+      + '<div class="phRow" style="display:block"><b>スタンプカード</b>（お店で食べるか 出前をたのむと 1こ）' + ST_NAMES.map((n, i) => '<div style="margin-top:3px">' + ST_IC[i] + ' ' + n + '　<b style="color:#c02a2a">' + (w.phone.stamp[n] || 0) + 'こ</b>　<span style="letter-spacing:1px;color:#c02a2a">' + '●'.repeat(Math.min(10, w.phone.stamp[n] || 0)) + '</span></div>').join('') + '</div>'
+      + '<div class="phRow" style="display:block;background:#fff6e0"><b>今日のおすすめ</b>　' + ST_IC[rs] + ' ' + ST_NAMES[rs] + 'の「' + ST_MENU[ST_NAMES[rs]][ri] + '」</div>'
+      + '<div style="display:flex;gap:4px;margin:8px 0">' + ST_NAMES.map((n, i) => '<button class="phBtn' + (i === stShop ? '' : ' gray') + '" data-st="shop:' + i + '" style="flex:1;padding:6px 2px">' + ST_IC[i] + '<br>' + n + '</button>').join('') + '</div>'
+      + '<div style="font-weight:bold;margin:4px 0">' + nm + '（' + ST_SUB[stShop] + '）のお品書き</div>'
+      + ST_MENU[nm].map((n, i) => '<div class="phRow"><div class="ic" style="background:#fff3e0">' + ST_IC[stShop] + '</div><div class="tx"><b>' + n + '</b><br><small style="color:#c02a2a">無料</small></div><button class="phBtn' + (wifi() ? '' : ' gray') + '" data-st="ord:' + i + '">出前</button></div>').join('')
+      + stRvHtml(nm)
+      + '<div style="font-size:11px;color:#777;margin-top:6px">お店の場所：みらいモールの入口を出て右（東がわ）。看板の矢印のほう。お店の中のカウンターの前で E を押しても注文できる。お店には テレビもある。</div></div>'; }
+  function stOrder(i){ const nm = ST_NAMES[stShop], it = ST_MENU[nm][i]; if (!it) return; if (!wifi()){ snd(200); return streetApp('Wi-Fiがないので たのめない（みらいモールか商店街に行こう）'); }
+    const w = stData(); w.items.push({ name: it, shop: nm, t: Date.now() }); W().save(w); snd(880); setTimeout(() => snd(1175), 90); const m = window.__streetStamp(nm); streetApp('「' + it + '」の出前がとどいた！（無料。持ち物の中）　' + m); }
+  /* ---- ミライテレビ: お店のテレビと同じ番組 (TVSHOW)。チャンネルは 4つ */
+  let tvCh = 0;
+  function tvApp(){ if (typeof TVSHOW === 'undefined' || !wifi()) return page2('📺 ミライテレビ', '<p style="font-size:15px">📵 <b>圏外</b>なので、テレビの電波がとどかない。</p><p>みらいモールの<b>無料Wi-Fi</b>のところで見てね。</p>');
+    $p('phMain').innerHTML = '<div class="phPage" style="padding:0 0 30px"><canvas id="tvC" width="384" height="216" style="width:100%;display:block;background:#000"></canvas><div style="padding:8px 12px"><div class="phMsg" id="tvNow"></div><div id="tvList"></div><div style="font-size:11px;color:#777">お店のテレビと同じ番組。番組は80秒ごとに入れかわる（音は出ない）</div></div></div>';
+    const paint = () => { const c = $p('tvC'); if (!c) return; const T0 = TVSHOW.now(), pi = TVSHOW.progAt(tvCh, T0); c.getContext('2d').drawImage(TVSHOW.shot(pi, T0), 0, 0); $p('tvNow').textContent = (tvCh + 1) + 'チャンネル：' + TVSHOW.PROG[pi].name + '（あと' + Math.ceil(TVSHOW.LEN - (T0 % TVSHOW.LEN)) + '秒）'; };
+    const list = () => { const el = $p('tvList'); if (!el) return; el.innerHTML = [0, 1, 2, 3].map(c => { const pi = TVSHOW.progAt(c); return '<div class="phRow"><div class="ic" style="background:#222">' + TVSHOW.PROG[pi].ic + '</div><div class="tx"><b>' + (c + 1) + 'チャンネル</b><br><small>今：' + TVSHOW.PROG[pi].name + '</small></div><button class="phBtn' + (c === tvCh ? ' gray' : '') + '" data-st="tv:' + c + '">' + (c === tvCh ? '見ている' : '見る') + '</button></div>'; }).join(''); };
+    tvSet = c => { tvCh = c; snd(500, .03); list(); paint(); }; list(); paint(); let ep0 = Math.floor(TVSHOW.now() / TVSHOW.LEN);
+    timer = setInterval(() => { paint(); const ep = Math.floor(TVSHOW.now() / TVSHOW.LEN); if (ep !== ep0){ ep0 = ep; list(); } }, 150); }
+  let tvSet = () => {}, dwDo = () => {};
+  /* ---- 寿司流し (ミニゲーム): 上の「注文」の順番どおりに、流れてくる皿をタップ。3つそろうと +30点と +4秒。まちがえると -4秒。次にいるネタが流れていなければ 必ず流す (運だけにしない) */
+  function sushi(){ gameShell('sushi', '', (g, best) => { const N = [['まぐろ', '#c8283a'], ['サーモン', '#f08a4a'], ['たまご', '#f4d040'], ['えび', '#f0a090'], ['いか', '#f4f0e8'], ['かっぱ', '#3aa84a']];
+      const S = { t: 45, score: 0, best, over: false, plates: [], order: [], oi: 0, done: 0, next: [0, .5, 1], flash: 0, bad: 0, bt: 0 }, LY = [215, 315, 415];
+      const newOrder = () => { S.order = [0, 1, 2].map(() => (Math.random() * 6) | 0); S.oi = 0; }; newOrder();
+      const sp = l => (58 + S.done * 6) * (l === 1 ? -1 : 1) * (1 + l * .14);
+      const rr2 = (x, y, w, h, q, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(x + q, y); g.arcTo(x + w, y, x + w, y + h, q); g.arcTo(x + w, y + h, x, y + h, q); g.arcTo(x, y + h, x, y, q); g.arcTo(x, y, x + w, y, q); g.fill(); };
+      const edge = () => { g.strokeStyle = 'rgba(70,45,20,.55)'; g.lineWidth = 1.2; g.stroke(); }, piece = (x, y, k, z) => { rr2(x - 15 * z, y - 2 * z, 30 * z, 13 * z, 6 * z, '#fffdf6'); edge(); rr2(x - 18 * z, y - 10 * z, 36 * z, 11 * z, 5 * z, N[k][1]); edge(); if (k === 2){ g.fillStyle = '#1a2a1a'; g.fillRect(x - 3 * z, y - 11 * z, 6 * z, 22 * z); } if (k === 5){ g.fillStyle = '#1a2a1a'; g.fillRect(x - 18 * z, y - 4 * z, 36 * z, 5 * z); } };
+      return { down(x, y){ if (S.over){ sushi(); return; } let hit = null, hd = 32; for (const p of S.plates){ const d = Math.hypot(x - p.x, y - LY[p.l]); if (d < hd){ hd = d; hit = p; } } if (!hit) return;
+          if (hit.k === S.order[S.oi]){ hit.gone = true; S.score += 10; S.oi++; snd(900, .04); if (S.oi >= 3){ S.score += 30; S.done++; S.t = Math.min(60, S.t + 4); S.flash = .7; snd(1175, .08); newOrder(); } } else { S.t -= 4; S.bad = .35; snd(150, .15); } },
+        step(dt){ if (S.over) return; S.t -= dt; S.flash -= dt; S.bad -= dt; S.bt += dt;
+          for (let l = 0; l < 3; l++){ S.next[l] -= dt; if (S.next[l] <= 0){ const v = sp(l), need = S.order[S.oi], has = S.plates.some(p => p.k === need && !p.gone); S.plates.push({ l, x: v > 0 ? -30 : 302, k: !has ? need : (Math.random() * 6) | 0 }); S.next[l] = 64 / Math.abs(v) + Math.random() * .3; } }
+          for (const p of S.plates) p.x += sp(p.l) * dt; S.plates = S.plates.filter(p => !p.gone && p.x > -40 && p.x < 312);
+          if (S.t <= 0){ S.t = 0; S.over = true; snd(150, .2); S.newBest = saveBest('sushi', S.score); S.best = Math.max(S.best, S.score); } },
+        draw(){ g.fillStyle = '#f8f0e0'; g.fillRect(0, 0, 272, 530); g.textBaseline = 'alphabetic';
+          rr2(8, 44, 256, 104, 12, '#fff'); T(g, '注文（左から順番にタップ）', 136, 64, 13, '#8a3a1a');
+          S.order.forEach((k, i) => { const x = 54 + i * 82, on = i === S.oi; if (on) rr2(x - 36, 72, 72, 68, 10, '#ffe9a8'); g.globalAlpha = i < S.oi ? .3 : 1; piece(x, 104, k, 1.25); T(g, N[k][0], x, 134, 13, '#333'); g.globalAlpha = 1; if (i < S.oi) T(g, '✔', x, 112, 26, '#2a9a4a'); });
+          for (let l = 0; l < 3; l++){ g.fillStyle = '#5a5a62'; g.fillRect(0, LY[l] - 36, 272, 72); g.fillStyle = '#6c6c76'; const o = ((S.bt * sp(l)) % 40 + 40) % 40; for (let x = -40 + o; x < 272; x += 40) g.fillRect(x, LY[l] - 36, 4, 72); }
+          for (const p of S.plates){ const y = LY[p.l]; g.fillStyle = '#fff'; g.beginPath(); g.arc(p.x, y, 27, 0, 7); g.fill(); g.strokeStyle = '#3a6ad0'; g.lineWidth = 3; g.beginPath(); g.arc(p.x, y, 23, 0, 7); g.stroke(); piece(p.x, y - 5, p.k, 1); T(g, N[p.k][0], p.x, y + 19, 10, '#222'); }
+          g.fillStyle = '#ddd'; g.fillRect(16, 470, 240, 12); g.fillStyle = S.t < 10 ? '#e84a4a' : '#3ab84a'; g.fillRect(16, 470, 240 * Math.min(1, S.t / 60), 12); T(g, 'のこり ' + Math.ceil(S.t) + '秒', 76, 506, 15, '#5a3a10'); T(g, S.score + '点', 206, 506, 20, '#c02a2a');
+          if (S.flash > 0) T(g, 'そろった！ +30点 +4秒', 136, 178, 17, '#2a9a4a'); if (S.bad > 0){ g.fillStyle = 'rgba(232,74,74,.25)'; g.fillRect(0, 0, 272, 530); T(g, 'ちがう！ -4秒', 136, 178, 17, '#c02a2a'); }
+          if (S.over) overScreen(g, S); } }; }); }
+  /* ---- お絵かき: かいた絵は 写真アルバムに入る (アルバムは 12まいまで) */
+  function drawApp(){ const M = $p('phMain'), COL = ['#222222', '#e84a4a', '#f09a20', '#f4d040', '#3ab84a', '#2e7cf6', '#a05ad8', '#ffffff'];
+    M.innerHTML = '<div class="phPage" style="padding:8px 8px 30px"><h4>🎨 お絵かき</h4><canvas id="dwC" width="256" height="300" style="width:100%;background:#fff;border-radius:8px;touch-action:none;cursor:crosshair;display:block;box-shadow:0 1px 3px rgba(0,0,0,.3)"></canvas><div style="display:flex;gap:5px;margin:8px 0;flex-wrap:wrap">'
+      + COL.map((c, i) => '<button data-st="dw:c' + i + '" style="width:27px;height:27px;border-radius:14px;border:2px solid #888;background:' + c + ';cursor:pointer"></button>').join('') + '</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="phBtn gray" data-st="dw:w">太さ：<span id="dwW">ふつう</span></button><button class="phBtn red" data-st="dw:x">ぜんぶ消す</button><button class="phBtn" data-st="dw:s">アルバムに保存</button></div><div class="phMsg" id="dwMsg">色をえらんで かこう（白は 消しゴムの代わり）</div></div>';
+    const c = $p('dwC'), g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 256, 300); g.lineCap = g.lineJoin = 'round'; let col = COL[0], wd = 4, last = null;
+    const pos = e => { const q = c.getBoundingClientRect(); return [(e.clientX - q.left) * 256 / q.width, (e.clientY - q.top) * 300 / q.height]; };
+    c.onpointerdown = e => { last = pos(e); try { c.setPointerCapture(e.pointerId); } catch (er){} g.fillStyle = col; g.beginPath(); g.arc(last[0], last[1], wd / 2, 0, 7); g.fill(); };
+    c.onpointermove = e => { if (!last) return; const p = pos(e); g.strokeStyle = col; g.lineWidth = wd; g.beginPath(); g.moveTo(last[0], last[1]); g.lineTo(p[0], p[1]); g.stroke(); last = p; };
+    c.onpointerup = c.onpointercancel = () => { last = null; };
+    dwDo = k => { const ms = $p('dwMsg'); if (!ms) return; if (k[0] === 'c'){ col = COL[+k.slice(1)]; ms.textContent = col === '#ffffff' ? '白（消しゴムの代わり）' : '色をかえた'; snd(600, .03); }
+      else if (k === 'w'){ wd = wd === 4 ? 10 : wd === 10 ? 2 : 4; $p('dwW').textContent = wd === 4 ? 'ふつう' : wd === 10 ? '太い' : '細い'; }
+      else if (k === 'x'){ g.fillStyle = '#fff'; g.fillRect(0, 0, 256, 300); ms.textContent = 'ぜんぶ消した'; }
+      else if (k === 's'){ const list = loadPhotos(); if (list.length >= 12){ ms.textContent = 'アルバムがいっぱい（12まい）。いらない写真をけしてね'; snd(200); return; } let img; try { img = c.toDataURL('image/jpeg', .8); } catch (er){ return; } list.unshift({ t: Date.now(), img }); if (savePhotos(list)){ ms.textContent = '写真アルバムに保存した（「写真アルバム」アプリで見られる）'; snd(1200, .03, .1); } else ms.textContent = '保存できなかった（いっぱい）'; } }; }
+  /* ---- 今日の占い: 日付で決まる (同じ日は 何回見ても同じ) */
+  function omikuji(){ const d = new Date(), seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate(), q = k => { let x = (seed * 9301 + k * 49297 + 233) % 233280; x = (x * 9301 + 49297) % 233280; return x / 233280; }, pk = (a, k) => a[(q(k) * a.length) | 0];
+    const LV = [['大吉', '#e84a4a'], ['中吉', '#f09a20'], ['小吉', '#3ab84a'], ['吉', '#2e7cf6'], ['末吉', '#a05ad8']], lv = pk(LV, 1);
+    const GM = ['マンション鬼ごっこ', '缶蹴り', '雪合戦', '買い物競争', '二択問題', '巨大草園かくれんぼ', '足跡かくれんぼ', '東京ビンゴタワー', '空中ケンパ', '鉄骨渡り', 'ドリル戦車', '緑のタイル', '裏カジノ', '地下ブラックジャック'];
+    const FD = ST_NAMES.flatMap(n => ST_MENU[n].map(m => n + 'の' + m)), CL = ['赤', '青', '黄色', '緑', '白', '黒', 'オレンジ', 'むらさき'];
+    const TIP = ['走る前に、まわりをよく見よう', 'まよったら、深呼吸を1回', '今日は 早めに動くといい', '友だちに電話をかけると いいことがあるかも', 'かくれる時は、足元に気をつけて', 'お金は 使う前に数えよう', '落ち着いて えらべば、うまくいく', '新しいアプリを 1つためしてみよう'];
+    page2('🔮 今日の占い', '<div style="text-align:center;font-size:13px;color:#777">' + (d.getMonth() + 1) + '月' + d.getDate() + '日の運勢</div><div style="text-align:center;font-size:54px;font-weight:bold;color:' + lv[1] + ';margin:6px 0">' + lv[0] + '</div>'
+      + [['🎮', 'ラッキーなゲーム', pk(GM, 2)], ['🍚', 'ラッキーなごはん', pk(FD, 3)], ['🎨', 'ラッキーな色', pk(CL, 4)], ['💡', '今日のひとこと', pk(TIP, 5)]].map(([ic, a, b]) => '<div class="phRow"><div class="ic" style="background:#f0e8ff">' + ic + '</div><div class="tx"><small>' + a + '</small><br><b>' + b + '</b></div></div>').join('')
+      + '<div style="font-size:11px;color:#777">占いは 1日に1つ。あしたになると かわる。</div>'); }
+  /* phone_apps4: 口コミ。元からの口コミは お店の名前から決まる 5〜15件 (rvBase)。[文, 星] の星がない文は 4か5 */
+  const RV_TXT = { 'ラーメン高一': ['スープがあつあつで、最後まで飲んだ', 'めんがもちもち。また来る', 'チャーシューメンのチャーシューが6まいもある', 'ぎょうざの皮がパリパリ', 'みそラーメンのコーンがあまい', '無料なのに、この味はすごい', 'テレビを見ながら食べられるのがいい', '店員さんがこっちを向いてくれる', '煮卵がおいしい。もう1こほしい', 'のりは、スープにひたる前に食べるのがコツ', 'ねぎ多めでうれしい', 'ドリル戦車が来ても、ここのラーメンは食べたい', '3杯食べた。4杯目も行ける', 'お品書きが見やすい', 'ひと口ずつ食べるのが楽しい', ['こんでいて、少し待った', 3], ['量が多くて、食べきるのが大変だった', 3], ['バターが溶ける前に食べたかった', 4]],
+    '寿司屋良口': ['まぐろが赤くてきれい', '特上は10かんもあって大満足', 'いくら丼のいくらがぷちぷち', '茶わんむしがぷるぷる', '玉子があまくて好き', 'えびのしっぽまで食べそうになった', '無料で特上はすごすぎる', 'しょうゆは、つけすぎないのがコツ', 'ガリで口がさっぱりする', 'うにを初めて食べた。おいしかった', '板の上にならぶ寿司がきれい', 'テレビのクイズを見ながら食べた', 'いかが白くてつやつや', '1かんずつ食べるのが楽しい', '店員さんのめがねがかっこいい', ['わさびが少しからかった', 3], ['どれから食べるか、まよいすぎた', 4], ['茶わんむしが熱くて、すぐ食べられなかった', 3]],
+    'カツ勝': ['カツがさくさく', 'たまごがとろとろ', 'ヒレカツがやわらかい', 'エビフライが長い', 'とん汁の具が多い', 'キャベツがおかわりしたいくらいおいしい', 'ごはんがつやつや', 'カツ丼は、勝負の前に食べたい', '無料とは思えない量', 'みそ汁つきでうれしい', 'タルタルソースがたっぷり', 'とん汁の大根がやわらかい', 'レモンをしぼると、さっぱりする', 'テレビで、好きなゲームが第5位だった', 'カツが5切れで食べやすい', ['おなかいっぱいで、走れなくなった', 3], ['定食はおぼんが大きくて、びっくりした', 4], ['とん汁が熱くて、口をやけどしそうだった', 3]] };
+  const rvBase = nm => { const h = hashS(nm + '/口コミ'), rd = rngOf(h), n = 5 + (h % 11), pool = (RV_TXT[nm] || []).slice(); for (let i = pool.length - 1; i > 0; i--){ const j = (rd() * (i + 1)) | 0; [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    return pool.slice(0, n).map((t, i) => ({ s: Array.isArray(t) ? t[1] : rd() < .65 ? 5 : 4, t: Array.isArray(t) ? t[0] : t, who: 'No.' + (1000 + hashS(nm + ':' + i) % 9000) + 'の人', d: 1 + ((rd() * 27) | 0) })); };
+  let rvStar = 5, rvDraft = '';
+  const rvRow = (who, x, extra) => '<div class="phRow" style="display:block"><div style="display:flex;justify-content:space-between;align-items:center"><span><b' + (who === 'あなた' ? ' style="color:#c02a2a"' : ' style="color:#777"') + '>' + who + '</b>　<span style="color:#f09a20">' + '★'.repeat(x.s) + '<span style="color:#ccc">' + '★'.repeat(5 - x.s) + '</span></span></span>' + (extra || '') + '</div><div style="margin-top:3px">' + esc(x.t) + '</div></div>';
+  function stRvHtml(nm){ const w = stData(), mine = ((w.phone.rv || {})[nm]) || [], base = rvBase(nm), all = mine.concat(base), avg = all.reduce((a, x) => a + x.s, 0) / all.length;
+    return '<div style="font-weight:bold;margin:12px 0 4px">💬 ' + nm + 'の口コミ（' + all.length + '件）　<span style="color:#f09a20">★' + avg.toFixed(1) + '</span></div>'
+      + '<div class="phRow" style="display:block;background:#fff6e0"><div>星をえらぶ：' + [1, 2, 3, 4, 5].map(n => '<span data-st="rs:' + n + '" style="cursor:pointer;font-size:22px;color:' + (n <= rvStar ? '#f09a20' : '#ccc') + '">★</span>').join('') + '</div><div style="display:flex;gap:4px;margin-top:4px"><input id="stRv" placeholder="口コミを書く（50字まで）" maxlength="50" value="' + esc(rvDraft) + '" style="flex:1;min-width:0;border:1px solid #ccc;border-radius:12px;padding:5px 9px;font:12px inherit"><button class="phBtn" data-st="rv" style="background:#c02a2a;font-size:11px;padding:3px 8px">書く</button></div><div class="phMsg" id="stRvMsg" style="font-size:11px;min-height:14px"></div><div style="font-size:10px;color:#999">書いた口コミは、このパソコンの中だけに残る（ほかの人には見えない）</div></div>'
+      + mine.map((x, i) => rvRow('あなた', x, '<button class="phBtn red" data-st="rd:' + i + '" style="font-size:10px;padding:2px 8px">けす</button>')).join('') + base.map(x => rvRow(x.who, x, '<small style="color:#999">' + x.d + '日前</small>')).join(''); }
+  const stKeep = (fn, m) => { const M = $p('phMain'), y = M.scrollTop; fn(); M.scrollTop = y; const e = $p('stRvMsg'); if (e && m) e.textContent = m; };
+  function stPost(){ const inp = $p('stRv'), txt = (inp ? inp.value : '').replace(/\s+/g, ' ').trim().slice(0, 50); if (!txt){ const e = $p('stRvMsg'); if (e) e.textContent = '文を書いてから「書く」を押してね'; snd(200); return; }
+    const w = stData(), nm = ST_NAMES[stShop]; w.phone.rv = w.phone.rv || {}; const L = w.phone.rv[nm] = w.phone.rv[nm] || []; L.unshift({ s: rvStar, t: txt, at: Date.now() }); if (L.length > 5) L.length = 5; W().save(w); rvDraft = ''; snd(880); setTimeout(() => snd(1175), 90); stKeep(() => streetApp(), '口コミを書いた！（自分の口コミは お店ごとに5件まで）'); }
+  box.addEventListener('click', e => { const t = e.target.closest('[data-st]'); if (!t) return; const [a, b] = t.dataset.st.split(':');
+    if (a === 'rs'){ rvDraft = ($p('stRv') || {}).value || ''; rvStar = +b; snd(600, .03); stKeep(() => streetApp()); return; } if (a === 'rv') return stPost(); if (a === 'rd'){ const w = stData(), L = (w.phone.rv || {})[ST_NAMES[stShop]]; if (L){ L.splice(+b, 1); W().save(w); } snd(300); stKeep(() => streetApp(), '口コミをけした'); return; }
+    if (a === 'shs') return shSearch(($p('shQ') || {}).value); if (a === 'shc'){ shCat = +b; shQ = ''; shList = SH_ALL; snd(500, .03); return shop(); }
+    if (a === 'shop'){ stShop = +b; snd(500, .03); streetApp(); } else if (a === 'ord') stOrder(+b); else if (a === 'tv') tvSet(+b); else if (a === 'dw') dwDo(b); });
   /* ---- クリックの受けつけ */
   box.addEventListener('click', e => { const t = e.target.closest('[data-bx],[data-vd],[data-bt],[data-tk],[data-open],[data-ins],[data-del],[data-buy],[data-cam],[data-shot],[data-turn],[data-back],[data-ph],[data-phdel],[data-ck],[data-sw],[data-tel],[data-wall],[data-song],[data-say]'); if (!t) return; const d = t.dataset;
     if (d.tk){ PHONE._tk(d.tk, t); return; }
@@ -2123,7 +2246,7 @@ const PHONE = (() => {
   $p('phHome').onclick = () => { talkMode = 'list'; talkRoom = null; show('home'); };
   box.addEventListener('click', e => { if (e.target === box) close(); });
   window.__phKeys = {};
-  addEventListener('keydown', e => { if (!isOpen || window.__g3dOpen) return; if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)){ /* 文字を打っているあいだは、ゲームのキーにしない */ if (e.code === 'Escape') close(); else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'talkIn'){ e.preventDefault(); PHONE._send(); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'bxQ'){ e.preventDefault(); bxSearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidQ'){ e.preventDefault(); vsearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidCm'){ e.preventDefault(); postCm(); } e.stopImmediatePropagation(); return; }
+  addEventListener('keydown', e => { if (!isOpen || window.__g3dOpen) return; if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)){ /* 文字を打っているあいだは、ゲームのキーにしない */ if (e.code === 'Escape') close(); else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'talkIn'){ e.preventDefault(); PHONE._send(); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'bxQ'){ e.preventDefault(); bxSearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidQ'){ e.preventDefault(); vsearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidCm'){ e.preventDefault(); postCm(); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'shQ'){ e.preventDefault(); shSearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'stRv'){ e.preventDefault(); stPost(); } e.stopImmediatePropagation(); return; }
     if (e.code === 'Escape' || e.code === 'KeyQ'){ close(); } else { window.__phKeys[e.code] = true; game && game.key && game.key(e.code); }
     e.preventDefault(); e.stopImmediatePropagation(); }, true);
   addEventListener('keyup', e => { if (!isOpen || window.__g3dOpen) return; window.__phKeys[e.code] = false; e.stopImmediatePropagation(); }, true);
@@ -3060,7 +3183,7 @@ const INV = (() => {
     [/ロボット/, '🤖'], [/ぬいぐるみ/, '🧸'], [/キーホルダー/, '🔑'], [/えんぴつ|ボールペン/, '✏️'], [/消しゴム/, '🧽'], [/イヤホン/, '🎧'], [/スマホ/, '📱'], [/ゲーム機|ゲーム/, '🎮'], [/テレビ/, '📺'], [/剣/, '🗡️'], [/金魚/, '🐟'],
     [/ハムスター/, '🐹'], [/犬/, '🦴'], [/DVD|CD/, '💿'], [/カード|スリーブ/, '🃏']];
   const icon = n => (ICON.find(([r]) => r.test(n)) || [0, '📦'])[1];
-  const FOOD_SHOPS = ['やさい・くだもの', 'おにく・おさかな', 'パン屋', 'おかし', 'おそうざい', '飲み物', '冷凍食品', 'お弁当', 'たまご・牛乳', 'お茶'];
+  const FOOD_SHOPS = ['やさい・くだもの', 'おにく・おさかな', 'パン屋', 'おかし', 'おそうざい', '飲み物', '冷凍食品', 'お弁当', 'たまご・牛乳', 'お茶', 'ラーメン高一', '寿司屋良口', 'カツ勝' /* 2026-11-26 みらい商店街の出前 */];
   const canEat = it => FOOD_SHOPS.includes(it.shop) && !/お米|しょうゆ|マヨネーズ|ルー|茶の葉|パック/.test(it.name);
   const W = () => window.WALLET;
   /* 所持金の一の位を0にする (前の値段で買ったときの端数をなくす) */ if (W()){ const w0 = W().get(); if (w0.yen % 10){ w0.yen -= w0.yen % 10; W().save(w0); } }

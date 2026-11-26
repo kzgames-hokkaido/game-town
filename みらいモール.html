@@ -104,6 +104,8 @@ a.sub{text-align:center;text-decoration:none}
     <li>4階の<b>カードテーブル</b>で、カードパックから出たカードを使って、お客さんとカードバトルができる（ルールはテーブルの画面に書いてある）</li>
     <li><b>無料Wi-Fi</b>がある。スマホ（4階の電気屋で買える）を <kbd>Q</kbd> か持ち物から開くと、アプリストアからアプリを入れられる</li>
     <li>モールの入口から外に出て <kbd>E</kbd> で、街にもどる</li>
+    <li>入口を出て<b>右（東がわ）</b>、看板の矢印のほうに<b>みらい商店街</b>がある。<b>ラーメン高一・寿司屋良口・カツ勝</b>に入って、カウンターの前で <kbd>E</kbd> を押すと注文できる（<b>全商品 無料</b>）。料理はカウンターに出てくるので、<kbd>E</kbd> で<b>ひと口ずつ</b>食べる（12品とも見た目がちがう）</li>
+    <li>どのお店にも<b>テレビ</b>が1台ついている（番組は4つ。時間で入れかわる）</li>
   </ul>
   <p id="titleWallet" style="font-size:20px;font-weight:bold;color:#ffe14d"></p>
   <div class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>：移動　マウス：見回す（動かないときはドラッグ）　<kbd>シフト</kbd>：走る　<kbd>E</kbd>：お店に入る　<kbd>I</kbd>：持ち物　<kbd>エスケープ</kbd>／<kbd>P</kbd>：一時停止</div>
@@ -1373,9 +1375,9 @@ const PHONE = (() => {
   document.body.appendChild(box);
   const $p = id => document.getElementById(id), W = () => window.WALLET, snd = (f, d = .05, v = .07) => { try { beep(f, d, v); } catch (e){} };
   const wifi = () => !!window.__WIFI;
-  /* アプリ (type: game はミニゲーム。3こまで) */
+  /* アプリ (type: game はミニゲーム。4こまで) */
   const APPS = [
-    { id: 'shop', name: 'みらい通販', ic: '🛒', bg: '#ff8a1e', desc: 'モールのいくつかのお店の品物を、スマホから買える（Wi-Fiが必要）' },
+    { id: 'shop', name: 'みらい通販', ic: '🛒', bg: '#ff8a1e', desc: '約70この商品を、スマホから買える。分類でえらべて、検索もできる（ほぼ必ず見つかる）。買うと持ち物にとどく（Wi-Fiが必要）' },
     { id: 'album', name: '写真アルバム', ic: '📷', bg: '#3a3a44', desc: 'スマホに写っている景色を撮って、アルバムで見られる' },
     { id: 'mole', name: 'もぐらたたき', ic: '🔨', bg: '#8a5a2a', type: 'game', desc: 'ミニゲーム：出てきたもぐらをタップ。ばくだんはさわらない' },
     { id: 'fruit', name: 'フルーツキャッチ', ic: '🍎', bg: '#e84a4a', type: 'game', desc: 'ミニゲーム：かごを動かしてフルーツを集める。石はよける' },
@@ -1384,6 +1386,12 @@ const PHONE = (() => {
     { id: 'town', name: 'みらいタウン', ic: '🏡', bg: '#5ab87a', type: 'net', desc: '3Dの町でくらすゲーム。果物・つり・花・家具。番号を交換した友だちが住人（Wi-Fiが必要）' },
     { id: 'battle', name: 'ともだちバトル', ic: '🤜', bg: '#e8603a', type: 'net', desc: 'インターネットで、番号を交換した友だちと対戦（Wi-Fiが必要。圏外では遊べない）' },
     { id: 'jump', name: 'ぴょんぴょんジャンプ', ic: '🐰', bg: '#3ab84a', type: 'game', desc: 'ミニゲーム：タップでジャンプして、岩をとびこえる' },
+    /* phone_apps3 (2026-11-26) */
+    { id: 'street', name: 'みらい商店街', ic: '🏮', bg: '#c02a2a', desc: 'ラーメン高一・寿司屋良口・カツ勝の専用アプリ。3つのお店は全商品無料。お品書き・出前（持ち物にとどく）・スタンプカード・口コミ（読める・書ける）。出前はWi-Fiが必要' }   /* phone_apps4 */,
+    { id: 'tv', name: 'ミライテレビ', ic: '📺', bg: '#2a2a3a', desc: 'お店のテレビと同じ番組を、スマホで見られる。4チャンネル（Wi-Fiが必要）' },
+    { id: 'sushi', name: '寿司流し', ic: '🍣', bg: '#f0e8d8', type: 'game', desc: 'ミニゲーム：流れてくる寿司を、注文の順番どおりにタップ。まちがえると時間がへる' },
+    { id: 'draw', name: 'お絵かき', ic: '🎨', bg: '#ffffff', desc: 'マウス（指）で絵をかける。かいた絵は、写真アルバムに保存できる' },
+    { id: 'omikuji', name: '今日の占い', ic: '🔮', bg: '#6a3ac8', desc: '今日の運勢と、ラッキーなゲーム・ごはん。毎日かわる' },
   ];
   /* 最初から入っているアプリ (ホーム画面に並ぶ。けせない) */
   const BUILTIN = [
@@ -1455,11 +1463,11 @@ const PHONE = (() => {
     if (p === 'video') return video();
     if (p === 'blox') return blox();
     if (p === 'town'){ if (!wifi()) return page2('🏡 みらいタウン', '<p style="font-size:15px">📵 <b>圏外</b>なので、インターネットにつながらない。</p><p>みらいモールの<b>無料Wi-Fi</b>のところで遊んでね。</p>'); page2('🏡 みらいタウン', '<p>町に入っています…</p>'); G3D.town(() => { if (isOpen) show('home'); }); return; }
-    const fn = { battle, shop, album, mole, fruit, jump, calc, clock, memo, tel, msg, settings, cal, weather, map, music, news }[p]; fn && fn(); }
+    const fn = { battle, shop, album, mole, fruit, jump, calc, clock, memo, tel, msg, settings, cal, weather, map, music, news, street: streetApp, tv: tvApp, sushi, draw: drawApp, omikuji }[p]; fn && fn(); }
   /* ---- アプリストア */
   function store(msg){ const w = ph(), have = w.phone.apps, nGame = have.filter(id => (appOf(id) || {}).type === 'game').length;
     $p('phMain').innerHTML = '<div class="phPage"><h4>🅰️ アプリストア</h4><div class="phMsg" id="stMsg">' + (msg || (wifi() ? '無料Wi-Fiで、アプリを入れられる（ぜんぶ無料）' : 'Wi-Fiにつながっていないので、アプリを入れられない')) + '</div>'
-      + '<div style="font-size:11px;color:#777;margin-bottom:6px">ミニゲームは3こまで（同じゲームは1つだけ）　今 ' + nGame + '／3</div>'
+      + '<div style="font-size:11px;color:#777;margin-bottom:6px">ミニゲームは4こまで（同じゲームは1つだけ）　今 ' + nGame + '／4</div>'
       + APPS.map(a => { const got = have.includes(a.id); return '<div class="phRow"><div class="ic" style="background:' + a.bg + '">' + a.ic + '</div><div class="tx"><b>' + a.name + '</b><br><small>' + a.desc + '</small></div>'
         + (got ? '<button class="phBtn red" data-del="' + a.id + '">けす</button>' : '<button class="phBtn' + (wifi() ? '' : ' gray') + '" data-ins="' + a.id + '">入れる</button>') + '</div>'; }).join('')
       + '<div style="font-weight:bold;font-size:13px;margin:10px 0 4px">📱 最初から入っているアプリ</div>' + BUILTIN.concat(DOCK).filter(a => a.id !== 'store').map(a => { const got = !goneIds().includes(a.id); return '<div class="phRow"><div class="ic" style="background:' + a.bg + '">' + a.ic + '</div><div class="tx"><b>' + a.name + '</b><br><small>' + (got ? 'ホーム画面に入っている' : 'けしてある') + '</small></div>' + (got ? '<button class="phBtn red" data-del="' + a.id + '">けす</button>' : '<button class="phBtn' + (wifi() ? '' : ' gray') + '" data-ins="' + a.id + '">入れる</button>') + '</div>'; }).join('')
@@ -1467,17 +1475,43 @@ const PHONE = (() => {
   function install(id){ if (BIDS.includes(id)){ if (!wifi()){ store('Wi-Fiがないので入れられない（みらいモールの中に行こう）'); snd(200); return; } const w = ph(); w.phone.gone = (w.phone.gone || []).filter(x => x !== id); W().save(w); snd(880); store('「' + BUILTIN.concat(DOCK).find(a => a.id === id).name + '」を入れた'); return; }
     const w = ph(), a = appOf(id); if (!wifi()){ store('Wi-Fiがないので入れられない（みらいモールの中に行こう）'); snd(200); return; }
     if (w.phone.apps.includes(id)){ store('「' + a.name + '」はもう入っている'); return; }
-    if (a.type === 'game' && w.phone.apps.filter(x => (appOf(x) || {}).type === 'game').length >= 3){ store('ミニゲームは3こまで。どれかをけしてから入れよう'); snd(200); return; }
+    if (a.type === 'game' && w.phone.apps.filter(x => (appOf(x) || {}).type === 'game').length >= 4){ store('ミニゲームは4こまで。どれかをけしてから入れよう'); snd(200); return; }
     w.phone.apps.push(id); W().save(w); snd(880); setTimeout(() => snd(1175), 90); store('「' + a.name + '」を入れた！ ホーム画面に出たよ'); }
   function uninstall(id){ if (BIDS.includes(id)){ const w = ph(); w.phone.gone = (w.phone.gone || []).filter(x => x !== id).concat([id]); W().save(w); snd(300); store('「' + BUILTIN.concat(DOCK).find(a => a.id === id).name + '」をけした（ここからまた入れられる）'); return; }
     const w = ph(); w.phone.apps = w.phone.apps.filter(x => x !== id); W().save(w); snd(300); store('「' + appOf(id).name + '」をけした'); }
-  /* ---- みらい通販 (少しだけ。モールのいくつかのお店の品物) */
-  const CATALOG = [['メロンパン', 160, 'パン屋'], ['カレーパン', 180, 'パン屋'], ['ポテトチップス', 160, 'おかし'], ['チョコレート', 120, 'おかし'], ['白いTシャツ', 990, 'Tシャツ'], ['恐竜のTシャツ', 1290, 'Tシャツ'], ['まんが', 530, '本屋'], ['カードパック', 180, 'カード屋']];
+  /* ---- みらい通販 (phone_apps4): 分類 [名前, 絵文字, 持ち物に出るお店の名前, [[商品, 値段, (お店の名前)]...]]。食べ物は お店の名前を モールの食品の店と同じにしてある (持ち物で食べられる) */
+  const SHCAT = [
+    ['おかし', '🍬', 'おかし', [['ポテトチップス', 160], ['チョコレート', 120], ['グミ', 110], ['あめ玉のふくろ', 100], ['クッキーの箱', 280], ['せんべい', 150], ['ラムネ', 80], ['キャラメル', 130], ['マシュマロ', 140], ['ドーナツ6こ入り', 480]]],
+    ['パン', '🍞', 'パン屋', [['メロンパン', 160], ['カレーパン', 180], ['クロワッサン', 150], ['あんパン', 140], ['ピザパン', 220], ['サンドイッチ', 300]]],
+    ['飲み物', '🥤', '飲み物', [['りんごジュース', 130], ['オレンジジュース', 130], ['麦茶', 100], ['牛乳', 180], ['サイダー', 120], ['ココア', 150]]],
+    ['おもちゃ', '🧸', 'みらい通販', [['くまのぬいぐるみ', 1480], ['恐竜のフィギュア', 980], ['ミニカー', 380], ['けん玉', 650], ['ヨーヨー', 420], ['つみ木セット', 1280], ['水でっぽう', 550], ['シャボン玉セット', 250], ['ジグソーパズル', 880], ['ラジコンカー', 2980], ['カードパック', 180, 'カード屋']]],
+    ['文房具', '✏️', 'みらい通販', [['えんぴつ1ダース', 360], ['消しゴム', 80], ['ノート', 150], ['色えんぴつ24色', 980], ['ふでばこ', 780], ['定規', 120], ['シールのセット', 200], ['のり', 110], ['はさみ', 330], ['スケッチブック', 400]]],
+    ['服', '👕', 'みらい通販', [['白いTシャツ', 990, 'Tシャツ'], ['恐竜のTシャツ', 1290, 'Tシャツ'], ['星のくつした', 390], ['毛糸のてぶくろ', 780], ['レインコート', 1980], ['タオル', 450], ['ハンカチ', 300], ['リュックサック', 2480]]],
+    ['本', '📚', 'みらい通販', [['まんが', 530, '本屋'], ['ぬりえ', 320], ['なぞなぞカード', 450], ['世界地図のポスター', 600], ['星座の早見ばん', 700], ['自由帳', 130]]],
+    ['スポーツ', '⚽', 'みらい通販', [['サッカーボール', 1680], ['なわとび', 380], ['バドミントンセット', 1280], ['フリスビー', 450], ['水とう', 980], ['運動用のぼうし', 880], ['ドッジボール', 1180]]],
+    ['ペット', '🐶', 'みらい通販', [['犬のおやつ', 280], ['ねこじゃらし', 180], ['金魚のえさ', 220], ['ハムスターの回し車', 780], ['鳥のえさ', 250], ['ペットのベッド', 1980]]],
+    ['家の物', '🏠', 'みらい通販', [['目ざまし時計', 1280], ['かいちゅう電灯', 680], ['電池4本', 330], ['マグカップ', 480], ['おべんとう箱', 880], ['かさ', 780], ['歯ブラシ', 150], ['せっけん', 120]]] ];
+  const SH_ALL = SHCAT.flatMap(([cn, ic, sh, list]) => list.map(([n, pr, sh2]) => ({ n, pr, sh: sh2 || sh, ic, cn })));
+  /* 検索で その場で作る商品。食べ物の言葉なら 食べ物の商品 (お店は「おかし」= 持ち物で食べられる)、そのほかは グッズ */
+  const SH_FOOD = /パン|ケーキ|アイス|チョコ|あめ|グミ|クッキー|ジュース|お茶|牛乳|ラーメン|カレー|すし|寿司|肉|魚|やさい|野菜|くだもの|果物|りんご|みかん|バナナ|いちご|ぶどう|もも|おかし|お菓子|ガム|プリン|ゼリー|せんべい|ポテト|ピザ|おにぎり|べんとう|弁当|たまご|卵|チーズ|ドーナツ|まんじゅう|もち|だんご|カツ|うどん|そば|ハンバーグ/;
+  const SH_TF = [q => q, q => '大きな' + q, q => 'ミニ' + q + 'のふくろ', q => q + 'の詰め合わせ', q => 'こだわりの' + q, q => q + '味のあめ', q => q + '味のグミ', q => q + 'の形のクッキー', q => q + '味のポテトチップス', q => 'ひえひえ' + q];
+  const SH_TG = [[q => q + 'のぬいぐるみ', '🧸'], [q => q + 'のキーホルダー', '🔑'], [q => q + 'のTシャツ', '👕'], [q => q + 'のシール', '⭐'], [q => q + 'の図かん', '📚'], [q => q + 'のフィギュア', '🗿'], [q => q + 'のポスター', '🖼️'], [q => q + 'のクッション', '🛋️'], [q => q + 'のえんぴつ', '✏️'], [q => q + 'のマグカップ', '☕'], [q => q + 'のパズル', '🧩'], [q => q + 'のぼうし', '🧢'], [q => q + 'のタオル', '🧺'], [q => q + 'のノート', '📓'], [q => '大きな' + q + 'の置き物', '🏺'], [q => q + 'セット', '🎁'], [q => q + 'のカレンダー', '📅'], [q => q + 'のバッジ', '📛']];
+  let shQ = '', shCat = -1, shList = SH_ALL;
+  function shSearch(q0){ const q = String(q0 || '').replace(/[<>&"'\\`]/g, '').trim().slice(0, 16); shQ = q; shCat = -1; if (!q){ shList = SH_ALL; return shop(); }
+    shList = SH_ALL.filter(x => x.n.includes(q) || x.cn.includes(q));
+    if (q.replace(/[\s!-\/:-@\[-`{-~　！？。、・]/g, '')){ const h = hashS('通販:' + q), rd = rngOf(h), n = 6 + (h % 5), food = SH_FOOD.test(q), T0 = (food ? SH_TF.map(t => [t, '🍬']) : SH_TG).slice(); for (let i = T0.length - 1; i > 0; i--){ const j = (rd() * (i + 1)) | 0; [T0[i], T0[j]] = [T0[j], T0[i]]; }
+      for (const [t, ic] of T0.slice(0, n)){ const nm = t(q); if (shList.some(x => x.n === nm)) continue; shList.push({ n: nm, pr: (food ? 8 + ((rd() * 60) | 0) : 20 + ((rd() * 280) | 0)) * 10, sh: food ? 'おかし' : 'みらい通販', ic, cn: food ? '食べ物' : 'グッズ' }); } }
+    snd(700, .04); shop(shList.length ? '' : '見つからなかった… ちがう言葉でさがしてみてね'); }
   function shop(msg){ const M = $p('phMain');
     if (!wifi()){ M.innerHTML = '<div class="phPage"><h4>🛒 みらい通販</h4><p>Wi-Fiにつながっていないので、ひらけない。<br>みらいモールの中なら、無料Wi-Fiでつながる。</p></div>'; return; }
-    M.innerHTML = '<div class="phPage"><h4>🛒 みらい通販</h4><div>所持金 ' + W().get().yen.toLocaleString() + '円</div><div class="phMsg">' + (msg || '買うと、すぐ持ち物にとどく') + '</div>'
-      + CATALOG.map(([n, pr, sh], i) => '<div class="phRow"><div class="ic" style="background:#fff3e0">🛍️</div><div class="tx"><b>' + n + '</b><br><small>' + sh + '　' + pr.toLocaleString() + '円</small></div><button class="phBtn" data-buy="' + i + '">買う</button></div>').join('') + '</div>'; }
-  function buyCat(i){ const [n, pr, sh] = CATALOG[i]; if (!W().spend(pr, { name: n, shop: sh, t: Date.now() })){ shop('お金が足りない…'); snd(200); return; } snd(880); shop(n + 'を買った！ 持ち物にとどいた'); }
+    const list = shCat >= 0 ? SH_ALL.filter(x => x.cn === SHCAT[shCat][0]) : shList; shNow = list;
+    M.innerHTML = '<div class="phPage"><h4>🛒 みらい通販</h4><div>所持金 ' + W().get().yen.toLocaleString() + '円</div>'
+      + '<div style="display:flex;gap:4px;margin:6px 0"><input id="shQ" placeholder="商品をさがす" maxlength="16" value="' + esc(shQ) + '" style="flex:1;min-width:0;border:1px solid #ccc;border-radius:14px;padding:6px 10px;font:13px inherit"><button class="phBtn" data-st="shs" style="background:#ff8a1e">🔍</button></div>'
+      + '<div style="display:flex;gap:4px;overflow-x:auto;margin-bottom:6px;padding-bottom:2px"><button class="phBtn' + (shCat < 0 && !shQ ? '' : ' gray') + '" data-st="shc:-1" style="flex:none;font-size:11px;padding:3px 8px">すべて</button>' + SHCAT.map((c, i) => '<button class="phBtn' + (i === shCat ? '' : ' gray') + '" data-st="shc:' + i + '" style="flex:none;font-size:11px;padding:3px 8px">' + c[1] + c[0] + '</button>').join('') + '</div>'
+      + '<div class="phMsg">' + (msg || (shQ && shCat < 0 ? '「' + esc(shQ) + '」の検索結果：' + list.length + '件' : '買うと、すぐ持ち物にとどく（' + list.length + '品）')) + '</div>'
+      + list.map((x, i) => '<div class="phRow"><div class="ic" style="background:#fff3e0">' + x.ic + '</div><div class="tx"><b>' + esc(x.n) + '</b><br><small>' + x.cn + '　' + x.pr.toLocaleString() + '円</small></div><button class="phBtn" data-buy="' + i + '">買う</button></div>').join('') + '</div>'; }
+  let shNow = SH_ALL;
+  function buyCat(i){ const x = shNow[i]; if (!x) return; const M = $p('phMain'), y = M.scrollTop; if (!W().spend(x.pr, { name: x.n, shop: x.sh, t: Date.now() })){ shop('お金が足りない…'); snd(200); } else { snd(880); shop(x.n + 'を買った！ 持ち物にとどいた'); } M.scrollTop = y; }
   /* ---- 写真アルバム: カメラ (スマホに写っている部分だけを撮る) */
   let camYaw = 0;
   function album(msg){ const M = $p('phMain'), list = loadPhotos();
@@ -1607,7 +1641,7 @@ const PHONE = (() => {
   function map(){ const F = typeof MALL_SHOPS !== 'undefined' ? MALL_SHOPS : null;
     page2('🗺️ モールの地図', F ? ['1階 食品', '2階 服', '3階 フードコート', '4階 本・おもちゃ・ゲーム・映画館'].map((t, k) => '<div style="font-weight:bold;margin:8px 0 4px">' + t + '</div><div style="font-size:12px;line-height:1.7;background:#fff;border-radius:10px;padding:6px 8px">' + F[k].join('・') + '</div>').join('') + '<div style="font-size:12px;margin-top:8px">4階の西の通路に<b>カードテーブル</b>があるよ</div>'
       : '<p>みらいモールの地図。<br>くわしいお店の場所は、みらいモールの中で見られる。</p><p>1階 食品／2階 服／3階 フードコート／4階 本・おもちゃ・ゲーム・映画館</p>'); }
-  function news(){ page2('📰 ニュース', ['みらいモールに無料Wi-Fiができました', '4階の映画館で「ポコと流れ星」「星の姫と大要塞」上映中', 'フードコートのラーメンが人気', 'カードテーブルで、カードバトルがもりあがる', 'ゲームをクリアすると5000円チケット'].map((t, i) => '<div class="phRow"><div class="ic" style="background:#ddd">' + ['📶', '🎬', '🍜', '🃏', '🎫'][i] + '</div><div class="tx"><b>' + t + '</b></div></div>').join('')); }
+  function news(){ page2('📰 ニュース', ['みらいモールの外に「みらい商店街」ができました（入口を出て東がわ）', 'みらいモールに無料Wi-Fiができました', '4階の映画館で「ポコと流れ星」「星の姫と大要塞」上映中', 'フードコートのラーメンが人気', 'カードテーブルで、カードバトルがもりあがる', 'ゲームをクリアすると5000円チケット'].map((t, i) => '<div class="phRow"><div class="ic" style="background:#ddd">' + ['🏮', '📶', '🎬', '🍜', '🃏', '🎫'][i] + '</div><div class="tx"><b>' + t + '</b></div></div>').join('')); }
   const SONGS = [['きらきら星', [523, 523, 784, 784, 880, 880, 784, 0, 698, 698, 659, 659, 587, 587, 523, 0]], ['ポコのテーマ', [523, 659, 784, 659, 698, 659, 587, 0, 523, 587, 659, 523, 587, 494, 523, 0]], ['げんきマーチ', [392, 523, 523, 587, 659, 659, 587, 523, 587, 659, 784, 659, 587, 523, 587, 0]], ['自然災害 第4ゾーンの曲', 'disaster'], ['東京ビンゴタワーの曲', 'tower']];
   let songT = 0;
   /* ---- 曲のエンジン: 「自然災害 第4ゾーンの曲」(disaster) と 「東京ビンゴタワーの曲」(tower)。ゲームの中と同じ譜面 (タワーの譜面は 02_作業スクリプト/tower_score.js) */
@@ -2177,6 +2211,97 @@ const PHONE = (() => {
       setTimeout(() => { if (page !== 'blox' || !isOpen) return; bxLaunch(); }, 1200); }, 1500 + Math.random() * 1500); }
   const bxClick = k => { if (k === 's') return bxSearch(($p('bxQ') || {}).value); if (k === 'home') return blox(); if (k === 'back') return blox(true); if (k === 'play') return bxPlay();
     if (k.startsWith('d:')) return bxDetail(bxList[+k.slice(2)]); if (k.startsWith('r:')) return bxDetail(BX10[+k.slice(2)]); };
+  /* ===================== phone_apps3 (2026-11-26): みらい商店街・ミライテレビ・寿司流し・お絵かき・今日の占い ===================== */
+  /* ---- みらい商店街 (3つのお店の専用アプリ)。お品書きは みらいモール.html の MENU と同じにしておく (tvshow_part.js)。
+     2026-11-26 弟君「カツ勝とか ドリル戦車店組 全商品無料って言ったじゃん」→ 3つのお店は どこでも ぜんぶ無料 (お金はへらない。無料券は なくした) */
+  const ST_MENU = { 'ラーメン高一': ['ラーメン', 'みそラーメン', 'チャーシューメン', 'ぎょうざ'], '寿司屋良口': ['寿司（5かん）', '特上寿司（10かん）', 'いくら丼', '茶わんむし'], 'カツ勝': ['カツ丼', 'ヒレカツ定食', 'エビフライ定食', 'とん汁'] };
+  const ST_NAMES = Object.keys(ST_MENU), ST_IC = ['🍜', '🍣', '🍚'], ST_SUB = ['ラーメン屋', '寿司屋', 'カツ丼屋'];
+  const stData = () => { const w = ph(); w.phone.stamp = w.phone.stamp || {}; return w; };
+  /* お店で食べた時 (みらいモール.html の buy) と 出前の時に スタンプを1つ押す (食べた回数の記録。ごほうびは ない。ぜんぶ無料なので) */
+  window.__streetStamp = name => { if (!W()) return ''; const w = stData(); w.phone.stamp[name] = (w.phone.stamp[name] || 0) + 1; W().save(w); return 'スタンプ ' + w.phone.stamp[name] + 'こ目'; };
+  let stShop = 0;
+  function streetApp(msg){ const w = stData(), nm = ST_NAMES[stShop], d = new Date(), seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate(), rs = seed % 3, ri = (seed * 7 + 3) % 4;
+    $p('phMain').innerHTML = '<div class="phPage"><h4>🏮 みらい商店街</h4><div><b style="color:#c02a2a">3つのお店は 全商品 無料</b></div><div class="phMsg">' + (typeof msg === 'string' ? msg : wifi() ? '出前をたのむと、すぐ持ち物にとどく（無料）' : 'Wi-Fiがないので、今は見るだけ（出前は みらいモールか商店街で）') + '</div>'
+      + '<div class="phRow" style="display:block"><b>スタンプカード</b>（お店で食べるか 出前をたのむと 1こ）' + ST_NAMES.map((n, i) => '<div style="margin-top:3px">' + ST_IC[i] + ' ' + n + '　<b style="color:#c02a2a">' + (w.phone.stamp[n] || 0) + 'こ</b>　<span style="letter-spacing:1px;color:#c02a2a">' + '●'.repeat(Math.min(10, w.phone.stamp[n] || 0)) + '</span></div>').join('') + '</div>'
+      + '<div class="phRow" style="display:block;background:#fff6e0"><b>今日のおすすめ</b>　' + ST_IC[rs] + ' ' + ST_NAMES[rs] + 'の「' + ST_MENU[ST_NAMES[rs]][ri] + '」</div>'
+      + '<div style="display:flex;gap:4px;margin:8px 0">' + ST_NAMES.map((n, i) => '<button class="phBtn' + (i === stShop ? '' : ' gray') + '" data-st="shop:' + i + '" style="flex:1;padding:6px 2px">' + ST_IC[i] + '<br>' + n + '</button>').join('') + '</div>'
+      + '<div style="font-weight:bold;margin:4px 0">' + nm + '（' + ST_SUB[stShop] + '）のお品書き</div>'
+      + ST_MENU[nm].map((n, i) => '<div class="phRow"><div class="ic" style="background:#fff3e0">' + ST_IC[stShop] + '</div><div class="tx"><b>' + n + '</b><br><small style="color:#c02a2a">無料</small></div><button class="phBtn' + (wifi() ? '' : ' gray') + '" data-st="ord:' + i + '">出前</button></div>').join('')
+      + stRvHtml(nm)
+      + '<div style="font-size:11px;color:#777;margin-top:6px">お店の場所：みらいモールの入口を出て右（東がわ）。看板の矢印のほう。お店の中のカウンターの前で E を押しても注文できる。お店には テレビもある。</div></div>'; }
+  function stOrder(i){ const nm = ST_NAMES[stShop], it = ST_MENU[nm][i]; if (!it) return; if (!wifi()){ snd(200); return streetApp('Wi-Fiがないので たのめない（みらいモールか商店街に行こう）'); }
+    const w = stData(); w.items.push({ name: it, shop: nm, t: Date.now() }); W().save(w); snd(880); setTimeout(() => snd(1175), 90); const m = window.__streetStamp(nm); streetApp('「' + it + '」の出前がとどいた！（無料。持ち物の中）　' + m); }
+  /* ---- ミライテレビ: お店のテレビと同じ番組 (TVSHOW)。チャンネルは 4つ */
+  let tvCh = 0;
+  function tvApp(){ if (typeof TVSHOW === 'undefined' || !wifi()) return page2('📺 ミライテレビ', '<p style="font-size:15px">📵 <b>圏外</b>なので、テレビの電波がとどかない。</p><p>みらいモールの<b>無料Wi-Fi</b>のところで見てね。</p>');
+    $p('phMain').innerHTML = '<div class="phPage" style="padding:0 0 30px"><canvas id="tvC" width="384" height="216" style="width:100%;display:block;background:#000"></canvas><div style="padding:8px 12px"><div class="phMsg" id="tvNow"></div><div id="tvList"></div><div style="font-size:11px;color:#777">お店のテレビと同じ番組。番組は80秒ごとに入れかわる（音は出ない）</div></div></div>';
+    const paint = () => { const c = $p('tvC'); if (!c) return; const T0 = TVSHOW.now(), pi = TVSHOW.progAt(tvCh, T0); c.getContext('2d').drawImage(TVSHOW.shot(pi, T0), 0, 0); $p('tvNow').textContent = (tvCh + 1) + 'チャンネル：' + TVSHOW.PROG[pi].name + '（あと' + Math.ceil(TVSHOW.LEN - (T0 % TVSHOW.LEN)) + '秒）'; };
+    const list = () => { const el = $p('tvList'); if (!el) return; el.innerHTML = [0, 1, 2, 3].map(c => { const pi = TVSHOW.progAt(c); return '<div class="phRow"><div class="ic" style="background:#222">' + TVSHOW.PROG[pi].ic + '</div><div class="tx"><b>' + (c + 1) + 'チャンネル</b><br><small>今：' + TVSHOW.PROG[pi].name + '</small></div><button class="phBtn' + (c === tvCh ? ' gray' : '') + '" data-st="tv:' + c + '">' + (c === tvCh ? '見ている' : '見る') + '</button></div>'; }).join(''); };
+    tvSet = c => { tvCh = c; snd(500, .03); list(); paint(); }; list(); paint(); let ep0 = Math.floor(TVSHOW.now() / TVSHOW.LEN);
+    timer = setInterval(() => { paint(); const ep = Math.floor(TVSHOW.now() / TVSHOW.LEN); if (ep !== ep0){ ep0 = ep; list(); } }, 150); }
+  let tvSet = () => {}, dwDo = () => {};
+  /* ---- 寿司流し (ミニゲーム): 上の「注文」の順番どおりに、流れてくる皿をタップ。3つそろうと +30点と +4秒。まちがえると -4秒。次にいるネタが流れていなければ 必ず流す (運だけにしない) */
+  function sushi(){ gameShell('sushi', '', (g, best) => { const N = [['まぐろ', '#c8283a'], ['サーモン', '#f08a4a'], ['たまご', '#f4d040'], ['えび', '#f0a090'], ['いか', '#f4f0e8'], ['かっぱ', '#3aa84a']];
+      const S = { t: 45, score: 0, best, over: false, plates: [], order: [], oi: 0, done: 0, next: [0, .5, 1], flash: 0, bad: 0, bt: 0 }, LY = [215, 315, 415];
+      const newOrder = () => { S.order = [0, 1, 2].map(() => (Math.random() * 6) | 0); S.oi = 0; }; newOrder();
+      const sp = l => (58 + S.done * 6) * (l === 1 ? -1 : 1) * (1 + l * .14);
+      const rr2 = (x, y, w, h, q, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(x + q, y); g.arcTo(x + w, y, x + w, y + h, q); g.arcTo(x + w, y + h, x, y + h, q); g.arcTo(x, y + h, x, y, q); g.arcTo(x, y, x + w, y, q); g.fill(); };
+      const edge = () => { g.strokeStyle = 'rgba(70,45,20,.55)'; g.lineWidth = 1.2; g.stroke(); }, piece = (x, y, k, z) => { rr2(x - 15 * z, y - 2 * z, 30 * z, 13 * z, 6 * z, '#fffdf6'); edge(); rr2(x - 18 * z, y - 10 * z, 36 * z, 11 * z, 5 * z, N[k][1]); edge(); if (k === 2){ g.fillStyle = '#1a2a1a'; g.fillRect(x - 3 * z, y - 11 * z, 6 * z, 22 * z); } if (k === 5){ g.fillStyle = '#1a2a1a'; g.fillRect(x - 18 * z, y - 4 * z, 36 * z, 5 * z); } };
+      return { down(x, y){ if (S.over){ sushi(); return; } let hit = null, hd = 32; for (const p of S.plates){ const d = Math.hypot(x - p.x, y - LY[p.l]); if (d < hd){ hd = d; hit = p; } } if (!hit) return;
+          if (hit.k === S.order[S.oi]){ hit.gone = true; S.score += 10; S.oi++; snd(900, .04); if (S.oi >= 3){ S.score += 30; S.done++; S.t = Math.min(60, S.t + 4); S.flash = .7; snd(1175, .08); newOrder(); } } else { S.t -= 4; S.bad = .35; snd(150, .15); } },
+        step(dt){ if (S.over) return; S.t -= dt; S.flash -= dt; S.bad -= dt; S.bt += dt;
+          for (let l = 0; l < 3; l++){ S.next[l] -= dt; if (S.next[l] <= 0){ const v = sp(l), need = S.order[S.oi], has = S.plates.some(p => p.k === need && !p.gone); S.plates.push({ l, x: v > 0 ? -30 : 302, k: !has ? need : (Math.random() * 6) | 0 }); S.next[l] = 64 / Math.abs(v) + Math.random() * .3; } }
+          for (const p of S.plates) p.x += sp(p.l) * dt; S.plates = S.plates.filter(p => !p.gone && p.x > -40 && p.x < 312);
+          if (S.t <= 0){ S.t = 0; S.over = true; snd(150, .2); S.newBest = saveBest('sushi', S.score); S.best = Math.max(S.best, S.score); } },
+        draw(){ g.fillStyle = '#f8f0e0'; g.fillRect(0, 0, 272, 530); g.textBaseline = 'alphabetic';
+          rr2(8, 44, 256, 104, 12, '#fff'); T(g, '注文（左から順番にタップ）', 136, 64, 13, '#8a3a1a');
+          S.order.forEach((k, i) => { const x = 54 + i * 82, on = i === S.oi; if (on) rr2(x - 36, 72, 72, 68, 10, '#ffe9a8'); g.globalAlpha = i < S.oi ? .3 : 1; piece(x, 104, k, 1.25); T(g, N[k][0], x, 134, 13, '#333'); g.globalAlpha = 1; if (i < S.oi) T(g, '✔', x, 112, 26, '#2a9a4a'); });
+          for (let l = 0; l < 3; l++){ g.fillStyle = '#5a5a62'; g.fillRect(0, LY[l] - 36, 272, 72); g.fillStyle = '#6c6c76'; const o = ((S.bt * sp(l)) % 40 + 40) % 40; for (let x = -40 + o; x < 272; x += 40) g.fillRect(x, LY[l] - 36, 4, 72); }
+          for (const p of S.plates){ const y = LY[p.l]; g.fillStyle = '#fff'; g.beginPath(); g.arc(p.x, y, 27, 0, 7); g.fill(); g.strokeStyle = '#3a6ad0'; g.lineWidth = 3; g.beginPath(); g.arc(p.x, y, 23, 0, 7); g.stroke(); piece(p.x, y - 5, p.k, 1); T(g, N[p.k][0], p.x, y + 19, 10, '#222'); }
+          g.fillStyle = '#ddd'; g.fillRect(16, 470, 240, 12); g.fillStyle = S.t < 10 ? '#e84a4a' : '#3ab84a'; g.fillRect(16, 470, 240 * Math.min(1, S.t / 60), 12); T(g, 'のこり ' + Math.ceil(S.t) + '秒', 76, 506, 15, '#5a3a10'); T(g, S.score + '点', 206, 506, 20, '#c02a2a');
+          if (S.flash > 0) T(g, 'そろった！ +30点 +4秒', 136, 178, 17, '#2a9a4a'); if (S.bad > 0){ g.fillStyle = 'rgba(232,74,74,.25)'; g.fillRect(0, 0, 272, 530); T(g, 'ちがう！ -4秒', 136, 178, 17, '#c02a2a'); }
+          if (S.over) overScreen(g, S); } }; }); }
+  /* ---- お絵かき: かいた絵は 写真アルバムに入る (アルバムは 12まいまで) */
+  function drawApp(){ const M = $p('phMain'), COL = ['#222222', '#e84a4a', '#f09a20', '#f4d040', '#3ab84a', '#2e7cf6', '#a05ad8', '#ffffff'];
+    M.innerHTML = '<div class="phPage" style="padding:8px 8px 30px"><h4>🎨 お絵かき</h4><canvas id="dwC" width="256" height="300" style="width:100%;background:#fff;border-radius:8px;touch-action:none;cursor:crosshair;display:block;box-shadow:0 1px 3px rgba(0,0,0,.3)"></canvas><div style="display:flex;gap:5px;margin:8px 0;flex-wrap:wrap">'
+      + COL.map((c, i) => '<button data-st="dw:c' + i + '" style="width:27px;height:27px;border-radius:14px;border:2px solid #888;background:' + c + ';cursor:pointer"></button>').join('') + '</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="phBtn gray" data-st="dw:w">太さ：<span id="dwW">ふつう</span></button><button class="phBtn red" data-st="dw:x">ぜんぶ消す</button><button class="phBtn" data-st="dw:s">アルバムに保存</button></div><div class="phMsg" id="dwMsg">色をえらんで かこう（白は 消しゴムの代わり）</div></div>';
+    const c = $p('dwC'), g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 256, 300); g.lineCap = g.lineJoin = 'round'; let col = COL[0], wd = 4, last = null;
+    const pos = e => { const q = c.getBoundingClientRect(); return [(e.clientX - q.left) * 256 / q.width, (e.clientY - q.top) * 300 / q.height]; };
+    c.onpointerdown = e => { last = pos(e); try { c.setPointerCapture(e.pointerId); } catch (er){} g.fillStyle = col; g.beginPath(); g.arc(last[0], last[1], wd / 2, 0, 7); g.fill(); };
+    c.onpointermove = e => { if (!last) return; const p = pos(e); g.strokeStyle = col; g.lineWidth = wd; g.beginPath(); g.moveTo(last[0], last[1]); g.lineTo(p[0], p[1]); g.stroke(); last = p; };
+    c.onpointerup = c.onpointercancel = () => { last = null; };
+    dwDo = k => { const ms = $p('dwMsg'); if (!ms) return; if (k[0] === 'c'){ col = COL[+k.slice(1)]; ms.textContent = col === '#ffffff' ? '白（消しゴムの代わり）' : '色をかえた'; snd(600, .03); }
+      else if (k === 'w'){ wd = wd === 4 ? 10 : wd === 10 ? 2 : 4; $p('dwW').textContent = wd === 4 ? 'ふつう' : wd === 10 ? '太い' : '細い'; }
+      else if (k === 'x'){ g.fillStyle = '#fff'; g.fillRect(0, 0, 256, 300); ms.textContent = 'ぜんぶ消した'; }
+      else if (k === 's'){ const list = loadPhotos(); if (list.length >= 12){ ms.textContent = 'アルバムがいっぱい（12まい）。いらない写真をけしてね'; snd(200); return; } let img; try { img = c.toDataURL('image/jpeg', .8); } catch (er){ return; } list.unshift({ t: Date.now(), img }); if (savePhotos(list)){ ms.textContent = '写真アルバムに保存した（「写真アルバム」アプリで見られる）'; snd(1200, .03, .1); } else ms.textContent = '保存できなかった（いっぱい）'; } }; }
+  /* ---- 今日の占い: 日付で決まる (同じ日は 何回見ても同じ) */
+  function omikuji(){ const d = new Date(), seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate(), q = k => { let x = (seed * 9301 + k * 49297 + 233) % 233280; x = (x * 9301 + 49297) % 233280; return x / 233280; }, pk = (a, k) => a[(q(k) * a.length) | 0];
+    const LV = [['大吉', '#e84a4a'], ['中吉', '#f09a20'], ['小吉', '#3ab84a'], ['吉', '#2e7cf6'], ['末吉', '#a05ad8']], lv = pk(LV, 1);
+    const GM = ['マンション鬼ごっこ', '缶蹴り', '雪合戦', '買い物競争', '二択問題', '巨大草園かくれんぼ', '足跡かくれんぼ', '東京ビンゴタワー', '空中ケンパ', '鉄骨渡り', 'ドリル戦車', '緑のタイル', '裏カジノ', '地下ブラックジャック'];
+    const FD = ST_NAMES.flatMap(n => ST_MENU[n].map(m => n + 'の' + m)), CL = ['赤', '青', '黄色', '緑', '白', '黒', 'オレンジ', 'むらさき'];
+    const TIP = ['走る前に、まわりをよく見よう', 'まよったら、深呼吸を1回', '今日は 早めに動くといい', '友だちに電話をかけると いいことがあるかも', 'かくれる時は、足元に気をつけて', 'お金は 使う前に数えよう', '落ち着いて えらべば、うまくいく', '新しいアプリを 1つためしてみよう'];
+    page2('🔮 今日の占い', '<div style="text-align:center;font-size:13px;color:#777">' + (d.getMonth() + 1) + '月' + d.getDate() + '日の運勢</div><div style="text-align:center;font-size:54px;font-weight:bold;color:' + lv[1] + ';margin:6px 0">' + lv[0] + '</div>'
+      + [['🎮', 'ラッキーなゲーム', pk(GM, 2)], ['🍚', 'ラッキーなごはん', pk(FD, 3)], ['🎨', 'ラッキーな色', pk(CL, 4)], ['💡', '今日のひとこと', pk(TIP, 5)]].map(([ic, a, b]) => '<div class="phRow"><div class="ic" style="background:#f0e8ff">' + ic + '</div><div class="tx"><small>' + a + '</small><br><b>' + b + '</b></div></div>').join('')
+      + '<div style="font-size:11px;color:#777">占いは 1日に1つ。あしたになると かわる。</div>'); }
+  /* phone_apps4: 口コミ。元からの口コミは お店の名前から決まる 5〜15件 (rvBase)。[文, 星] の星がない文は 4か5 */
+  const RV_TXT = { 'ラーメン高一': ['スープがあつあつで、最後まで飲んだ', 'めんがもちもち。また来る', 'チャーシューメンのチャーシューが6まいもある', 'ぎょうざの皮がパリパリ', 'みそラーメンのコーンがあまい', '無料なのに、この味はすごい', 'テレビを見ながら食べられるのがいい', '店員さんがこっちを向いてくれる', '煮卵がおいしい。もう1こほしい', 'のりは、スープにひたる前に食べるのがコツ', 'ねぎ多めでうれしい', 'ドリル戦車が来ても、ここのラーメンは食べたい', '3杯食べた。4杯目も行ける', 'お品書きが見やすい', 'ひと口ずつ食べるのが楽しい', ['こんでいて、少し待った', 3], ['量が多くて、食べきるのが大変だった', 3], ['バターが溶ける前に食べたかった', 4]],
+    '寿司屋良口': ['まぐろが赤くてきれい', '特上は10かんもあって大満足', 'いくら丼のいくらがぷちぷち', '茶わんむしがぷるぷる', '玉子があまくて好き', 'えびのしっぽまで食べそうになった', '無料で特上はすごすぎる', 'しょうゆは、つけすぎないのがコツ', 'ガリで口がさっぱりする', 'うにを初めて食べた。おいしかった', '板の上にならぶ寿司がきれい', 'テレビのクイズを見ながら食べた', 'いかが白くてつやつや', '1かんずつ食べるのが楽しい', '店員さんのめがねがかっこいい', ['わさびが少しからかった', 3], ['どれから食べるか、まよいすぎた', 4], ['茶わんむしが熱くて、すぐ食べられなかった', 3]],
+    'カツ勝': ['カツがさくさく', 'たまごがとろとろ', 'ヒレカツがやわらかい', 'エビフライが長い', 'とん汁の具が多い', 'キャベツがおかわりしたいくらいおいしい', 'ごはんがつやつや', 'カツ丼は、勝負の前に食べたい', '無料とは思えない量', 'みそ汁つきでうれしい', 'タルタルソースがたっぷり', 'とん汁の大根がやわらかい', 'レモンをしぼると、さっぱりする', 'テレビで、好きなゲームが第5位だった', 'カツが5切れで食べやすい', ['おなかいっぱいで、走れなくなった', 3], ['定食はおぼんが大きくて、びっくりした', 4], ['とん汁が熱くて、口をやけどしそうだった', 3]] };
+  const rvBase = nm => { const h = hashS(nm + '/口コミ'), rd = rngOf(h), n = 5 + (h % 11), pool = (RV_TXT[nm] || []).slice(); for (let i = pool.length - 1; i > 0; i--){ const j = (rd() * (i + 1)) | 0; [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    return pool.slice(0, n).map((t, i) => ({ s: Array.isArray(t) ? t[1] : rd() < .65 ? 5 : 4, t: Array.isArray(t) ? t[0] : t, who: 'No.' + (1000 + hashS(nm + ':' + i) % 9000) + 'の人', d: 1 + ((rd() * 27) | 0) })); };
+  let rvStar = 5, rvDraft = '';
+  const rvRow = (who, x, extra) => '<div class="phRow" style="display:block"><div style="display:flex;justify-content:space-between;align-items:center"><span><b' + (who === 'あなた' ? ' style="color:#c02a2a"' : ' style="color:#777"') + '>' + who + '</b>　<span style="color:#f09a20">' + '★'.repeat(x.s) + '<span style="color:#ccc">' + '★'.repeat(5 - x.s) + '</span></span></span>' + (extra || '') + '</div><div style="margin-top:3px">' + esc(x.t) + '</div></div>';
+  function stRvHtml(nm){ const w = stData(), mine = ((w.phone.rv || {})[nm]) || [], base = rvBase(nm), all = mine.concat(base), avg = all.reduce((a, x) => a + x.s, 0) / all.length;
+    return '<div style="font-weight:bold;margin:12px 0 4px">💬 ' + nm + 'の口コミ（' + all.length + '件）　<span style="color:#f09a20">★' + avg.toFixed(1) + '</span></div>'
+      + '<div class="phRow" style="display:block;background:#fff6e0"><div>星をえらぶ：' + [1, 2, 3, 4, 5].map(n => '<span data-st="rs:' + n + '" style="cursor:pointer;font-size:22px;color:' + (n <= rvStar ? '#f09a20' : '#ccc') + '">★</span>').join('') + '</div><div style="display:flex;gap:4px;margin-top:4px"><input id="stRv" placeholder="口コミを書く（50字まで）" maxlength="50" value="' + esc(rvDraft) + '" style="flex:1;min-width:0;border:1px solid #ccc;border-radius:12px;padding:5px 9px;font:12px inherit"><button class="phBtn" data-st="rv" style="background:#c02a2a;font-size:11px;padding:3px 8px">書く</button></div><div class="phMsg" id="stRvMsg" style="font-size:11px;min-height:14px"></div><div style="font-size:10px;color:#999">書いた口コミは、このパソコンの中だけに残る（ほかの人には見えない）</div></div>'
+      + mine.map((x, i) => rvRow('あなた', x, '<button class="phBtn red" data-st="rd:' + i + '" style="font-size:10px;padding:2px 8px">けす</button>')).join('') + base.map(x => rvRow(x.who, x, '<small style="color:#999">' + x.d + '日前</small>')).join(''); }
+  const stKeep = (fn, m) => { const M = $p('phMain'), y = M.scrollTop; fn(); M.scrollTop = y; const e = $p('stRvMsg'); if (e && m) e.textContent = m; };
+  function stPost(){ const inp = $p('stRv'), txt = (inp ? inp.value : '').replace(/\s+/g, ' ').trim().slice(0, 50); if (!txt){ const e = $p('stRvMsg'); if (e) e.textContent = '文を書いてから「書く」を押してね'; snd(200); return; }
+    const w = stData(), nm = ST_NAMES[stShop]; w.phone.rv = w.phone.rv || {}; const L = w.phone.rv[nm] = w.phone.rv[nm] || []; L.unshift({ s: rvStar, t: txt, at: Date.now() }); if (L.length > 5) L.length = 5; W().save(w); rvDraft = ''; snd(880); setTimeout(() => snd(1175), 90); stKeep(() => streetApp(), '口コミを書いた！（自分の口コミは お店ごとに5件まで）'); }
+  box.addEventListener('click', e => { const t = e.target.closest('[data-st]'); if (!t) return; const [a, b] = t.dataset.st.split(':');
+    if (a === 'rs'){ rvDraft = ($p('stRv') || {}).value || ''; rvStar = +b; snd(600, .03); stKeep(() => streetApp()); return; } if (a === 'rv') return stPost(); if (a === 'rd'){ const w = stData(), L = (w.phone.rv || {})[ST_NAMES[stShop]]; if (L){ L.splice(+b, 1); W().save(w); } snd(300); stKeep(() => streetApp(), '口コミをけした'); return; }
+    if (a === 'shs') return shSearch(($p('shQ') || {}).value); if (a === 'shc'){ shCat = +b; shQ = ''; shList = SH_ALL; snd(500, .03); return shop(); }
+    if (a === 'shop'){ stShop = +b; snd(500, .03); streetApp(); } else if (a === 'ord') stOrder(+b); else if (a === 'tv') tvSet(+b); else if (a === 'dw') dwDo(b); });
   /* ---- クリックの受けつけ */
   box.addEventListener('click', e => { const t = e.target.closest('[data-bx],[data-vd],[data-bt],[data-tk],[data-open],[data-ins],[data-del],[data-buy],[data-cam],[data-shot],[data-turn],[data-back],[data-ph],[data-phdel],[data-ck],[data-sw],[data-tel],[data-wall],[data-song],[data-say]'); if (!t) return; const d = t.dataset;
     if (d.tk){ PHONE._tk(d.tk, t); return; }
@@ -2190,7 +2315,7 @@ const PHONE = (() => {
   $p('phHome').onclick = () => { talkMode = 'list'; talkRoom = null; show('home'); };
   box.addEventListener('click', e => { if (e.target === box) close(); });
   window.__phKeys = {};
-  addEventListener('keydown', e => { if (!isOpen || window.__g3dOpen) return; if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)){ /* 文字を打っているあいだは、ゲームのキーにしない */ if (e.code === 'Escape') close(); else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'talkIn'){ e.preventDefault(); PHONE._send(); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'bxQ'){ e.preventDefault(); bxSearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidQ'){ e.preventDefault(); vsearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidCm'){ e.preventDefault(); postCm(); } e.stopImmediatePropagation(); return; }
+  addEventListener('keydown', e => { if (!isOpen || window.__g3dOpen) return; if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)){ /* 文字を打っているあいだは、ゲームのキーにしない */ if (e.code === 'Escape') close(); else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'talkIn'){ e.preventDefault(); PHONE._send(); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'bxQ'){ e.preventDefault(); bxSearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidQ'){ e.preventDefault(); vsearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'vidCm'){ e.preventDefault(); postCm(); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'shQ'){ e.preventDefault(); shSearch(e.target.value); } else if (e.code === 'Enter' && !e.isComposing && e.target.id === 'stRv'){ e.preventDefault(); stPost(); } e.stopImmediatePropagation(); return; }
     if (e.code === 'Escape' || e.code === 'KeyQ'){ close(); } else { window.__phKeys[e.code] = true; game && game.key && game.key(e.code); }
     e.preventDefault(); e.stopImmediatePropagation(); }, true);
   addEventListener('keyup', e => { if (!isOpen || window.__g3dOpen) return; window.__phKeys[e.code] = false; e.stopImmediatePropagation(); }, true);
@@ -3127,7 +3252,7 @@ const INV = (() => {
     [/ロボット/, '🤖'], [/ぬいぐるみ/, '🧸'], [/キーホルダー/, '🔑'], [/えんぴつ|ボールペン/, '✏️'], [/消しゴム/, '🧽'], [/イヤホン/, '🎧'], [/スマホ/, '📱'], [/ゲーム機|ゲーム/, '🎮'], [/テレビ/, '📺'], [/剣/, '🗡️'], [/金魚/, '🐟'],
     [/ハムスター/, '🐹'], [/犬/, '🦴'], [/DVD|CD/, '💿'], [/カード|スリーブ/, '🃏']];
   const icon = n => (ICON.find(([r]) => r.test(n)) || [0, '📦'])[1];
-  const FOOD_SHOPS = ['やさい・くだもの', 'おにく・おさかな', 'パン屋', 'おかし', 'おそうざい', '飲み物', '冷凍食品', 'お弁当', 'たまご・牛乳', 'お茶'];
+  const FOOD_SHOPS = ['やさい・くだもの', 'おにく・おさかな', 'パン屋', 'おかし', 'おそうざい', '飲み物', '冷凍食品', 'お弁当', 'たまご・牛乳', 'お茶', 'ラーメン高一', '寿司屋良口', 'カツ勝' /* 2026-11-26 みらい商店街の出前 */];
   const canEat = it => FOOD_SHOPS.includes(it.shop) && !/お米|しょうゆ|マヨネーズ|ルー|茶の葉|パック/.test(it.name);
   const W = () => window.WALLET;
   /* 所持金の一の位を0にする (前の値段で買ったときの端数をなくす) */ if (W()){ const w0 = W().get(); if (w0.yen % 10){ w0.yen -= w0.yen % 10; W().save(w0); } }
@@ -3247,6 +3372,7 @@ const INV = (() => {
 })();
 
 const MENU = {
+  'ラーメン高一': [['ラーメン', 0], ['みそラーメン', 0], ['チャーシューメン', 0], ['ぎょうざ', 0]], '寿司屋良口': [['寿司（5かん）', 0], ['特上寿司（10かん）', 0], ['いくら丼', 0], ['茶わんむし', 0]], 'カツ勝': [['カツ丼', 0], ['ヒレカツ定食', 0], ['エビフライ定食', 0], ['とん汁', 0]],   /* 3つのお店は 全商品無料 (弟君 2026-11-26)。値段 0 は「無料」と出る */
   'やさい・くだもの': [['キャベツ', 198], ['トマト', 158], ['りんご', 128], ['バナナ', 198]], 'おにく・おさかな': [['とり肉', 398], ['ぶた肉', 498], ['サーモンの切り身', 450], ['まぐろのおさしみ', 680]],
   'パン屋': [['メロンパン', 160], ['カレーパン', 180], ['クロワッサン', 150], ['食パン', 280]], 'おかし': [['ポテトチップス', 158], ['チョコレート', 120], ['グミ', 110], ['クッキー', 248]],
   'おそうざい': [['コロッケ', 90], ['からあげ', 398], ['ポテトサラダ', 198], ['春巻き', 120]], '飲み物': [['お茶', 98], ['オレンジジュース', 128], ['牛乳', 218], ['スポーツドリンク', 148]],
@@ -3279,16 +3405,17 @@ const TABLE = { foe: null }; let shopOpen = null, bagOpen = false, nearShop = nu
 const yen = n => n.toLocaleString() + '円';
 const walletNow = () => (window.WALLET ? WALLET.get().yen : 0);
 function drawWallet(){ const y = walletNow(), fl = player ? Math.min(4, 1 + Math.round(player.pos.y / FH)) : 1; $('walletHud').innerHTML = '所持金 ' + yen(y) + '<br><small>' + fl + '階</small>'; $('titleWallet').textContent = '今の所持金：' + yen(y); }
-function openShop(s){ shopOpen = s; paused = true; for (const k in keys) keys[k] = false; if (document.pointerLockElement) document.exitPointerLock(); $('shopName').textContent = s.name + '（' + (s.floor + 1) + '階）'; $('shopMsg').textContent = s.floor === 2 ? 'いらっしゃいませ！ ここで食べていってね' : 'いらっしゃいませ！'; drawShop(); $('shop').classList.add('on'); }
+function openShop(s){ shopOpen = s; paused = true; for (const k in keys) keys[k] = false; if (document.pointerLockElement) document.exitPointerLock(); $('shopName').textContent = s.name + (s.street ? '（みらい商店街）' : '（' + (s.floor + 1) + '階）'); $('shopMsg').textContent = s.street ? 'いらっしゃいませ！ 全商品 無料です。えらぶと カウンターに出てきます' : s.floor === 2 ? 'いらっしゃいませ！ ここで食べていってね' : 'いらっしゃいませ！'; drawShop(); $('shop').classList.add('on'); }
 function drawShop(){ const s = shopOpen; $('shopWallet').textContent = '所持金：' + yen(walletNow());
   if (s.name === '本屋'){ /* 本屋は本棚から。クリックで説明 → 買う／読む */ const owned = () => WALLET.get().items.map(x => x.name); $('shopItems').innerHTML = BOOK.shelfHTML(owned());
     $('shopItems').querySelectorAll('[data-bk]').forEach(el => el.onclick = () => BOOK.shelfPick(+el.dataset.bk, owned(), (nm, price) => { buy(nm, price, 'buy'); BOOK.shelfPick(+el.dataset.bk, owned(), (n2, p2) => buy(n2, p2, 'buy'), n2 => { BOOK.onDone(() => drawShop()); BOOK.read(n2); }); }, nm => { BOOK.onDone(() => drawShop()); BOOK.read(nm); })); return; }
   $('shopItems').innerHTML = ''; for (const [nm, price, kind0] of MENU[s.name] || []){ const kind = kind0 || (s.floor === 2 ? 'eat' : 'buy'), b = document.createElement('button'); b.className = 'opt'; b.style.textAlign = 'left';
-    b.innerHTML = nm + '　<b>' + yen(price) + '</b>　<small>' + { eat: '食べる', buy: '買う', movie: '映画を見る', movie2: '映画を見る', crane: '遊ぶ', play: '遊ぶ' }[kind] + '</small>'; b.onclick = () => buy(nm, price, kind); $('shopItems').appendChild(b); } }
+    b.innerHTML = nm + '　<b>' + (price ? yen(price) : '無料') + '</b>　<small>' + { eat: '食べる', buy: '買う', movie: '映画を見る', movie2: '映画を見る', crane: '遊ぶ', play: '遊ぶ' }[kind] + '</small>'; b.onclick = () => buy(nm, price, kind); $('shopItems').appendChild(b); } }
 function buy(nm, price, kind){
-  if (!window.WALLET || !WALLET.spend(price, kind === 'buy' ? { name: nm, shop: shopOpen.name, t: Date.now() } : null)){ $('shopMsg').textContent = 'お金が足りない…（ゲームをクリアするとチケットがもらえる）'; beep(220, .15, .15); return; }
+  if (shopOpen && shopOpen.street){ const s = shopOpen; closeShop(); STREET.serve(s, nm); return; }   /* みらい商店街: 立体の料理が出てきて、E で ひと口ずつ食べる */
+  if (price > 0 && (!window.WALLET || !WALLET.spend(price, kind === 'buy' ? { name: nm, shop: shopOpen.name, t: Date.now() } : null))){ $('shopMsg').textContent = 'お金が足りない…（ゲームをクリアするとチケットがもらえる）'; beep(220, .15, .15); return; }
   beep(880, .08, .12); setTimeout(() => beep(1320, .08, .12), 90);
-  if (kind === 'eat') $('shopMsg').textContent = nm + 'を食べた！ おいしい！';
+  if (kind === 'eat'){ $('shopMsg').textContent = nm + 'を食べた！ おいしい！'; if (shopOpen.street && window.__streetStamp){ const m2 = window.__streetStamp(shopOpen.name); if (m2) $('shopMsg').textContent += '　' + m2; } }
   else if (kind === 'movie' || kind === 'movie2'){ const mid = kind === 'movie2' ? 'hime' : 'poko'; $('shopMsg').textContent = 'まもなく上映します'; MOVIE.onDone(fin => { $('shopMsg').textContent = fin ? '映画「' + MOVIE.title(mid) + '」を見た！ おもしろかった！' : 'とちゅうで映画館を出た'; }); MOVIE.play(mid); }
   else if (kind === 'play'){ $('shopMsg').textContent = ''; ARCADE.onDone(() => { drawShop(); drawWallet(); }); if (/レース/.test(nm)) ARCADE.race(); else ARCADE.rhythm(); }
   else if (kind === 'crane'){ $('shopMsg').textContent = ''; FUN.onDone(() => { drawShop(); drawWallet(); }); FUN.crane(); } else if (kind === 'craneOld'){ if (Math.random() < .3){ const p = pick(['くまのぬいぐるみ', 'ねこのぬいぐるみ', '大きなおかしの箱', 'キーホルダー']); const w = WALLET.get(); w.items.push({ name: p, shop: 'ゲームセンター', t: Date.now() }); WALLET.save(w); $('shopMsg').textContent = 'やった！ ' + p + 'が取れた！（持ち物に入れた）'; } else $('shopMsg').textContent = 'おしい！ 取れなかった…'; }
@@ -3353,8 +3480,8 @@ function updateHub(dt){
     if (keys.KeyE){ keys.KeyE = false; paused = true; window.__uiOpen = true; for (const k in keys) keys[k] = false; if (document.pointerLockElement) document.exitPointerLock(); FUN.onDone(() => { window.__uiOpen = false; paused = false; clock.getDelta(); tryLock(); }); FUN.battle(); } return; }
   nearShop = null; let nd = 1e9;
   for (const s of SHOPS){ if (Math.abs(s.y - player.pos.y) > 1.5) continue; const d = Math.hypot(s.x - player.pos.x, s.z - player.pos.z); if (d < 3.2 && d < nd){ nd = d; nearShop = s; } }
-  const outside = player.pos.z < -20 && Math.abs(player.pos.x) < 7;
-  if (nearShop){ $('prompt').style.display = 'block'; $('prompt').textContent = 'E：「' + nearShop.name + '」で' + (nearShop.floor === 2 ? '食べる' : nearShop.name === '映画館' ? '映画を見る' : nearShop.name === 'ゲームセンター' ? '遊ぶ' : '買い物する'); if (keys.KeyE){ keys.KeyE = false; openShop(nearShop); } }
+  const outside = player.pos.z < -20 && Math.abs(player.pos.x) < 7; STREET.people(); if (!nearShop) nearShop = STREET.at(player.pos); if (STREET.tick(dt)) return;
+  if (nearShop){ $('prompt').style.display = 'block'; $('prompt').textContent = 'E：「' + nearShop.name + '」で' + (nearShop.street ? '注文する' : nearShop.floor === 2 ? '食べる' : nearShop.name === '映画館' ? '映画を見る' : nearShop.name === 'ゲームセンター' ? '遊ぶ' : '買い物する'); if (keys.KeyE){ keys.KeyE = false; openShop(nearShop); } }
   else if (outside){ $('prompt').style.display = 'block'; $('prompt').textContent = 'E：街へもどる'; if (keys.KeyE && !HUB.leaving){ keys.KeyE = false; HUB.leaving = true; showMsg('街へもどる', 1.5); setTimeout(() => { location.href = '街.html'; }, 400); } }
   else $('prompt').style.display = 'none';
 }
@@ -3485,6 +3612,241 @@ function mallInside(b, bi, cx, cz, hw, door, doorIn){
 }
 
 // ---- みらいモール (この街にはモールだけ。まわりは駐車場)
+// ===================== お店のテレビ (tvshow_snip.js) =====================
+// 2026-11-26 弟君「ドリル戦車でも みらいモールでも どの店にも テレビが壁に一台。番組は『ゲームの街 マシなゲームはどれか』番組と、それ以外に2種類ぐらい」
+// みらいモール (mall_make.js が読む tvshow_part.js) と ドリル戦車 (tank_v36.js) の両方が、このファイルをそのまま入れる。スマホの「ミライテレビ」も TVSHOW.shot を使う。
+// 番組は 4つ (PROG)。1つ 80秒 (LEN)。チャンネル c は「(c + 今が何本目か) % 4」の番組を映すので、時間がたつと番組が入れかわる。時計は本物の時刻 (どのテレビも同じ)。
+// TVSHOW.add(親, x, y, z, 向き, 横はば, チャンネル) でテレビを1台つける。音は出ない。人の名前は出さない (「司会の人」)。
+const TVSHOW = (() => {
+  const CW = 384, CH = 216, LEN = 80, FONT = '"BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif';
+  const PROG = [{ id: 'mashi', name: 'ゲームの街 マシなゲームはどれか', ic: '🏆' }, { id: 'news', name: 'みらいニュース', ic: '📰' }, { id: 'cook', name: '商店街の今日のごはん', ic: '🍜' }, { id: 'quiz', name: '豆知識クイズ', ic: '❓' }];
+  const rng = s => () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  const pickN = (arr, n, seed) => { const r = rng((seed * 7919 + 13) >>> 0), a = arr.slice(); r(); for (let i = a.length - 1; i > 0; i--){ const j = (r() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); };
+  const T = (g, s, x, y, px, col = '#fff', al = 'center', maxW) => { g.font = 'bold ' + px + 'px ' + FONT; g.textAlign = al; g.textBaseline = 'middle'; g.fillStyle = col; if (maxW) g.fillText(s, x, y, maxW); else g.fillText(s, x, y); };
+  const wrap = (g, s, x, y, px, col, maxW, al = 'center') => { g.font = 'bold ' + px + 'px ' + FONT; const lines = []; let cur = ''; for (const ch of [...s]){ if (ch === '\n'){ lines.push(cur); cur = ''; } else if (g.measureText(cur + ch).width > maxW){ lines.push(cur); cur = ch; } else cur += ch; } if (cur) lines.push(cur); lines.forEach((l, i) => T(g, l, x, y + i * px * 1.3, px, col, al)); return lines.length; };
+  const rr = (g, x, y, w, h, r, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.fill(); };
+  const grad = (g, c0, c1) => { const q = g.createLinearGradient(0, 0, 0, CH); q.addColorStop(0, c0); q.addColorStop(1, c1); g.fillStyle = q; g.fillRect(0, 0, CW, CH); };
+  const ell = (g, x, y, rx, ry, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(x, y, Math.max(.1, rx), Math.max(.1, ry), 0, 0, 7); g.fill(); };
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  /* 上の帯: 番組の名前と 今の時刻 */
+  const bar = (g, pi, col) => { g.fillStyle = col; g.fillRect(0, 0, CW, 24); T(g, PROG[pi].ic + ' ' + PROG[pi].name, 8, 13, 14, '#fff', 'left'); const d = new Date(); T(g, d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'), CW - 8, 13, 14, '#fff', 'right'); };
+  /* 司会の人 */
+  const host = (g, x, y, t, col = '#e8503a', talk = true) => { g.fillStyle = col; g.beginPath(); g.moveTo(x - 27, y + 62); g.quadraticCurveTo(x - 27, y + 19, x, y + 19); g.quadraticCurveTo(x + 27, y + 19, x + 27, y + 62); g.fill();
+    ell(g, x, y, 19, 19, '#f2c9a0'); g.fillStyle = '#2a2018'; g.beginPath(); g.arc(x, y - 4, 20, Math.PI, 0); g.fill(); g.fillStyle = '#222'; g.fillRect(x - 8, y, 3, 4); g.fillRect(x + 5, y, 3, 4);
+    g.fillStyle = '#7a2a20'; g.fillRect(x - 5, y + 9, 10, talk ? 2 + Math.abs(Math.sin(t * 9)) * 5 : 2); g.fillStyle = '#333'; g.fillRect(x + 17, y + 22, 4, 24); ell(g, x + 19, y + 20, 6, 6, '#333'); };
+
+  /* ---- 番組1: ゲームの街 マシなゲームはどれか。[名前, あぶなさ 1〜5, つかれる 1〜5, マシな理由, でも] */
+  const GAMES = [   /* 文は 映画館 (cinema_tpl.html の CLIPS の lose・tip) と同じ中身にしてある。ゲームのルールを変えたら、ここも直す */
+    ['L字マンション鬼ごっこ', 4, 5, 'ロッカーにかくれて、鬼が通りすぎるのを待てばいい', '鬼はピストルを持っている'],
+    ['熱湯スタジアム脱出', 5, 4, '開いているゲートまで走るだけ', '後ろから、熱いお湯が追いかけてくる'],
+    ['地下ブラックジャック', 2, 1, 'すわってカードをするだけ。走らなくていい', 'チップが0枚になったら終わり'],
+    ['ぶら下がり耐久', 4, 5, 'ぶら下がっているだけ', '握力がなくなると奈落。電流も来る'],
+    ['おみくじデスゲーム', 4, 1, 'おみくじを引いて、問題を解くだけ', 'まちがえた分だけ、火矢が飛んでくる'],
+    ['巨大草園かくれんぼ', 4, 3, 'オオカミ役になれば、生きのこれる', '生きのこるのは オオカミ役の1人だけ。ほかの3人は全員アウト'],
+    ['缶蹴り', 3, 4, '缶を取って、ホールの中央に行くだけ', 'タイマーが0の時に、中央にいないとアウト'],
+    ['雪合戦', 2, 3, '当たっても雪だるまになるだけ。仲間がたき火で助けてくれる', '仲間が来なければ、ずっと雪だるま'],
+    ['二択問題', 3, 1, '2つからえらぶだけ。半分は当たる', 'まちがえると、天井からレーザー'],
+    ['買い物競争', 2, 4, 'お題の品物を見つけるだけ', '時間は90秒。売り場が広い'],
+    ['足跡かくれんぼ', 3, 2, 'ニセの足跡で、鬼をまどわせられる', '本物の足跡をたどられると、ドアを開けられる'],
+    ['鉄骨渡り', 5, 3, 'まっすぐ歩くだけ', '高い所で、風がふく'],
+    ['空中ケンパ', 5, 3, 'ケンケンパをするだけ', 'ふむ足をまちがえると、パネルが消える'],
+    ['東京ビンゴタワー', 4, 3, '数字のボタンを、順にさがすだけ', 'タワーの骨組みの上でやる'],
+    ['緑のタイル', 5, 4, '緑のタイルの上に立っているだけ', 'タイルがどんどんへる。最後は1こ'],
+    ['ドリル戦車', 1, 2, '自分が戦車に乗るがわ。負けがない', '警察官が100人来る'],
+    ['上陸作戦', 5, 5, '仲間がたくさんいる', '海岸のバンカーから うたれる'],
+    ['トンネル逃亡ゲーム', 4, 5, '一本道なので、まよわない', 'チーターが追いかけてくる'],
+    ['自然災害', 5, 4, '高い所へ上がればいい', '津波・大雨・地震・雪山が、次々に来る'],
+    ['裏カジノ', 2, 1, 'すわって遊ぶだけ', '恐怖の台「沼」に、所持金をすいこまれる'] ];
+  const star = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+  function mashi(g, t, ep, pi){ grad(g, '#3a1a6a', '#150a2a'); for (let i = 0; i < 14; i++){ const a = i * 2.4 + t * .25; ell(g, 192 + Math.cos(a) * (120 + i * 9), 120 + Math.sin(a * 1.3) * 80, 2, 2, 'rgba(255,230,120,.5)'); }
+    const five = pickN(GAMES, 5, ep).sort((a, b) => (a[1] * 2 + a[2]) - (b[1] * 2 + b[2]));   /* [0] が いちばんマシ */
+    if (t < 6){ T(g, 'ゲームの街 けんきゅう番組', 192, 62, 17, '#ffd84a'); T(g, 'マシなゲームは', 192, 104, 34, '#fff'); T(g, 'どれか？', 192, 146, 34, '#fff'); T(g, '第' + (ep % 900 + 1) + '回', 192, 186, 15, '#c8b8ff'); }
+    else if (t < 12){ host(g, 60, 110, t); rr(g, 104, 48, 266, 132, 12, '#fff'); wrap(g, 'ゲームの街のゲームは、どれもあぶない。\nその中で「まだマシ」なのはどれか、今日の5つから決めます！', 237, 74, 16, '#222', 244); }
+    else if (t < 72){ const k = Math.min(4, Math.floor((t - 12) / 12)), u = t - 12 - k * 12, rank = 5 - k, G = five[rank - 1];
+      if (rank === 1 && u < 3){ T(g, '第1位は…', 192, 100, 38, Math.sin(t * 20) > 0 ? '#ffd84a' : '#fff'); for (let i = 0; i < 8; i++) rr(g, 60 + i * 34, 150 + Math.sin(t * 18 + i) * 8, 24, 10, 4, '#ffd84a'); }
+      else { rr(g, 10, 32, 92, 40, 8, rank === 1 ? '#ffd84a' : '#e8e0ff'); T(g, '第' + rank + '位', 56, 53, 24, '#3a1a6a'); T(g, G[0], 238, 53, 23, '#fff', 'center', 262);
+        T(g, 'あぶなさ ' + star(G[1]), 14, 88, 15, '#ffb0a0', 'left'); T(g, 'つかれる ' + star(G[2]), 200, 88, 15, '#a0d8ff', 'left');
+        const two = (tx, cy) => { g.font = 'bold 16px ' + FONT; wrap(g, tx, 192, g.measureText(tx).width > 350 ? cy - 10 : cy, 16, '#fff', 350); };   /* 1行なら まん中、2行なら 少し上から */
+        rr(g, 10, 102, 364, 48, 8, 'rgba(40,170,100,.94)'); two('マシ：' + G[3], 126);
+        if (u > 5.5){ rr(g, 10, 156, 364, 52, 8, 'rgba(230,70,60,.94)'); two('でも：' + G[4], 182); } } }
+    else { host(g, 60, 110, t); rr(g, 104, 48, 266, 132, 12, '#fff'); wrap(g, 'けつろん：\n「' + five[0][0] + '」が\nまだマシ。でも、どれも\nふつうにあぶない。また来週！', 237, 72, 16, '#222', 250); }
+    bar(g, pi, '#6a3ac8'); }
+
+  /* ---- 番組2: みらいニュース と 天気予報 */
+  const NEWS = ['みらいモールの外に「みらい商店街」ができました', '商店街の3つのお店に、スマホのアプリができました', '町のお店というお店に、テレビがつきました', '映画館で「24の逃走所」を上映中。ポップコーンは無料です',
+    'スーパーにドリル戦車が入り、警察官100人が出動しました', 'フードコートのラーメンが人気です', '駅のタイルが緑色に光る件、原因は調査中です', 'ゲームをクリアすると、5000円チケットがもらえます',
+    '落とし物です。映画館の客席に ポップコーンが1つぶ', '商店街の3つのお店は、全商品が無料です', '4階のカードテーブルで、カードバトルがもりあがっています', 'みらいモールは、今日も無料Wi-Fiが使えます'];
+  const weather = k => { const d = new Date(), seed = d.getFullYear() * 400 + d.getMonth() * 32 + d.getDate(), W2 = [['はれ', '☀️'], ['くもり', '☁️'], ['雨', '☔'], ['はれのちくもり', '⛅']]; return [W2[(seed * 7 + k * 3) % 4], 14 + ((seed + k * 5) % 12)]; };   /* スマホの天気アプリと同じ決め方 */
+  function news(g, t, ep, pi){ grad(g, '#12305a', '#0a1830'); const five = pickN(NEWS, 5, ep);
+    if (t < 50){ const k = Math.min(4, Math.floor(t / 10)), u = t - k * 10; g.fillStyle = '#1e4a8a'; g.fillRect(0, 150, 130, 66); host(g, 62, 100, t, '#2a3a5a'); g.fillStyle = '#c8d8f0'; g.fillRect(0, 160, 130, 6);
+      const sl = clamp01(u * 3); rr(g, 138 + (1 - sl) * 60, 40, 236, 128, 10, 'rgba(255,255,255,' + (.96 * sl) + ')'); if (sl >= 1){ rr(g, 146, 48, 86, 22, 6, '#c02a2a'); T(g, 'ニュース ' + (k + 1), 189, 60, 13, '#fff'); wrap(g, five[k], 256, 92, 17, '#1a2a4a', 216); } }
+    else if (t < 72){ T(g, '天気予報', 192, 48, 22, '#fff'); ['きょう', 'あした', 'あさって'].forEach((nm, i) => { const [w, tp] = weather(i), x = 24 + i * 116; rr(g, x, 66, 104, 112, 10, 'rgba(255,255,255,.95)'); T(g, nm, x + 52, 82, 15, '#1a2a4a'); T(g, w[1], x + 52, 116 + Math.sin(t * 2 + i) * 2, 34, '#000'); T(g, w[0], x + 52, 148, w[0].length > 4 ? 11 : 14, '#1a2a4a'); T(g, tp + '℃', x + 52, 166, 14, '#c0392b'); }); }
+    else { T(g, 'このあとは', 192, 80, 20, '#c8d8f0'); T(g, PROG[(pi + 1) % PROG.length].ic + ' ' + PROG[(pi + 1) % PROG.length].name, 192, 122, 20, '#fff', 'center', 360); }
+    g.fillStyle = '#c02a2a'; g.fillRect(0, 194, CW, 22); const all = NEWS.join('　◆　'); g.font = 'bold 14px ' + FONT; const wAll = g.measureText(all).width; T(g, all, CW - ((t * 46) % (wAll + CW)), 206, 14, '#fff', 'left');
+    bar(g, pi, '#1e4a8a'); }
+
+  /* ---- 番組3: 商店街の今日のごはん (3つのお店の料理を、1回に1つ) */
+  const steam = (g, x, y, t) => { g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 3; g.lineCap = 'round'; for (let i = -1; i <= 1; i++){ g.beginPath(); for (let q = 0; q <= 10; q++){ const yy = y - q * 5, xx = x + i * 30 + Math.sin(q * .8 + t * 3 + i) * 5; q ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); } };
+  const bowl = (g, col, inner) => { g.fillStyle = col; g.beginPath(); g.moveTo(96, 112); g.quadraticCurveTo(192, 232, 288, 112); g.fill(); ell(g, 192, 112, 96, 34, col); ell(g, 192, 112, 88, 28, inner); };
+  const COOK = [
+    { shop: 'ラーメン高一', dish: 'ラーメン', steps: ['どんぶりに あついスープを そそぐ', 'ゆでた めんを入れて ととのえる', 'チャーシューと 煮卵をのせる', 'のりと ねぎをのせる', 'できあがり！'],
+      draw(g, n, u, t){ bowl(g, '#c0392b', '#f5efe2'); const s = n === 0 ? clamp01(u / 6) : 1; ell(g, 192, 114, 84 * s, 25 * s, '#c8842a');
+        if (n >= 1){ g.strokeStyle = '#f4dc7a'; g.lineWidth = 3; const m = n === 1 ? clamp01(u / 6) : 1; for (let i = 0; i < 9 * m; i++){ g.beginPath(); for (let q = 0; q <= 12; q++){ const xx = 126 + q * 11, yy = 104 + i * 2.6 + Math.sin(q * 1.1 + i) * 3; q ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); } }
+        if (n >= 2){ const m = n === 2 ? clamp01(u / 4) : 1; g.globalAlpha = m; ell(g, 150, 108, 24, 12, '#b8765a'); ell(g, 150, 108, 15, 7, '#d89a7a'); ell(g, 232, 118, 15, 11, '#fffaf0'); ell(g, 232, 118, 7, 5, '#f0a020'); g.globalAlpha = 1; }
+        if (n >= 3){ const m = n === 3 ? clamp01(u / 4) : 1; g.globalAlpha = m; g.fillStyle = '#1a2a1a'; g.fillRect(196, 70, 34, 36); for (let i = 0; i < 12; i++) ell(g, 160 + (i * 37) % 70, 112 + (i * 13) % 16, 3, 2, '#5ac85a'); g.globalAlpha = 1; }
+        if (n >= 4) steam(g, 192, 76, t); } },
+    { shop: '寿司屋良口', dish: '寿司（5かん）', steps: ['酢めしを ひと口の大きさに にぎる', 'わさびを 少しだけつける', 'まぐろ・サーモン・たまごをのせる', 'えび・いかをのせる', 'できあがり！ しょうゆをつけて'],
+      draw(g, n, u, t){ rr(g, 56, 118, 272, 22, 4, '#b8864a'); g.fillStyle = '#8a5a2a'; g.fillRect(76, 140, 20, 16); g.fillRect(288, 140, 20, 16);
+        const NETA = ['#c8283a', '#f08a4a', '#f4d040', '#f0a090', '#f8f4ee'], cnt = n === 0 ? Math.floor(clamp01(u / 8) * 5.01) : 5;
+        for (let i = 0; i < cnt; i++){ const x = 74 + i * 50; rr(g, x, 98, 38, 20, 9, '#fffdf6'); if (n >= 1) ell(g, x + 19, 99, 5, 2.5, '#7ac84a');
+          const on = n > 3 || (n === 3 ? (i < 3 || u > (i - 3) * 3 + 1) : n === 2 ? u > i * 2.5 + 1 && i < 3 : false); if (on){ rr(g, x - 3, 86, 44, 15, 7, NETA[i]); if (i === 2){ g.fillStyle = '#1a2a1a'; g.fillRect(x + 15, 84, 8, 30); } if (i === 0){ g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 1.5; for (let q = 0; q < 3; q++){ g.beginPath(); g.moveTo(x + 6 + q * 12, 88); g.lineTo(x + 10 + q * 12, 99); g.stroke(); } } } }
+        if (n >= 4){ ell(g, 322, 168, 22, 9, '#f4f4f4'); ell(g, 322, 168, 16, 6, '#3a1a0a'); for (let i = 0; i < 5; i++) T(g, '✨', 74 + i * 50 + 19, 66 + Math.sin(t * 4 + i) * 4, 13, '#fff'); } } },
+    { shop: 'カツ勝', dish: 'カツ丼', steps: ['どんぶりに ごはんをよそう', 'あげたてのカツを 切ってのせる', 'たまごでとじた具を かける', 'みつばをのせる', 'できあがり！'],
+      draw(g, n, u, t){ bowl(g, '#2a2420', '#3a2a1a'); const s = n === 0 ? clamp01(u / 6) : 1; ell(g, 192, 113, 84 * s, 25 * s, '#fffdf6');
+        if (n >= 1){ const m = n === 1 ? Math.floor(clamp01(u / 6) * 5.01) : 5; for (let i = 0; i < m; i++){ rr(g, 132 + i * 25, 98, 21, 30, 6, '#c8842a'); rr(g, 136 + i * 25, 103, 13, 20, 4, '#f0d8b0'); } }
+        if (n >= 2){ g.globalAlpha = n === 2 ? clamp01(u / 4) : 1; for (let i = 0; i < 7; i++) ell(g, 128 + i * 21, 108 + (i % 2) * 14, 15, 7, i % 3 ? '#f4d040' : '#fff6c0'); g.globalAlpha = 1; }
+        if (n >= 3){ g.globalAlpha = n === 3 ? clamp01(u / 3) : 1; for (let i = 0; i < 5; i++) ell(g, 150 + i * 21, 110 + (i * 7) % 9, 6, 3, '#3aa84a'); g.globalAlpha = 1; }
+        if (n >= 4) steam(g, 192, 78, t); } } ];
+  function cook(g, t, ep, pi){ grad(g, '#f8e8c8', '#f0c890'); const C = COOK[((ep % 3) + 3) % 3];
+    if (t < 5){ T(g, '商店街の', 192, 62, 22, '#8a3a1a'); T(g, '今日のごはん', 192, 98, 36, '#c0391a'); T(g, '今日は「' + C.shop + '」の ' + C.dish, 192, 150, 17, '#4a2a10', 'center', 360); }
+    else if (t < 70){ const n = Math.min(4, Math.floor((t - 5) / 13)), u = t - 5 - n * 13; C.draw(g, n, u, t); rr(g, 8, 30, 86, 26, 8, '#c0391a'); T(g, n < 4 ? 'その' + (n + 1) : '完成', 51, 44, 15, '#fff'); T(g, C.shop, 376, 44, 14, '#8a3a1a', 'right');
+      rr(g, 8, 178, 368, 32, 8, 'rgba(60,30,10,.88)'); T(g, C.steps[n], 192, 195, 17, '#fff', 'center', 352); }
+    else { T(g, 'つづきは', 192, 62, 18, '#8a3a1a'); T(g, 'みらい商店街の「' + C.shop + '」で！', 192, 100, 21, '#c0391a', 'center', 364); wrap(g, 'スマホのアプリ「みらい商店街」でも たのめます', 192, 146, 15, '#4a2a10', 340); }
+    bar(g, pi, '#c0391a'); }
+
+  /* ---- 番組4: 豆知識クイズ。[問題, 3つの答え, 正解の番号, ひとこと] */
+  const QUIZ = [['タコの心臓は いくつある？', ['1つ', '3つ', '8つ'], 1, '体に血を送る1つと、えらに送る2つ'], ['1日は 何秒？', ['3600秒', '86400秒', '100000秒'], 1, '60秒×60分×24時間'], ['キリンの首の骨は 何こ？', ['7こ', '14こ', '25こ'], 0, '人間と同じ7こ。1こが長い'],
+    ['太陽の光が 地球にとどくまで どのくらい？', ['約8秒', '約8分', '約8時間'], 1, '光でも 8分ちょっとかかる'], ['シロクマの はだの色は？', ['白', 'ピンク', '黒'], 2, '毛はとうめいで、はだは黒い'], ['水が こおる温度は？', ['0℃', '10℃', '100℃'], 0, '100℃は ふっとうする温度'],
+    ['世界でいちばん大きい動物は？', ['アフリカゾウ', 'ジンベエザメ', 'シロナガスクジラ'], 2, '長さ30メートルになることもある'], ['バナナは どこになる？', ['木', '大きな草', '土の中'], 1, 'バナナの「木」は、じつは草のなかま'], ['1円玉の重さは？', ['1グラム', '5グラム', '10グラム'], 0, 'ちょうど1グラム'],
+    ['日本でいちばん高い山は？', ['富士山', '北岳', '大雪山'], 0, '高さ3776メートル'], ['カタツムリの歯は どのくらいある？', ['0本', '32本', '1万本以上'], 2, '小さな歯が ずらっとならんでいる'], ['にじは ふつう何色と数える？（日本）', ['5色', '7色', '12色'], 1, '赤・だいだい・黄・緑・青・あい・むらさき'],
+    ['いちばん面積が大きい都道府県は？', ['北海道', '岩手県', '長野県'], 0, '2番目の岩手県の 5倍以上'], ['はちみつは 長くおくと どうなる？', ['すぐくさる', 'ほとんどくさらない', '水になる'], 1, '水分が少ないので、菌がふえにくい']];
+  function quiz(g, t, ep, pi){ grad(g, '#0a5a4a', '#062a2a'); const four = pickN(QUIZ, 4, ep);
+    if (t < 4){ T(g, '豆知識クイズ', 192, 96, 40, '#ffe14d'); T(g, 'いっしょに考えよう', 192, 146, 18, '#fff'); }
+    else if (t < 76){ const k = Math.min(3, Math.floor((t - 4) / 18)), u = t - 4 - k * 18, Q = four[k], open = u >= 11;
+      rr(g, 8, 30, 368, 52, 8, '#fff'); T(g, '第' + (k + 1) + '問', 16, 41, 12, '#0a5a4a', 'left'); T(g, Q[0], 192, 63, 17, '#123', 'center', 354);
+      Q[1].forEach((a, i) => { const ok = i === Q[2]; rr(g, 30, 90 + i * 30, 324, 26, 8, open ? (ok ? '#3ad06a' : 'rgba(255,255,255,.25)') : '#ffe14d'); T(g, 'ABC'[i] + '　' + a + (open && ok ? '　◎' : ''), 192, 104 + i * 30, 17, open && !ok ? 'rgba(255,255,255,.6)' : '#123'); });
+      if (!open){ g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(30, 188, 324, 12); g.fillStyle = '#ff7a5a'; g.fillRect(30, 188, 324 * (1 - u / 11), 12); T(g, String(Math.ceil(11 - u)), 366, 194, 14, '#fff'); }
+      else { rr(g, 8, 182, 368, 28, 8, 'rgba(0,0,0,.55)'); T(g, Q[3], 192, 197, 15, '#fff', 'center', 356); } }
+    else { T(g, 'また見てね！', 192, 110, 34, '#ffe14d'); }
+    bar(g, pi, '#0a8a6a'); }
+
+  const DRAW = [mashi, news, cook, quiz];
+  let off = 0; const now = () => Date.now() / 1000 + off;
+  const progAt = (c, T0 = now()) => (((c + Math.floor(T0 / LEN)) % PROG.length) + PROG.length) % PROG.length;
+  function draw(g, pi, T0){ const t = ((T0 % LEN) + LEN) % LEN, ep = Math.floor(T0 / LEN); g.save(); g.globalAlpha = 1; try { DRAW[pi](g, t, ep, pi); } catch (e){ g.fillStyle = '#000'; g.fillRect(0, 0, CW, CH); TVSHOW_ERR = String(e && e.stack || e); } g.restore(); }
+  let TVSHOW_ERR = '';
+  const chans = [];
+  const chan = c => chans[c] || (chans[c] = (() => { const cv = document.createElement('canvas'); cv.width = CW; cv.height = CH; const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; return { cv, g: cv.getContext('2d'), tex, n: 0 }; })());
+  function tick(){ const T0 = now(); for (let c = 0; c < chans.length; c++){ const h = chans[c]; if (!h || !h.n) continue; draw(h.g, progAt(c, T0), T0); h.tex.needsUpdate = true; } }
+  setInterval(() => { if (!document.hidden) tick(); }, 150);
+  /* テレビを1台つける。(x, y, z) は 画面のまん中、ry は 画面の向き (0 なら +z を向く)。かべから 5センチ手前に置く */
+  function add(parent, x, y, z, ry, w = 1.3, c = 0, frame = true){ c = ((c % PROG.length) + PROG.length) % PROG.length; const h = chan(c); h.n++; const grp = new THREE.Group(), hh = w * CH / CW;
+    const fr = new THREE.Mesh(new THREE.BoxGeometry(w + .1, hh + .1, .07), new THREE.MeshStandardMaterial({ color: 0x15161a, roughness: .5 })); fr.position.z = -.005;
+    const sc = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), new THREE.MeshBasicMaterial({ map: h.tex, toneMapped: false })); sc.position.z = .034;
+    grp.add(sc); if (frame) grp.add(fr); grp.position.set(x, y, z); grp.rotation.y = ry; grp.userData.tv = c; parent.add(grp); return grp; }
+  /* スマホなどで 1まいの絵として使う (番組 pi の 今の場面) */
+  let shotCv = null; function shot(pi, T0 = now()){ if (!shotCv){ shotCv = document.createElement('canvas'); shotCv.width = CW; shotCv.height = CH; } draw(shotCv.getContext('2d'), pi, T0); return shotCv; }
+  return { PROG, LEN, CW, CH, add, draw, shot, tick, progAt, now, get err(){ return TVSHOW_ERR; }, set off(v){ off = v; }, get off(){ return off; }, get count(){ return chans.reduce((a, h) => a + (h ? h.n : 0), 0); } };
+})();
+window.TVSHOW = TVSHOW;
+
+/* ---- みらい商店街 (tvshow_part.js) */
+const STREET = { shops: [], clerks: null, FX: 46, food: null,
+  /* 料理を カウンターの上 (自分の前) に出す */
+  serve(s, name){ if (STREET.food) scene.remove(STREET.food.g); const f = FOOD3D.make(name); if (!f) return false; f.shop = s; f.i = 0; f.cool = .4; f.done = false; f.g.position.set(STREET.FX + 5.88, 1.085, Math.max(s.z - 3.7, Math.min(s.z + 3.7, player.pos.z))); f.g.rotation.y = -Math.PI / 2; scene.add(f.g); STREET.food = f;
+    showMsg('「' + name + '」が出てきた。E（コントローラーは A）で ひと口ずつ食べる', 3.5); beep(880, .08, .1); setTimeout(() => beep(1175, .08, .1), 90); return true; },
+  /* 毎フレーム: 食べかけの ひと口を 口のほうへ動かして消す。料理の近くにいたら E で食べる (true を返すと、注文の案内より先) */
+  tick(dt){ const f = STREET.food; if (!f || !player) return false;
+    for (const b of f.bites){ if (!(b.userData.eat > 0)) continue; b.userData.eat -= dt; const k = Math.max(0, b.userData.eat / .28); b.scale.setScalar(.2 + .8 * k); b.position.y = b.userData.p0.y + (1 - k) * .09; b.position.z = b.userData.p0.z + (1 - k) * .07; if (b.userData.eat <= 0) b.visible = false; }
+    const near = player.pos.y < 1 && Math.abs(player.pos.z - f.g.position.z) < 1.6 && player.pos.x > STREET.FX + 2.6 && player.pos.x < STREET.FX + 5.6;
+    if (f.done){ f.t -= dt; if (f.t <= 0){ scene.remove(f.g); STREET.food = null; return false; } if (!near) return false; $('prompt').style.display = 'block'; $('prompt').textContent = 'ごちそうさま！（うつわを下げています）'; keys.KeyE = false; return true; }   /* 食べ終わった直後の E で、すぐ注文の画面が開かないように */
+    f.cool -= dt; if (!near) return false;
+    $('prompt').style.display = 'block'; $('prompt').textContent = 'E（コントローラーは A）：「' + f.name + '」を食べる（のこり ' + (f.bites.length - f.i) + '口）';
+    if (keys.KeyE){ keys.KeyE = false; if (f.cool <= 0) STREET.bite(); } return true; },
+  bite(){ const f = STREET.food; if (!f || f.done) return; const b = f.bites[f.i++]; b.userData.eat = .28; f.cool = .32; beep(420 + (f.i % 3) * 60, .05, .1);
+    if (f.i >= f.bites.length){ f.done = true; f.t = 3; const m = window.__streetStamp ? window.__streetStamp(f.shop.name) : ''; showMsg('「' + f.name + '」を食べ終わった。ごちそうさま！　' + m, 3.5); setTimeout(() => { beep(880, .1, .1); setTimeout(() => beep(1320, .12, .1), 110); }, 250); } },
+  at(p){ if (p.y > 1) return null; for (const s of STREET.shops) if (p.x > STREET.FX + 2.6 && p.x < STREET.FX + 5.5 && Math.abs(p.z - s.z) < 4.6) return s; return null; },
+  people(){ if (!STREET.clerks){ STREET.clerks = STREET.shops.map((s, i) => { const m = makePerson({ shirt: [0xf4f4f4, 0x2a4a8a, 0xf0e0c0][i], pants: [0x2a2a30, 0x1a1a24, 0x3a2a20][i], hair: [0x1a1410, 0x2a2018, 0x4a3a2a][i], skin: [0xe8b894, 0xf0c8a0, 0xd8a880][i], scale: 1, look: { hair: ['short', 'spiky', 'bob'][i], glasses: i === 1 } }); m.group.position.set(STREET.FX + 7.25, 0, s.z); m.group.rotation.y = -Math.PI / 2; scene.add(m.group); return { m, s }; }); }
+    if (!player) return; for (const c of STREET.clerks){ const g = c.m.group, dx = player.pos.x - g.position.x, dz = player.pos.z - g.position.z, near = Math.abs(dz) < 5.4 && dx > -7.4 && dx < 0 && player.pos.y < 1; let want = near ? Math.atan2(dx, dz) : -Math.PI / 2, d = want - g.rotation.y; while (d > Math.PI) d -= 6.2832; while (d < -Math.PI) d += 6.2832; g.rotation.y += d * .12; } } };
+/* ---- みらい商店街の料理 12品 (street_food_part.js)。長さは メートル (あとで K 倍に大きくする)。B() が「ひと口」のかたまりを作る (作った順に食べる) */
+const FOOD3D = (() => {
+  const mc = new Map(), M = (c, r = .6, dbl) => { const k = c + ':' + r + ':' + (dbl ? 1 : 0); if (!mc.has(k)){ const m = std({ color: c, roughness: r }); if (dbl) m.side = THREE.DoubleSide; mc.set(k, m); } return mc.get(k); };
+  const put = (g, geo, col, x, y, z, o = {}) => { const m = new THREE.Mesh(geo, M(col, o.r, o.dbl)); m.position.set(x, y, z); m.rotation.set(o.rx || 0, o.ry || 0, o.rz || 0); if (o.s) m.scale.set(o.s[0], o.s[1], o.s[2]); g.add(m); return m; };
+  const cyl = (g, rt, rb, h, col, x, y, z, o) => put(g, new THREE.CylinderGeometry(rt, rb, h, 20), col, x, y + h / 2, z, o);
+  const box = (g, w, h, d, col, x, y, z, o) => put(g, new THREE.BoxGeometry(w, h, d), col, x, y + h / 2, z, o);
+  const sph = (g, r, col, x, y, z, o) => put(g, new THREE.SphereGeometry(r, 12, 8), col, x, y, z, o);
+  const half = (g, r, col, x, y, z, o) => put(g, new THREE.SphereGeometry(r, 14, 8, 0, 6.2832, 0, 1.5708), col, x, y, z, o);
+  const tor = (g, r, t, col, x, y, z, o) => put(g, new THREE.TorusGeometry(r, t, 6, 18), col, x, y, z, Object.assign({ rx: Math.PI / 2 }, o || {}));
+  const rnd = s => () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  /* どんぶり・おわん: 外の色 out・中の色 inn・ふちの色 rim。中身は y = h - .03 〜 h に置く (x, z にずらせる) */
+  const bowl = (g, r, h, out, inn, rim, x = 0, z = 0) => { cyl(g, r * .9, r * .55, h - .035, out, x, 0, z, { r: .35 }); put(g, new THREE.CylinderGeometry(r, r * .9, .035, 24, 1, true), out, x, h - .0175, z, { r: .35, dbl: 1 }); cyl(g, r * .89, r * .89, .003, inn, x, h - .036, z); tor(g, r - .003, .006, rim || out, x, h, z); };
+  const disc = (g, r, col, y, x = 0, z = 0, o) => cyl(g, r, r, .006, col, x, y, z, o);
+  /* にぎり寿司 1かん */
+  const nig = (b, x, y, z, col, kind) => {
+    if (kind === 'gun'){ box(b, .05, .03, .032, 0x141a14, x, y, z); if (col === 0xf0601a){ for (let i = 0; i < 9; i++) sph(b, .0075, col, x - .016 + (i % 3) * .016, y + .034, z - .01 + ((i / 3) | 0) * .01, { r: .25 }); } else { box(b, .042, .009, .024, col, x, y + .03, z); for (let i = 0; i < 3; i++) sph(b, .006, 0xf0a020, x - .012 + i * .012, y + .04, z); } return; }
+    box(b, .05, .022, .028, 0xfafafa, x, y, z); box(b, .06, .011, .034, col, x, y + .022, z, { rz: .06, r: .45 });
+    if (kind === 'band') box(b, .012, .036, .037, 0x141a14, x, y, z);
+    if (kind === 'stripe') for (const dx of [-.016, 0, .016]) box(b, .003, .0115, .035, 0xffe0d0, x + dx, y + .0228, z, { rz: .06 });
+    if (kind === 'tail') box(b, .016, .008, .02, 0xe8503a, x + .036, y + .024, z);
+    if (kind === 'sauce') box(b, .05, .003, .012, 0x4a2410, x, y + .0335, z); };
+  /* 定食の ごはん (2口)・みそ汁 (1口)・キャベツ (1口)・おぼん */
+  const tray = g => { box(g, .46, .012, .32, 0x6a4a2a, 0, 0, 0, { r: .5 }); for (const s of [-1, 1]) box(g, .46, .01, .012, 0x4a3018, 0, .012, s * .154); };
+  const rice = (g, B, x, z) => { bowl(g, .058, .055, 0xf4f4f0, 0xf4f4f0, 0x2a4a9a, x, z); let b = B(); half(b, .05, 0xfdfdf8, x, .048, z, { s: [1, .55, 1], r: .9 }); b = B(); disc(b, .05, 0xfdfdf8, .04, x, z, { r: .9 }); };
+  const miso = (g, B, x, z) => { bowl(g, .058, .055, 0x1a1414, 0xb02020, 0x1a1414, x, z); const b = B(); disc(b, .052, 0xb07838, .042, x, z, { r: .25 }); for (const [dx, dz] of [[-.018, .01], [.015, -.012], [.004, .022]]) box(b, .012, .006, .012, 0xfffdf0, x + dx, .046, z + dz); for (const [dx, dz] of [[.02, .014], [-.01, -.02]]) box(b, .016, .003, .01, 0x1a4a2a, x + dx, .047, z + dz); };
+  const cabbage = (b, x, y, z) => { half(b, .05, 0xdcecb0, x, y, z, { s: [1, .8, 1], r: .9 }); const r = rnd(9); for (let i = 0; i < 10; i++) box(b, .03, .002, .003, 0xb8d880, x + (r() - .5) * .06, y + .012 + r() * .024, z + (r() - .5) * .06, { ry: r() * 3 }); };
+  const D = {
+    'ラーメン': (g, B) => { bowl(g, .125, .09, 0xf4f4f0, 0xf4f4f0, 0xc02020); let b = B(); box(b, .06, .075, .004, 0x101410, -.07, .072, -.05, { ry: .5 });
+      b = B(); for (const s of [-1, 1]){ cyl(b, .036, .036, .008, 0xa06a4a, s * .045, .084, .048); cyl(b, .022, .022, .009, 0xd8a080, s * .045, .084, .048); }
+      b = B(); half(b, .028, 0xfafafa, .052, .084, -.045); sph(b, .015, 0xf2b030, .052, .09, -.045);
+      b = B(); const r = rnd(3); for (let i = 0; i < 7; i++) tor(b, .028, .004, 0xf0e2a8, (r() - .5) * .1, .088 + i * .0012, (r() - .5) * .08); for (let i = 0; i < 7; i++) box(b, .01, .005, .01, 0x4a9a3a, (r() - .5) * .08, .094, (r() - .5) * .08);
+      b = B(); disc(b, .098, 0xf0e2a8, .08); b = B(); disc(b, .116, 0xb8803a, .074, 0, 0, { r: .2 }); },
+    'みそラーメン': (g, B) => { bowl(g, .13, .09, 0x5a3a20, 0xe8d8b8, 0x3a2414); let b = B(); const r = rnd(5); for (let i = 0; i < 22; i++) sph(b, .006, 0xf8d030, .04 + (r() - .5) * .06, .09 + r() * .006, .04 + (r() - .5) * .06, { r: .4 }); box(b, .022, .014, .022, 0xfff2a8, .04, .094, .04, { ry: .5, r: .3 });
+      b = B(); for (let i = 0; i < 16; i++) box(b, .034, .004, .004, 0xf8f8f0, -.04 + (r() - .5) * .05, .088 + r() * .014, -.03 + (r() - .5) * .05, { ry: r() * 3 });
+      b = B(); cyl(b, .034, .034, .008, 0xa06a4a, -.045, .086, .05); cyl(b, .02, .02, .009, 0xd8a080, -.045, .086, .05); for (let i = 0; i < 4; i++) box(b, .04, .006, .01, 0x9a6a30, .05 + i * .004, .086 + i * .003, -.05 + i * .011, { ry: .3 });
+      b = B(); for (let i = 0; i < 7; i++) tor(b, .03, .0055, 0xf0d070, (r() - .5) * .09, .087 + i * .0012, (r() - .5) * .08);
+      b = B(); disc(b, .1, 0xf0d070, .08); b = B(); disc(b, .12, 0xc8964a, .074, 0, 0, { r: .25 }); },
+    'チャーシューメン': (g, B) => { bowl(g, .135, .09, 0x1a1a1e, 0xb02020, 0x1a1a1e); const sl = (b, a) => { const x = Math.cos(a) * .07, z = Math.sin(a) * .07; cyl(b, .04, .04, .008, 0xa86a4a, x, .085, z, { rz: .12 }); cyl(b, .027, .027, .009, 0xd8a288, x, .085, z, { rz: .12 }); cyl(b, .011, .011, .0095, 0xf0d8c8, x + .012, .085, z, { rz: .12 }); };
+      let b; for (let k = 0; k < 3; k++){ b = B(); sl(b, k * 2.094); sl(b, k * 2.094 + 1.047); }
+      b = B(); const r = rnd(7); half(b, .03, 0x4aa040, 0, .088, 0, { s: [1, .6, 1] }); for (let i = 0; i < 6; i++) tor(b, .026, .004, 0xf0e2a8, (r() - .5) * .07, .086 + i * .001, (r() - .5) * .07);
+      b = B(); disc(b, .1, 0xf0e2a8, .08); b = B(); disc(b, .124, 0x8a5a2a, .074, 0, 0, { r: .2 }); },
+    'ぎょうざ': (g, B) => { box(g, .3, .012, .15, 0xfafaf6, 0, 0, 0, { r: .3 }); box(g, .28, .003, .13, 0xe8eef8, 0, .012, 0, { r: .3 }); cyl(g, .034, .026, .018, 0x1a1a1e, .18, 0, .03, { r: .3 }); cyl(g, .028, .028, .003, 0x5a2a10, .18, .017, .03, { r: .2 });
+      for (let i = 0; i < 6; i++){ const b = B(), x = -.11 + i * .044; sph(b, .03, 0xf2e2b8, x, .03, 0, { s: [.62, .6, 1.25], rz: -.35 }); sph(b, .026, 0xb8763a, x + .005, .04, 0, { s: [.5, .42, 1.15], rz: -.35 }); for (let k = -2; k <= 2; k++) box(b, .004, .012, .004, 0xe8d4a0, x - .014, .034, k * .013, { rz: -.35 }); } },
+    '寿司（5かん）': (g, B) => { box(g, .38, .018, .15, 0xc09a60, 0, .02, 0, { r: .7 }); for (const s of [-1, 1]) box(g, .022, .02, .15, 0xa07a40, s * .14, 0, 0);
+      [[0xc8283a], [0xf08a4a, 'stripe'], [0xf4d040, 'band'], [0xf4a088, 'tail'], [0xf8f6f0]].forEach(([c, k], i) => nig(B(), -.14 + i * .068, .038, 0, c, k));
+      const b = B(); for (let i = 0; i < 4; i++) box(b, .026, .004, .02, 0xf4c0c0, .165, .038 + i * .004, .045, { ry: i * .7 }); },
+    '特上寿司（10かん）': (g, B) => { box(g, .42, .016, .24, 0x16161c, 0, 0, 0, { r: .25 }); for (const s of [-1, 1]){ box(g, .42, .012, .008, 0xb02020, 0, .016, s * .116); box(g, .008, .012, .24, 0xb02020, s * .206, .016, 0); } box(g, .03, .004, .05, 0x3a8a3a, -.185, .016, 0, { ry: .3 });
+      [[0xf08a90, 'stripe'], [0xd84050], [0xf0a020, 'gun'], [0xf0601a, 'gun'], [0xf4a088, 'tail'], [0x9a6a3a, 'sauce'], [0xf8ecd0], [0xf8dcd8], [0xf08a4a, 'stripe'], [0xf4d040, 'band']].forEach(([c, k], i) => nig(B(), -.14 + (i % 5) * .072, .018, i < 5 ? -.052 : .052, c, k)); },
+    'いくら丼': (g, B) => { bowl(g, .12, .085, 0x1a1a1e, 0xb02020, 0x1a1a1e); const r = rnd(11); let b;
+      for (let k = 0; k < 4; k++){ b = B(); const a = k * 1.5708 + .6; for (let i = 0; i < 16; i++){ const q = r() * .05, t = a + (r() - .5) * 1.5; sph(b, .0075, 0xf0601a, Math.cos(t) * (q + .02), .086 + r() * .007, Math.sin(t) * (q + .02), { r: .2 }); } if (k === 0){ box(b, .04, .002, .03, 0x2a8a3a, .03, .092, -.05, { ry: .6 }); sph(b, .008, 0x8ac84a, .045, .096, -.05); } }
+      b = B(); disc(b, .1, 0xfdfdf8, .078, 0, 0, { r: .9 }); for (let i = 0; i < 12; i++) box(b, .02, .002, .003, 0x141a14, (r() - .5) * .12, .085, (r() - .5) * .12, { ry: r() * 3 });
+      b = B(); disc(b, .104, 0xfdfdf8, .066, 0, 0, { r: .9 }); },
+    '茶わんむし': (g, B) => { cyl(g, .075, .075, .006, 0xf4f4f0, 0, 0, 0, { r: .3 }); cyl(g, .048, .038, .05, 0xf4f4f0, 0, .006, 0, { r: .3 }); put(g, new THREE.CylinderGeometry(.05, .048, .03, 24, 1, true), 0xf4f4f0, 0, .071, 0, { r: .3, dbl: 1 }); tor(g, .05, .004, 0x2a4a9a, 0, .086, 0); tor(g, .0485, .003, 0x2a4a9a, 0, .05, 0); cyl(g, .047, .047, .003, 0xf4f4f0, 0, .054, 0);
+      cyl(g, .054, .05, .012, 0xf4f4f0, .13, 0, .02, { r: .3 }); cyl(g, .014, .018, .012, 0x2a4a9a, .13, .012, .02); box(g, .012, .006, .12, 0x9a6a3a, -.11, 0, .01, { ry: .2 }); sph(g, .014, 0x9a6a3a, -.122, .006, .068, { s: [1, .4, 1.4] });
+      let b = B(); tor(b, .012, .005, 0xf4a088, .012, .084, .008); sph(b, .008, 0xd8d060, -.018, .084, -.012); box(b, .02, .003, .012, 0x3a9a3a, -.008, .083, .02, { ry: .7 }); cyl(b, .012, .012, .004, 0x6a4a2a, .018, .08, -.02);
+      b = B(); disc(b, .046, 0xf6e48a, .076, 0, 0, { r: .3 }); b = B(); disc(b, .046, 0xf6e48a, .068, 0, 0, { r: .3 }); b = B(); disc(b, .046, 0xf2dc78, .058, 0, 0, { r: .3 }); },
+    'カツ丼': (g, B) => { bowl(g, .125, .09, 0x3a2418, 0x241810, 0x3a2418); let b;
+      for (let i = 0; i < 5; i++){ b = B(); const x = -.062 + i * .031; box(b, .027, .02, .1, 0xc8842a, x, .086, 0, { ry: .12 }); box(b, .012, .021, .086, 0xf0d8c8, x + .006, .086, 0, { ry: .12 }); sph(b, .03, i % 2 ? 0xf6d250 : 0xfff2b0, x, .104, (i % 2 ? .02 : -.02), { s: [.7, .2, 1.2], r: .4 }); }
+      b = B(); const r = rnd(13); for (let i = 0; i < 6; i++) box(b, .016, .003, .008, 0x3a9a3a, (r() - .5) * .1, .083, (r() - .5) * .14, { ry: r() * 3 }); disc(b, .104, 0xfdfdf8, .078, 0, 0, { r: .9 });
+      b = B(); disc(b, .108, 0xfdfdf8, .066, 0, 0, { r: .9 }); },
+    'ヒレカツ定食': (g, B) => { tray(g); cyl(g, .11, .09, .012, 0xfafaf6, -.09, .012, -.03, { r: .3 }); let b;
+      for (let i = 0; i < 3; i++){ b = B(); const x = -.135 + i * .05, z = .0; cyl(b, .026, .026, .03, 0xc8842a, x, .024, z, { r: .8 }); cyl(b, .019, .019, .031, 0xe8b4a0, x, .024, z); box(b, .054, .032, .003, 0xc8842a, x, .024, z, { ry: 1.5708 }); }
+      b = B(); cabbage(b, -.085, .024, -.085); put(b, new THREE.SphereGeometry(.02, 10, 6, 0, 1.6), 0xf8e040, -.02, .034, -.05, { rx: -.3 });
+      cyl(g, .026, .02, .016, 0xfafaf6, -.01, .012, .06, { r: .3 }); cyl(g, .021, .021, .003, 0x4a2410, -.01, .026, .06, { r: .2 });
+      { const q = new THREE.Group(); q.position.set(.13, .012, .07); g.add(q); const BB = () => { const x = B(); x.position.set(.13, .012, .07); return x; }; rice(q, BB, 0, 0); } { const q = new THREE.Group(); q.position.set(.13, .012, -.07); g.add(q); miso(q, () => { const x = B(); x.position.set(.13, .012, -.07); return x; }, 0, 0); }
+      cyl(g, .026, .02, .012, 0x2a4a9a, .03, .012, -.1, { r: .3 }); b = B(); for (let i = 0; i < 3; i++) cyl(b, .011, .011, .004, 0xf4d040, .024 + i * .007, .024 + i * .003, -.1, { rz: .4 }); },
+    'エビフライ定食': (g, B) => { tray(g); box(g, .2, .012, .15, 0xfafaf6, -.09, .012, -.02, { r: .3 }); let b;
+      for (let i = 0; i < 3; i++){ b = B(); const z = .035 - i * .038; cyl(b, .017, .014, .12, 0xd8963a, -.1, .03 + i * .004, z, { rz: 1.5708, r: .9 }); const r = rnd(20 + i); for (let k = 0; k < 10; k++) sph(b, .005, 0xe8b050, -.155 + r() * .11, .046 + i * .004 + r() * .006, z + (r() - .5) * .024, { r: .9 }); put(b, new THREE.ConeGeometry(.018, .03, 8), 0xe8503a, -.025, .044 + i * .004, z, { rz: 1.5708, s: [1, 1, .45] }); }
+      b = B(); cabbage(b, -.06, .024, -.07); sph(b, .022, 0xfffbe8, -.01, .034, .03, { s: [1, .6, 1] }); for (const [dx, dz] of [[-.006, .004], [.008, -.004], [.002, .01]]) box(b, .004, .003, .004, 0x4a9a3a, -.01 + dx, .046, .03 + dz); put(b, new THREE.SphereGeometry(.022, 10, 6, 0, 1.6), 0xe8402a, -.165, .036, -.075, { rx: -.3 });
+      { const q = new THREE.Group(); q.position.set(.13, .012, .07); g.add(q); rice(q, () => { const x = B(); x.position.set(.13, .012, .07); return x; }, 0, 0); } { const q = new THREE.Group(); q.position.set(.13, .012, -.07); g.add(q); miso(q, () => { const x = B(); x.position.set(.13, .012, -.07); return x; }, 0, 0); } },
+    'とん汁': (g, B) => { bowl(g, .135, .1, 0x7a2a1a, 0x16120f, 0x16120f); const r = rnd(17); let b = B();
+      for (let i = 0; i < 6; i++) box(b, .04, .005, .022, 0xd8a090, (r() - .5) * .15, .096, (r() - .5) * .15, { ry: r() * 3, rz: (r() - .5) * .3 });
+      b = B(); for (let i = 0; i < 5; i++) put(b, new THREE.CylinderGeometry(.024, .024, .007, 14, 1, false, 0, 1.5708), 0xfbfbf4, (r() - .5) * .15, .096, (r() - .5) * .15, { ry: r() * 6 }); for (let i = 0; i < 5; i++) cyl(b, .013, .013, .006, 0xf08020, (r() - .5) * .16, .094, (r() - .5) * .16);
+      b = B(); for (let i = 0; i < 4; i++) box(b, .03, .008, .012, 0x8a8a84, (r() - .5) * .14, .094, (r() - .5) * .14, { ry: r() * 3 }); for (let i = 0; i < 4; i++) box(b, .03, .005, .006, 0x7a5a3a, (r() - .5) * .14, .095, (r() - .5) * .14, { ry: r() * 3 }); for (let i = 0; i < 7; i++) tor(b, .006, .0022, 0x5ab84a, (r() - .5) * .12, .099, (r() - .5) * .12);
+      b = B(); disc(b, .124, 0xb8894a, .088, 0, 0, { r: .25 }); b = B(); disc(b, .12, 0xb07f40, .076, 0, 0, { r: .25 }); } };
+  const KS = { 'ヒレカツ定食': 1.85, 'エビフライ定食': 1.85, '特上寿司（10かん）': 2.0, '寿司（5かん）': 2.2, 'ぎょうざ': 2.2, '茶わんむし': 2.6 };
+  function make(name){ const fn = D[name]; if (!fn) return null; const g = new THREE.Group(), bites = []; fn(g, () => { const b = new THREE.Group(); g.add(b); bites.push(b); return b; }); g.scale.setScalar(KS[name] || 2.3); for (const b of bites) b.userData.p0 = b.position.clone(); return { g, bites, name }; }
+  return { make, names: Object.keys(D) };
+})();
 const carM = [0xc0392b, 0x2e86de, 0xf4f4f4, 0x333333, 0xf1c40f, 0x7f8c8d, 0x27ae60];
 const MALLMATS = { wood: std({ color: 0x8a6040, roughness: .8 }), wood2: std({ color: 0xb08a60, roughness: .8 }), metal: std({ color: 0x8a8e94, metalness: .5, roughness: .5 }), white: std({ color: 0xeeeeea, roughness: .6 }),
   dark: std({ color: 0x222428, roughness: .5 }), fabric: std({ color: 0x5a7a9a, roughness: 1 }), bedding: std({ color: 0xd8c8a8, roughness: 1 }), pot: std({ color: 0x8a5a3a }), leaf: std({ color: 0x3a7a3a, roughness: 1 }),
@@ -3493,7 +3855,9 @@ const MALLMATS = { wood: std({ color: 0x8a6040, roughness: .8 }), wood2: std({ c
   mallGlass: new THREE.MeshBasicMaterial({ color: 0xbfe0f0, transparent: true, opacity: .35, depthWrite: false }), esc: std({ color: 0x5a5e66, metalness: .5, roughness: .4 }), escRail: std({ color: 0x18181c }), escStep: std({ color: 0xe8c040 }),
   cl0: std({ color: 0xd04040 }), cl1: std({ color: 0x3a6ad0 }), cl2: std({ color: 0xf0f0f0 }), cl3: std({ color: 0x2a2a2a }), cl4: std({ color: 0xe8b830 }), cl5: std({ color: 0x48a860 }),
   mannequin: std({ color: 0xe8e0d6 }), screenW: new THREE.MeshBasicMaterial({ color: 0xf4f6ff }), screenG: new THREE.MeshBasicMaterial({ color: 0x50e0ff }), seat: std({ color: 0xa02434, roughness: 1 }),
-  lot: std({ color: 0x55565c, roughness: .95 }), lotLine: new THREE.MeshBasicMaterial({ color: 0xe8e8e8 }) };
+  lot: std({ color: 0x55565c, roughness: .95 }), stPave: std({ color: 0xb8a890, roughness: .95 }), stPave2: std({ color: 0xa89678, roughness: .95 }), stWall0: std({ color: 0xe8d8b0, roughness: .85 }), stWall1: std({ color: 0xf0f0e8, roughness: .85 }), stWall2: std({ color: 0xd8c8a0, roughness: .85 }),
+  stRoof: std({ color: 0x3a3028, roughness: .8 }), stFloor: std({ color: 0x8a6a4a, roughness: .9 }), stCounter: std({ color: 0x6a4a2a, roughness: .7 }), stNoren: std({ color: 0x2a3a6a, roughness: 1 }), stStool: std({ color: 0xa02020, roughness: .7 }), stArch: std({ color: 0xc02a2a, roughness: .6 }),
+  lantern: new THREE.MeshBasicMaterial({ color: 0xff5a3a }), lampGlow: new THREE.MeshBasicMaterial({ color: 0xfff0c0 }), lotLine: new THREE.MeshBasicMaterial({ color: 0xe8e8e8 }) };
 const MALL_B = (() => {
   const cx = 0, cz = 0, hw = 19.3, hd = 19.3, floors = 4, T = .3, H = floors * FH, DW = 1.6, DH = 2.7;
   const b = { cx, cz, hw, hd, floors, door: 'S', kind: 'bld', style: 'mall', inside: floors, nodes: [] }, bi = BUILD.length; BUILD.push(b);
@@ -3504,6 +3868,14 @@ const MALL_B = (() => {
   for (const yy of [FH * 2 - .3, H - .6]) for (const [a0, c0, a1, c1] of [[x0 - .2, z0 - .22, x1 + .2, z0 - .16], [x0 - .2, z1 + .16, x1 + .2, z1 + .22], [x0 - .22, z0, x0 - .16, z1], [x1 + .16, z0, x1 + .22, z1]]) addBox('mallBand', a0, yy, c0, a1, yy + .45, c1);
   const doorIn = addNode(0, 0, z0 + 1.2, bi), doorOut = addNode(0, 0, z0 - 1.6, bi); linkN(doorIn, doorOut); b.doorOut = doorOut; b.nodes.push(doorIn);
   mallInside(b, bi, cx, cz, hw, 'S', doorIn);
+  { /* どの店にも テレビを1台 (奥のかべの上のほう。映画館だけは スクリーンがあるので 横のかべ)。モールの店には店員がいないので、店員の後ろにはならない */
+    let q = 0; for (const s of b.shops){ if (s.entrance) continue; const dx = s.x - cx, dz = s.z - cz, ns = Math.abs(dz) > Math.abs(dx), sg = Math.sign(ns ? dz : dx), TW = s.floor === 2 ? 1.7 : 1.8, TH = TW * 216 / 384;   /* フードコートは メニューの板の上なので 少し小さく */
+      let x, z, ry, yy = s.y + (s.floor === 2 ? 2.85 : 2.8), alongX;
+      if (s.name === '映画館'){ yy = s.y + 2.3; if (ns){ x = s.x + 4.03; z = cz + sg * 16; ry = -Math.PI / 2; alongX = false; } else { x = cx + sg * 16; z = s.z + 4.03; ry = Math.PI; alongX = true; } }
+      else if (ns){ x = s.x; z = cz + sg * (hw - .2); ry = sg > 0 ? Math.PI : 0; alongX = true; } else { x = cx + sg * (hw - .2); z = s.z; ry = sg > 0 ? -Math.PI / 2 : Math.PI / 2; alongX = false; }
+      TVSHOW.add(scene, x, yy, z, ry, TW, q++, false); s.tv = { x, y: yy, z };
+      const nx = Math.round(Math.sin(ry)), nz = Math.round(Math.cos(ry));   /* 画面の向き。わくは かべがわへ 4センチ・手前へ 3センチ (画面は 3.4センチ手前) */
+      if (alongX) addBox('dark', x - TW / 2 - .05, yy - TH / 2 - .05, Math.min(z - nz * .04, z + nz * .03), x + TW / 2 + .05, yy + TH / 2 + .05, Math.max(z - nz * .04, z + nz * .03)); else addBox('dark', Math.min(x - nx * .04, x + nx * .03), yy - TH / 2 - .05, z - TW / 2 - .05, Math.max(x - nx * .04, x + nx * .03), yy + TH / 2 + .05, z + TW / 2 + .05); } }
   { /* 4階の西の通路にカードテーブル (緑のマット)。相手のお客さんが向こうに立っている */ const y = 3 * FH;
     wall('wood', -8.2, y, -.9, -7.0, y + .74, .9); addBox('cl5', -8.15, y + .74, -.85, -7.05, y + .77, .85);
     for (const z of [-.5, .5]) addBox('white', -7.9 + (z > 0 ? .1 : 0), y + .77, z - .18, -7.6 + (z > 0 ? .1 : 0), y + .79, z + .18);
@@ -3518,8 +3890,44 @@ const MALL_B = (() => {
   const lot = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), MALLMATS.lot); lot.rotation.x = -Math.PI / 2; scene.add(lot);
   addBox('walk', -24, 0, -24, 24, .06, 24);
   for (const zz of [-34, -48]) for (let x = -40; x <= 40; x += 2.7){ if (Math.abs(x) < 4) continue; addBox('lotLine', x - .06, .02, zz - 2.6, x + .06, .03, zz + 2.6); if (Math.random() < .55){ const ck = 'car' + ((Math.random() * carM.length) | 0); wall(ck, x + .45, 0, zz - 2.2, x + 2.25, 1.4, zz + 2.2); } }
-  for (let x = -40; x <= 40; x += 8) for (const zz of [-26, 26]) vtree(x, zz); for (let z = -18; z <= 18; z += 8) for (const xx of [-26, 26]) vtree(xx, z);
+  for (let x = -40; x <= 40; x += 8) for (const zz of [-26, 26]) if (x < 30) vtree(x, zz); for (let z = -18; z <= 18; z += 8) for (const xx of [-26, 26]) vtree(xx, z);
   for (const [a0, c0, a1, c1] of [[-62, -62, 62, -61], [-62, 61, 62, 62], [-62, -61, -61, 61], [61, -61, 62, 61]]) wall('fence', a0, 0, c0, a1, 2.2, c1);
+  { /* ---- みらい商店街 (モールの東がわ)。道は南北。お店は道の東がわにならび、西を向いている */
+    const SX0 = 34, SX1 = 45.7, FX = STREET.FX, BX = FX + 10, ZS = -24, ZN = 24, CLs = ['cl0', 'cl1', 'cl2', 'cl4', 'cl5'];
+    addBox('stPave', SX0, 0, ZS, SX1, .05, ZN); for (let z = ZS + .5, i = 0; z < ZN - 1; z += 2, i++) addBox('stPave2', SX0 + .4 + (i % 2) * 5.6, .05, z, SX0 + 5.6 + (i % 2) * 5.6, .058, z + 1);
+    addBox('walk', 24, 0, -24.6, SX0, .05, -21.4);   /* モールの入口から 商店街までの歩道 */
+    /* アーチ (南と北)。看板は 外がわと内がわの両方から読める */
+    for (const [az, out] of [[ZS + .6, Math.PI], [ZN - .6, 0]]){ for (const px of [SX0 + .5, SX1 - .5]) wall('stArch', px - .3, 0, az - .3, px + .3, 5.2, az + .3); addBox('stArch', SX0, 5.2, az - .35, SX1, 6.6, az + .35);
+      for (const ry of [out, out + Math.PI]) signMesh(signCanvas([['みらい商店街', 96, '#fff']], 1024, 128, '#c02a2a'), 10.4, 1.3, (SX0 + SX1) / 2, 5.9, az + Math.cos(ry) * .37, ry); }
+    /* 道の上にわたした旗・街灯・ちょうちん・ベンチ・植木 */
+    for (let z = ZS + 4; z < ZN - 2; z += 4){ addBox('dark', SX0 + .2, 4.55, z - .015, SX1 - .2, 4.58, z + .015); for (let x = SX0 + .6, i = 0; x < SX1 - .6; x += .9, i++) addBox(CLs[(i + Math.round(z + 40)) % 5], x, 4.1, z - .02, x + .55, 4.55, z + .02); }
+    for (const z of [-18, -6, 6, 18]){ wall('metal', SX0 + .15, 0, z - .08, SX0 + .31, 3.6, z + .08); addBox('lampGlow', SX0 + .03, 3.6, z - .2, SX0 + .43, 4.0, z + .2); }
+    for (const z of [-12, 12]){ wall('wood', SX0 + .5, 0, z - 1.1, SX0 + 1.1, .45, z + 1.1); addBox('wood', SX0 + .5, .45, z - 1.1, SX0 + .62, .95, z + 1.1); }
+    for (const z of [-21, 0, 21]){ wall('pot', SX0 + .45, 0, z - .4, SX0 + 1.25, .6, z + .4); const g = new THREE.SphereGeometry(.6, 8, 6); g.translate(SX0 + .85, 1.15, z); (geos.leaf ??= []).push(g); }
+    /* 案内の立て看板 (モールの入口の前)。南を向いて歩く人 (入口から出てきた人) には 東は右、北を向いて歩く人には 東は左 */
+    wall('metal', 7.9, 0, -23.1, 8.1, 2.9, -22.9); signMesh(signCanvas([['みらい商店街 →', 60, '#fff'], ['ラーメン・寿司・カツ丼', 34, '#ffe0a0']], 512, 160, '#c02a2a'), 3.4, 1.06, 8, 2.35, -22.86, 0); signMesh(signCanvas([['← みらい商店街', 60, '#fff'], ['ラーメン・寿司・カツ丼', 34, '#ffe0a0']], 512, 160, '#c02a2a'), 3.4, 1.06, 8, 2.35, -23.14, Math.PI);
+    signMesh(signCanvas([['← みらい商店街', 60, '#fff'], ['歩いてすぐ（東がわ）', 34, '#ffe0a0']], 512, 160, '#c02a2a'), 4.2, 1.3, 11.5, 2.2, z0 - .2, Math.PI);
+    /* お店 3つ */
+    const DEF = [['ラーメン高一', 'ラーメン屋', -12, ['ラーメン', 'みそラーメン', 'チャーシューメン', 'ぎょうざ']], ['寿司屋良口', '寿司屋', 0, ['寿司（5かん）', '特上寿司（10かん）', 'いくら丼', '茶わんむし']], ['カツ勝', 'カツ丼屋', 12, ['カツ丼', 'ヒレカツ定食', 'エビフライ定食', 'とん汁']]];
+    DEF.forEach(([name, sub, zc, menu], i) => { const key = 'stWall' + i, a = zc - 5.5, c = zc + 5.5, H2 = 4.2;
+      wall(key, FX, 0, a - .3, BX + .3, H2, a); wall(key, FX, 0, c, BX + .3, H2, c + .3); wall(key, BX, 0, a, BX + .3, H2, c);
+      wall(key, FX - .3, 0, a - .3, FX, H2, zc - 1.1); wall(key, FX - .3, 0, zc + 1.1, FX, H2, c + .3); addBox(key, FX - .3, 2.4, zc - 1.1, FX, H2, zc + 1.1);
+      addBox('stRoof', FX - .8, H2, a - .5, BX + .5, H2 + .4, c + .5); addBox('white', FX, H2 - .06, a, BX, H2, c); addBox('stFloor', FX, 0, a, BX, .04, c);
+      addBox('stNoren', FX - .34, 1.9, zc - 1.1, FX - .28, 2.4, zc + 1.1); for (const s of [-1, 1]){ addBox('lantern', FX - .62, 1.75, zc + s * 1.75 - .2, FX - .32, 2.3, zc + s * 1.75 + .2); addBox('dark', FX - .5, 2.3, zc + s * 1.75 - .03, FX - .44, 2.6, zc + s * 1.75 + .03); }
+      signMesh(signCanvas([[name, 70, '#fff'], [sub, 30, '#ffe0a0']], 512, 132, '#8a1a1a'), 7, 1.8, FX - .33, 3.35, zc, -Math.PI / 2);
+      /* 中: カウンター・いす・台所・メニューの板 (店員の後ろのかべ)・テレビ (北がわの横のかべ。カウンターの手前) */
+      wall('stCounter', FX + 5.5, 0, zc - 4.3, FX + 6.5, 1.0, zc + 4.3); addBox('wood2', FX + 5.4, 1.0, zc - 4.4, FX + 6.6, 1.08, zc + 4.4);
+      for (let s = -3; s <= 3; s += 1.5){ addBox('stStool', FX + 4.25, .42, zc + s - .22, FX + 4.69, .5, zc + s + .22); addBox('metal', FX + 4.43, 0, zc + s - .04, FX + 4.51, .42, zc + s + .04); }
+      wall('metal', BX - 1.6, 0, a + .2, BX - .3, .95, c - .2); addBox('dark', BX - .55, 1.55, a + .5, BX - .05, 1.75, c - .5);
+      wall('wood2', FX + .9, 0, a + .7, FX + 2.3, .72, a + 1.9); for (const [ox, oz] of [[.45, 2.3], [1.75, 2.3]]) addBox('dark', FX + ox + .25, 0, a + oz, FX + ox + .65, .45, a + oz + .4);
+      signMesh(signCanvas([['お品書き（全品 無料）', 32, '#ffe0a0'], ...menu.map(m => [m, 30, '#fff'])], 512, 300, '#2a1a10'), 3.6, 2.1, BX - .04, 2.95, zc, -Math.PI / 2);
+      TVSHOW.add(scene, FX + 3.2, 2.85, c - .05, Math.PI, 2.5, i);
+      STREET.shops.push({ name, sub, street: true, floor: 2, x: FX + 4.4, y: 0, z: zc, tv: { x: FX + 3.2, y: 2.85, z: c - .05 } }); });
+    /* お客さんの道しるべ: モールの入口の外 → 歩道 → 商店街の道 → それぞれのお店の中 */
+    const nA = addNode(7, 0, -22.6, bi), nB = addNode(31, 0, -22.6, bi), nC = addNode(40, 0, -20, bi); linkN(doorOut, nA); linkN(nA, nB); linkN(nB, nC); b.nodes.push(nA, nB, nC);
+    let prev = nC; for (const zc of [-12, 0, 12]){ const st = addNode(40, 0, zc, bi), dr = addNode(FX - 1.4, 0, zc, bi), ins = addNode(FX + 2.4, 0, zc, bi); linkN(prev, st); linkN(st, dr); linkN(dr, ins); b.nodes.push(st, dr, ins); prev = st; }
+    const nN = addNode(40, 0, 20, bi); linkN(prev, nN); b.nodes.push(nN);
+  }
   for (let k = 0; k < 90; k++){ const a = R(0, 6.28), r = R(110, 300), x = Math.cos(a) * r, z = Math.sin(a) * r, w = R(14, 30), d = R(14, 30), h = R(15, 90); addBox('bld' + (k % 4), x - w / 2, 0, z - d / 2, x + w / 2, h, z + d / 2); }
   return b;
 })();
@@ -4217,7 +4625,7 @@ function common(dt){
   const t = Math.max(0, GAME_T - Math.max(0, elapsed - COUNTDOWN));
   $('timer').textContent = 'みらいモール'; $('timer').classList.remove('hurry');
   $('alive').textContent = player.pos.y > 1 ? Math.round(player.pos.y / FH) + 1 + '階' : '';
-  $('obj').textContent = nearShop ? nearShop.name + '（' + (nearShop.floor + 1) + '階）' : 'お店の入口の前で E：買い物　I：持ち物';
+  $('obj').textContent = nearShop ? nearShop.name + (nearShop.street ? '（みらい商店街）' : '（' + (nearShop.floor + 1) + '階）') : player && player.pos.x > 33 && player.pos.x < 57 && Math.abs(player.pos.z) < 25 && player.pos.y < 1 ? 'みらい商店街：お店のカウンターの前で E：注文' : 'お店の入口の前で E：買い物　I：持ち物';
   const aimed = !ghost && player.alive && oni.target === player && oni.laser.visible;
   $('aimWarn').style.display = aimed ? 'block' : 'none';
   const near = !ghost && player.alive && oni.m.group.visible && oni.pos.distanceTo(player.pos) < 40 && sees(player, oni, 1.6, 1.5);
@@ -4300,7 +4708,7 @@ $('warpBtn2').onclick = () => { setPaused(false); openWarp(); };
 $('warpClose').onclick = () => closeWarp();
 addEventListener('keydown', e => { if (e.code !== 'KeyM' || e.repeat || state !== 'play') return; if (warpOpen) closeWarp(); else if (!paused) openWarp(); });
 window.__ready = true;
-window.__game = { G3D, TVG, MOVIE, BOOK, ARCADE, get SHOPS(){ return SHOPS; }, MALL_B, MALLN, openShop, buy, closeShop, openBag, get shopOpen(){ return shopOpen; }, warpTo, openWarp, get warpOpen(){ return warpOpen; }, VENUES, HUB, enterVenue, updateHub, get survT(){ return SURV_T; }, paceK, get state(){ return state; }, get people(){ return people; }, get npcs(){ return npcs; }, get player(){ return player; }, get oni(){ return oni; }, get elapsed(){ return elapsed; }, get outcome(){ return outcome; }, get ghost(){ return ghost; }, keys, get camera(){ return camera; }, BUILD, NODES, ONI,
+window.__game = { FOOD3D, STREET, TVSHOW, G3D, TVG, MOVIE, BOOK, ARCADE, get SHOPS(){ return SHOPS; }, MALL_B, MALLN, openShop, buy, closeShop, openBag, get shopOpen(){ return shopOpen; }, warpTo, openWarp, get warpOpen(){ return warpOpen; }, VENUES, HUB, enterVenue, updateHub, get survT(){ return SURV_T; }, paceK, get state(){ return state; }, get people(){ return people; }, get npcs(){ return npcs; }, get player(){ return player; }, get oni(){ return oni; }, get elapsed(){ return elapsed; }, get outcome(){ return outcome; }, get ghost(){ return ghost; }, keys, get camera(){ return camera; }, BUILD, NODES, ONI,
   setView(y, p){ yaw = y; pitch = p; }, set god(v){ window.__godMode = v; }, routeTo, nearestNode, groundHeight: (x, z, y) => groundHeight(x, z, y),
   sim(sec, render = true){ const n = Math.round(sec * 30); for (let i = 0; i < n; i++){ if (state === 'play') update(1 / 30); else if (state === 'caught') updateCaught(1 / 30); } if (render) renderer.render(scene, camera); } };
 loop();

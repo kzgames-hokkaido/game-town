@@ -76,7 +76,7 @@ a.sub{text-align:center;text-decoration:none}
 
 <div class="screen on" id="title"><div class="panel">
   <h1><small>ドリル戦車</small>ドリル戦車</h1>
-  <p>スーパーの外には<b>町</b>が広がっている。入れる建物は<b>飲食店</b>だけ（ラーメン高一・寿司屋良口・カツ勝）。飲食店では<b>カウンターでEを押すと注文できる</b>（タダ）。<b>交番</b>の前には<b>指名手配のポスター</b>がある（1人殺して20秒たつと、あなたのポスターも加わる。やり直すと消える）。</p>
+  <p>スーパーの外には<b>町</b>が広がっている。入れる建物は<b>飲食店</b>だけ（ラーメン高一・寿司屋良口・カツ勝）。飲食店では<b>カウンターでEを押すと注文できる</b>（タダ）。スーパーと飲食店の<b>かべにはテレビ</b>が1台ずつある（番組は4つ。時間で入れかわる）。<b>交番</b>の前には<b>指名手配のポスター</b>がある（1人殺して20秒たつと、あなたのポスターも加わる。やり直すと消える）。</p>
   <p>めっちゃ広いスーパー（横70メートル）。棚がたくさん。レジの近くには棚がない。あなたは<b>ドリルつきの小さな戦車</b>に乗っている（一人称。戦車は小さくて、まわりからは見えにくい）。店にいるのは<b>警察官100人</b>・<b>レジの店員10人</b>（セルフレジをふくめて7か所）・<b>客50人</b>。</p>
   <ul>
     <li>ドリルで<b>ぶつかると吹っ飛んで倒れる</b>。同じ人を<b>2回</b>吹っ飛ばすと死ぬ（死体はそのまま残る。代わりの人は来ない）。</li>
@@ -165,6 +165,145 @@ const BLOOD_TEX = (() => { const [c, g] = mk(256, 256);
     g.fillStyle = `rgb(${70 + Math.random() * 25 | 0},${2 + Math.random() * 4 | 0},${4 + Math.random() * 4 | 0})`; g.beginPath(); g.arc(x, y, Math.max(4, rr), 0, 7); g.fill(); }
   return tx(c, false); })();
 
+/* tank_v36: お店のテレビ (tvshow_snip.js をそのまま) */
+// ===================== お店のテレビ (tvshow_snip.js) =====================
+// 2026-11-26 弟君「ドリル戦車でも みらいモールでも どの店にも テレビが壁に一台。番組は『ゲームの街 マシなゲームはどれか』番組と、それ以外に2種類ぐらい」
+// みらいモール (mall_make.js が読む tvshow_part.js) と ドリル戦車 (tank_v36.js) の両方が、このファイルをそのまま入れる。スマホの「ミライテレビ」も TVSHOW.shot を使う。
+// 番組は 4つ (PROG)。1つ 80秒 (LEN)。チャンネル c は「(c + 今が何本目か) % 4」の番組を映すので、時間がたつと番組が入れかわる。時計は本物の時刻 (どのテレビも同じ)。
+// TVSHOW.add(親, x, y, z, 向き, 横はば, チャンネル) でテレビを1台つける。音は出ない。人の名前は出さない (「司会の人」)。
+const TVSHOW = (() => {
+  const CW = 384, CH = 216, LEN = 80, FONT = '"BIZ UDPGothic","Yu Gothic UI","Meiryo",sans-serif';
+  const PROG = [{ id: 'mashi', name: 'ゲームの街 マシなゲームはどれか', ic: '🏆' }, { id: 'news', name: 'みらいニュース', ic: '📰' }, { id: 'cook', name: '商店街の今日のごはん', ic: '🍜' }, { id: 'quiz', name: '豆知識クイズ', ic: '❓' }];
+  const rng = s => () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  const pickN = (arr, n, seed) => { const r = rng((seed * 7919 + 13) >>> 0), a = arr.slice(); r(); for (let i = a.length - 1; i > 0; i--){ const j = (r() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, n); };
+  const T = (g, s, x, y, px, col = '#fff', al = 'center', maxW) => { g.font = 'bold ' + px + 'px ' + FONT; g.textAlign = al; g.textBaseline = 'middle'; g.fillStyle = col; if (maxW) g.fillText(s, x, y, maxW); else g.fillText(s, x, y); };
+  const wrap = (g, s, x, y, px, col, maxW, al = 'center') => { g.font = 'bold ' + px + 'px ' + FONT; const lines = []; let cur = ''; for (const ch of [...s]){ if (ch === '\n'){ lines.push(cur); cur = ''; } else if (g.measureText(cur + ch).width > maxW){ lines.push(cur); cur = ch; } else cur += ch; } if (cur) lines.push(cur); lines.forEach((l, i) => T(g, l, x, y + i * px * 1.3, px, col, al)); return lines.length; };
+  const rr = (g, x, y, w, h, r, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.fill(); };
+  const grad = (g, c0, c1) => { const q = g.createLinearGradient(0, 0, 0, CH); q.addColorStop(0, c0); q.addColorStop(1, c1); g.fillStyle = q; g.fillRect(0, 0, CW, CH); };
+  const ell = (g, x, y, rx, ry, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(x, y, Math.max(.1, rx), Math.max(.1, ry), 0, 0, 7); g.fill(); };
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  /* 上の帯: 番組の名前と 今の時刻 */
+  const bar = (g, pi, col) => { g.fillStyle = col; g.fillRect(0, 0, CW, 24); T(g, PROG[pi].ic + ' ' + PROG[pi].name, 8, 13, 14, '#fff', 'left'); const d = new Date(); T(g, d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'), CW - 8, 13, 14, '#fff', 'right'); };
+  /* 司会の人 */
+  const host = (g, x, y, t, col = '#e8503a', talk = true) => { g.fillStyle = col; g.beginPath(); g.moveTo(x - 27, y + 62); g.quadraticCurveTo(x - 27, y + 19, x, y + 19); g.quadraticCurveTo(x + 27, y + 19, x + 27, y + 62); g.fill();
+    ell(g, x, y, 19, 19, '#f2c9a0'); g.fillStyle = '#2a2018'; g.beginPath(); g.arc(x, y - 4, 20, Math.PI, 0); g.fill(); g.fillStyle = '#222'; g.fillRect(x - 8, y, 3, 4); g.fillRect(x + 5, y, 3, 4);
+    g.fillStyle = '#7a2a20'; g.fillRect(x - 5, y + 9, 10, talk ? 2 + Math.abs(Math.sin(t * 9)) * 5 : 2); g.fillStyle = '#333'; g.fillRect(x + 17, y + 22, 4, 24); ell(g, x + 19, y + 20, 6, 6, '#333'); };
+
+  /* ---- 番組1: ゲームの街 マシなゲームはどれか。[名前, あぶなさ 1〜5, つかれる 1〜5, マシな理由, でも] */
+  const GAMES = [   /* 文は 映画館 (cinema_tpl.html の CLIPS の lose・tip) と同じ中身にしてある。ゲームのルールを変えたら、ここも直す */
+    ['L字マンション鬼ごっこ', 4, 5, 'ロッカーにかくれて、鬼が通りすぎるのを待てばいい', '鬼はピストルを持っている'],
+    ['熱湯スタジアム脱出', 5, 4, '開いているゲートまで走るだけ', '後ろから、熱いお湯が追いかけてくる'],
+    ['地下ブラックジャック', 2, 1, 'すわってカードをするだけ。走らなくていい', 'チップが0枚になったら終わり'],
+    ['ぶら下がり耐久', 4, 5, 'ぶら下がっているだけ', '握力がなくなると奈落。電流も来る'],
+    ['おみくじデスゲーム', 4, 1, 'おみくじを引いて、問題を解くだけ', 'まちがえた分だけ、火矢が飛んでくる'],
+    ['巨大草園かくれんぼ', 4, 3, 'オオカミ役になれば、生きのこれる', '生きのこるのは オオカミ役の1人だけ。ほかの3人は全員アウト'],
+    ['缶蹴り', 3, 4, '缶を取って、ホールの中央に行くだけ', 'タイマーが0の時に、中央にいないとアウト'],
+    ['雪合戦', 2, 3, '当たっても雪だるまになるだけ。仲間がたき火で助けてくれる', '仲間が来なければ、ずっと雪だるま'],
+    ['二択問題', 3, 1, '2つからえらぶだけ。半分は当たる', 'まちがえると、天井からレーザー'],
+    ['買い物競争', 2, 4, 'お題の品物を見つけるだけ', '時間は90秒。売り場が広い'],
+    ['足跡かくれんぼ', 3, 2, 'ニセの足跡で、鬼をまどわせられる', '本物の足跡をたどられると、ドアを開けられる'],
+    ['鉄骨渡り', 5, 3, 'まっすぐ歩くだけ', '高い所で、風がふく'],
+    ['空中ケンパ', 5, 3, 'ケンケンパをするだけ', 'ふむ足をまちがえると、パネルが消える'],
+    ['東京ビンゴタワー', 4, 3, '数字のボタンを、順にさがすだけ', 'タワーの骨組みの上でやる'],
+    ['緑のタイル', 5, 4, '緑のタイルの上に立っているだけ', 'タイルがどんどんへる。最後は1こ'],
+    ['ドリル戦車', 1, 2, '自分が戦車に乗るがわ。負けがない', '警察官が100人来る'],
+    ['上陸作戦', 5, 5, '仲間がたくさんいる', '海岸のバンカーから うたれる'],
+    ['トンネル逃亡ゲーム', 4, 5, '一本道なので、まよわない', 'チーターが追いかけてくる'],
+    ['自然災害', 5, 4, '高い所へ上がればいい', '津波・大雨・地震・雪山が、次々に来る'],
+    ['裏カジノ', 2, 1, 'すわって遊ぶだけ', '恐怖の台「沼」に、所持金をすいこまれる'] ];
+  const star = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+  function mashi(g, t, ep, pi){ grad(g, '#3a1a6a', '#150a2a'); for (let i = 0; i < 14; i++){ const a = i * 2.4 + t * .25; ell(g, 192 + Math.cos(a) * (120 + i * 9), 120 + Math.sin(a * 1.3) * 80, 2, 2, 'rgba(255,230,120,.5)'); }
+    const five = pickN(GAMES, 5, ep).sort((a, b) => (a[1] * 2 + a[2]) - (b[1] * 2 + b[2]));   /* [0] が いちばんマシ */
+    if (t < 6){ T(g, 'ゲームの街 けんきゅう番組', 192, 62, 17, '#ffd84a'); T(g, 'マシなゲームは', 192, 104, 34, '#fff'); T(g, 'どれか？', 192, 146, 34, '#fff'); T(g, '第' + (ep % 900 + 1) + '回', 192, 186, 15, '#c8b8ff'); }
+    else if (t < 12){ host(g, 60, 110, t); rr(g, 104, 48, 266, 132, 12, '#fff'); wrap(g, 'ゲームの街のゲームは、どれもあぶない。\nその中で「まだマシ」なのはどれか、今日の5つから決めます！', 237, 74, 16, '#222', 244); }
+    else if (t < 72){ const k = Math.min(4, Math.floor((t - 12) / 12)), u = t - 12 - k * 12, rank = 5 - k, G = five[rank - 1];
+      if (rank === 1 && u < 3){ T(g, '第1位は…', 192, 100, 38, Math.sin(t * 20) > 0 ? '#ffd84a' : '#fff'); for (let i = 0; i < 8; i++) rr(g, 60 + i * 34, 150 + Math.sin(t * 18 + i) * 8, 24, 10, 4, '#ffd84a'); }
+      else { rr(g, 10, 32, 92, 40, 8, rank === 1 ? '#ffd84a' : '#e8e0ff'); T(g, '第' + rank + '位', 56, 53, 24, '#3a1a6a'); T(g, G[0], 238, 53, 23, '#fff', 'center', 262);
+        T(g, 'あぶなさ ' + star(G[1]), 14, 88, 15, '#ffb0a0', 'left'); T(g, 'つかれる ' + star(G[2]), 200, 88, 15, '#a0d8ff', 'left');
+        const two = (tx, cy) => { g.font = 'bold 16px ' + FONT; wrap(g, tx, 192, g.measureText(tx).width > 350 ? cy - 10 : cy, 16, '#fff', 350); };   /* 1行なら まん中、2行なら 少し上から */
+        rr(g, 10, 102, 364, 48, 8, 'rgba(40,170,100,.94)'); two('マシ：' + G[3], 126);
+        if (u > 5.5){ rr(g, 10, 156, 364, 52, 8, 'rgba(230,70,60,.94)'); two('でも：' + G[4], 182); } } }
+    else { host(g, 60, 110, t); rr(g, 104, 48, 266, 132, 12, '#fff'); wrap(g, 'けつろん：\n「' + five[0][0] + '」が\nまだマシ。でも、どれも\nふつうにあぶない。また来週！', 237, 72, 16, '#222', 250); }
+    bar(g, pi, '#6a3ac8'); }
+
+  /* ---- 番組2: みらいニュース と 天気予報 */
+  const NEWS = ['みらいモールの外に「みらい商店街」ができました', '商店街の3つのお店に、スマホのアプリができました', '町のお店というお店に、テレビがつきました', '映画館で「24の逃走所」を上映中。ポップコーンは無料です',
+    'スーパーにドリル戦車が入り、警察官100人が出動しました', 'フードコートのラーメンが人気です', '駅のタイルが緑色に光る件、原因は調査中です', 'ゲームをクリアすると、5000円チケットがもらえます',
+    '落とし物です。映画館の客席に ポップコーンが1つぶ', '商店街の3つのお店は、全商品が無料です', '4階のカードテーブルで、カードバトルがもりあがっています', 'みらいモールは、今日も無料Wi-Fiが使えます'];
+  const weather = k => { const d = new Date(), seed = d.getFullYear() * 400 + d.getMonth() * 32 + d.getDate(), W2 = [['はれ', '☀️'], ['くもり', '☁️'], ['雨', '☔'], ['はれのちくもり', '⛅']]; return [W2[(seed * 7 + k * 3) % 4], 14 + ((seed + k * 5) % 12)]; };   /* スマホの天気アプリと同じ決め方 */
+  function news(g, t, ep, pi){ grad(g, '#12305a', '#0a1830'); const five = pickN(NEWS, 5, ep);
+    if (t < 50){ const k = Math.min(4, Math.floor(t / 10)), u = t - k * 10; g.fillStyle = '#1e4a8a'; g.fillRect(0, 150, 130, 66); host(g, 62, 100, t, '#2a3a5a'); g.fillStyle = '#c8d8f0'; g.fillRect(0, 160, 130, 6);
+      const sl = clamp01(u * 3); rr(g, 138 + (1 - sl) * 60, 40, 236, 128, 10, 'rgba(255,255,255,' + (.96 * sl) + ')'); if (sl >= 1){ rr(g, 146, 48, 86, 22, 6, '#c02a2a'); T(g, 'ニュース ' + (k + 1), 189, 60, 13, '#fff'); wrap(g, five[k], 256, 92, 17, '#1a2a4a', 216); } }
+    else if (t < 72){ T(g, '天気予報', 192, 48, 22, '#fff'); ['きょう', 'あした', 'あさって'].forEach((nm, i) => { const [w, tp] = weather(i), x = 24 + i * 116; rr(g, x, 66, 104, 112, 10, 'rgba(255,255,255,.95)'); T(g, nm, x + 52, 82, 15, '#1a2a4a'); T(g, w[1], x + 52, 116 + Math.sin(t * 2 + i) * 2, 34, '#000'); T(g, w[0], x + 52, 148, w[0].length > 4 ? 11 : 14, '#1a2a4a'); T(g, tp + '℃', x + 52, 166, 14, '#c0392b'); }); }
+    else { T(g, 'このあとは', 192, 80, 20, '#c8d8f0'); T(g, PROG[(pi + 1) % PROG.length].ic + ' ' + PROG[(pi + 1) % PROG.length].name, 192, 122, 20, '#fff', 'center', 360); }
+    g.fillStyle = '#c02a2a'; g.fillRect(0, 194, CW, 22); const all = NEWS.join('　◆　'); g.font = 'bold 14px ' + FONT; const wAll = g.measureText(all).width; T(g, all, CW - ((t * 46) % (wAll + CW)), 206, 14, '#fff', 'left');
+    bar(g, pi, '#1e4a8a'); }
+
+  /* ---- 番組3: 商店街の今日のごはん (3つのお店の料理を、1回に1つ) */
+  const steam = (g, x, y, t) => { g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 3; g.lineCap = 'round'; for (let i = -1; i <= 1; i++){ g.beginPath(); for (let q = 0; q <= 10; q++){ const yy = y - q * 5, xx = x + i * 30 + Math.sin(q * .8 + t * 3 + i) * 5; q ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); } };
+  const bowl = (g, col, inner) => { g.fillStyle = col; g.beginPath(); g.moveTo(96, 112); g.quadraticCurveTo(192, 232, 288, 112); g.fill(); ell(g, 192, 112, 96, 34, col); ell(g, 192, 112, 88, 28, inner); };
+  const COOK = [
+    { shop: 'ラーメン高一', dish: 'ラーメン', steps: ['どんぶりに あついスープを そそぐ', 'ゆでた めんを入れて ととのえる', 'チャーシューと 煮卵をのせる', 'のりと ねぎをのせる', 'できあがり！'],
+      draw(g, n, u, t){ bowl(g, '#c0392b', '#f5efe2'); const s = n === 0 ? clamp01(u / 6) : 1; ell(g, 192, 114, 84 * s, 25 * s, '#c8842a');
+        if (n >= 1){ g.strokeStyle = '#f4dc7a'; g.lineWidth = 3; const m = n === 1 ? clamp01(u / 6) : 1; for (let i = 0; i < 9 * m; i++){ g.beginPath(); for (let q = 0; q <= 12; q++){ const xx = 126 + q * 11, yy = 104 + i * 2.6 + Math.sin(q * 1.1 + i) * 3; q ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); } }
+        if (n >= 2){ const m = n === 2 ? clamp01(u / 4) : 1; g.globalAlpha = m; ell(g, 150, 108, 24, 12, '#b8765a'); ell(g, 150, 108, 15, 7, '#d89a7a'); ell(g, 232, 118, 15, 11, '#fffaf0'); ell(g, 232, 118, 7, 5, '#f0a020'); g.globalAlpha = 1; }
+        if (n >= 3){ const m = n === 3 ? clamp01(u / 4) : 1; g.globalAlpha = m; g.fillStyle = '#1a2a1a'; g.fillRect(196, 70, 34, 36); for (let i = 0; i < 12; i++) ell(g, 160 + (i * 37) % 70, 112 + (i * 13) % 16, 3, 2, '#5ac85a'); g.globalAlpha = 1; }
+        if (n >= 4) steam(g, 192, 76, t); } },
+    { shop: '寿司屋良口', dish: '寿司（5かん）', steps: ['酢めしを ひと口の大きさに にぎる', 'わさびを 少しだけつける', 'まぐろ・サーモン・たまごをのせる', 'えび・いかをのせる', 'できあがり！ しょうゆをつけて'],
+      draw(g, n, u, t){ rr(g, 56, 118, 272, 22, 4, '#b8864a'); g.fillStyle = '#8a5a2a'; g.fillRect(76, 140, 20, 16); g.fillRect(288, 140, 20, 16);
+        const NETA = ['#c8283a', '#f08a4a', '#f4d040', '#f0a090', '#f8f4ee'], cnt = n === 0 ? Math.floor(clamp01(u / 8) * 5.01) : 5;
+        for (let i = 0; i < cnt; i++){ const x = 74 + i * 50; rr(g, x, 98, 38, 20, 9, '#fffdf6'); if (n >= 1) ell(g, x + 19, 99, 5, 2.5, '#7ac84a');
+          const on = n > 3 || (n === 3 ? (i < 3 || u > (i - 3) * 3 + 1) : n === 2 ? u > i * 2.5 + 1 && i < 3 : false); if (on){ rr(g, x - 3, 86, 44, 15, 7, NETA[i]); if (i === 2){ g.fillStyle = '#1a2a1a'; g.fillRect(x + 15, 84, 8, 30); } if (i === 0){ g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 1.5; for (let q = 0; q < 3; q++){ g.beginPath(); g.moveTo(x + 6 + q * 12, 88); g.lineTo(x + 10 + q * 12, 99); g.stroke(); } } } }
+        if (n >= 4){ ell(g, 322, 168, 22, 9, '#f4f4f4'); ell(g, 322, 168, 16, 6, '#3a1a0a'); for (let i = 0; i < 5; i++) T(g, '✨', 74 + i * 50 + 19, 66 + Math.sin(t * 4 + i) * 4, 13, '#fff'); } } },
+    { shop: 'カツ勝', dish: 'カツ丼', steps: ['どんぶりに ごはんをよそう', 'あげたてのカツを 切ってのせる', 'たまごでとじた具を かける', 'みつばをのせる', 'できあがり！'],
+      draw(g, n, u, t){ bowl(g, '#2a2420', '#3a2a1a'); const s = n === 0 ? clamp01(u / 6) : 1; ell(g, 192, 113, 84 * s, 25 * s, '#fffdf6');
+        if (n >= 1){ const m = n === 1 ? Math.floor(clamp01(u / 6) * 5.01) : 5; for (let i = 0; i < m; i++){ rr(g, 132 + i * 25, 98, 21, 30, 6, '#c8842a'); rr(g, 136 + i * 25, 103, 13, 20, 4, '#f0d8b0'); } }
+        if (n >= 2){ g.globalAlpha = n === 2 ? clamp01(u / 4) : 1; for (let i = 0; i < 7; i++) ell(g, 128 + i * 21, 108 + (i % 2) * 14, 15, 7, i % 3 ? '#f4d040' : '#fff6c0'); g.globalAlpha = 1; }
+        if (n >= 3){ g.globalAlpha = n === 3 ? clamp01(u / 3) : 1; for (let i = 0; i < 5; i++) ell(g, 150 + i * 21, 110 + (i * 7) % 9, 6, 3, '#3aa84a'); g.globalAlpha = 1; }
+        if (n >= 4) steam(g, 192, 78, t); } } ];
+  function cook(g, t, ep, pi){ grad(g, '#f8e8c8', '#f0c890'); const C = COOK[((ep % 3) + 3) % 3];
+    if (t < 5){ T(g, '商店街の', 192, 62, 22, '#8a3a1a'); T(g, '今日のごはん', 192, 98, 36, '#c0391a'); T(g, '今日は「' + C.shop + '」の ' + C.dish, 192, 150, 17, '#4a2a10', 'center', 360); }
+    else if (t < 70){ const n = Math.min(4, Math.floor((t - 5) / 13)), u = t - 5 - n * 13; C.draw(g, n, u, t); rr(g, 8, 30, 86, 26, 8, '#c0391a'); T(g, n < 4 ? 'その' + (n + 1) : '完成', 51, 44, 15, '#fff'); T(g, C.shop, 376, 44, 14, '#8a3a1a', 'right');
+      rr(g, 8, 178, 368, 32, 8, 'rgba(60,30,10,.88)'); T(g, C.steps[n], 192, 195, 17, '#fff', 'center', 352); }
+    else { T(g, 'つづきは', 192, 62, 18, '#8a3a1a'); T(g, 'みらい商店街の「' + C.shop + '」で！', 192, 100, 21, '#c0391a', 'center', 364); wrap(g, 'スマホのアプリ「みらい商店街」でも たのめます', 192, 146, 15, '#4a2a10', 340); }
+    bar(g, pi, '#c0391a'); }
+
+  /* ---- 番組4: 豆知識クイズ。[問題, 3つの答え, 正解の番号, ひとこと] */
+  const QUIZ = [['タコの心臓は いくつある？', ['1つ', '3つ', '8つ'], 1, '体に血を送る1つと、えらに送る2つ'], ['1日は 何秒？', ['3600秒', '86400秒', '100000秒'], 1, '60秒×60分×24時間'], ['キリンの首の骨は 何こ？', ['7こ', '14こ', '25こ'], 0, '人間と同じ7こ。1こが長い'],
+    ['太陽の光が 地球にとどくまで どのくらい？', ['約8秒', '約8分', '約8時間'], 1, '光でも 8分ちょっとかかる'], ['シロクマの はだの色は？', ['白', 'ピンク', '黒'], 2, '毛はとうめいで、はだは黒い'], ['水が こおる温度は？', ['0℃', '10℃', '100℃'], 0, '100℃は ふっとうする温度'],
+    ['世界でいちばん大きい動物は？', ['アフリカゾウ', 'ジンベエザメ', 'シロナガスクジラ'], 2, '長さ30メートルになることもある'], ['バナナは どこになる？', ['木', '大きな草', '土の中'], 1, 'バナナの「木」は、じつは草のなかま'], ['1円玉の重さは？', ['1グラム', '5グラム', '10グラム'], 0, 'ちょうど1グラム'],
+    ['日本でいちばん高い山は？', ['富士山', '北岳', '大雪山'], 0, '高さ3776メートル'], ['カタツムリの歯は どのくらいある？', ['0本', '32本', '1万本以上'], 2, '小さな歯が ずらっとならんでいる'], ['にじは ふつう何色と数える？（日本）', ['5色', '7色', '12色'], 1, '赤・だいだい・黄・緑・青・あい・むらさき'],
+    ['いちばん面積が大きい都道府県は？', ['北海道', '岩手県', '長野県'], 0, '2番目の岩手県の 5倍以上'], ['はちみつは 長くおくと どうなる？', ['すぐくさる', 'ほとんどくさらない', '水になる'], 1, '水分が少ないので、菌がふえにくい']];
+  function quiz(g, t, ep, pi){ grad(g, '#0a5a4a', '#062a2a'); const four = pickN(QUIZ, 4, ep);
+    if (t < 4){ T(g, '豆知識クイズ', 192, 96, 40, '#ffe14d'); T(g, 'いっしょに考えよう', 192, 146, 18, '#fff'); }
+    else if (t < 76){ const k = Math.min(3, Math.floor((t - 4) / 18)), u = t - 4 - k * 18, Q = four[k], open = u >= 11;
+      rr(g, 8, 30, 368, 52, 8, '#fff'); T(g, '第' + (k + 1) + '問', 16, 41, 12, '#0a5a4a', 'left'); T(g, Q[0], 192, 63, 17, '#123', 'center', 354);
+      Q[1].forEach((a, i) => { const ok = i === Q[2]; rr(g, 30, 90 + i * 30, 324, 26, 8, open ? (ok ? '#3ad06a' : 'rgba(255,255,255,.25)') : '#ffe14d'); T(g, 'ABC'[i] + '　' + a + (open && ok ? '　◎' : ''), 192, 104 + i * 30, 17, open && !ok ? 'rgba(255,255,255,.6)' : '#123'); });
+      if (!open){ g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(30, 188, 324, 12); g.fillStyle = '#ff7a5a'; g.fillRect(30, 188, 324 * (1 - u / 11), 12); T(g, String(Math.ceil(11 - u)), 366, 194, 14, '#fff'); }
+      else { rr(g, 8, 182, 368, 28, 8, 'rgba(0,0,0,.55)'); T(g, Q[3], 192, 197, 15, '#fff', 'center', 356); } }
+    else { T(g, 'また見てね！', 192, 110, 34, '#ffe14d'); }
+    bar(g, pi, '#0a8a6a'); }
+
+  const DRAW = [mashi, news, cook, quiz];
+  let off = 0; const now = () => Date.now() / 1000 + off;
+  const progAt = (c, T0 = now()) => (((c + Math.floor(T0 / LEN)) % PROG.length) + PROG.length) % PROG.length;
+  function draw(g, pi, T0){ const t = ((T0 % LEN) + LEN) % LEN, ep = Math.floor(T0 / LEN); g.save(); g.globalAlpha = 1; try { DRAW[pi](g, t, ep, pi); } catch (e){ g.fillStyle = '#000'; g.fillRect(0, 0, CW, CH); TVSHOW_ERR = String(e && e.stack || e); } g.restore(); }
+  let TVSHOW_ERR = '';
+  const chans = [];
+  const chan = c => chans[c] || (chans[c] = (() => { const cv = document.createElement('canvas'); cv.width = CW; cv.height = CH; const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; return { cv, g: cv.getContext('2d'), tex, n: 0 }; })());
+  function tick(){ const T0 = now(); for (let c = 0; c < chans.length; c++){ const h = chans[c]; if (!h || !h.n) continue; draw(h.g, progAt(c, T0), T0); h.tex.needsUpdate = true; } }
+  setInterval(() => { if (!document.hidden) tick(); }, 150);
+  /* テレビを1台つける。(x, y, z) は 画面のまん中、ry は 画面の向き (0 なら +z を向く)。かべから 5センチ手前に置く */
+  function add(parent, x, y, z, ry, w = 1.3, c = 0, frame = true){ c = ((c % PROG.length) + PROG.length) % PROG.length; const h = chan(c); h.n++; const grp = new THREE.Group(), hh = w * CH / CW;
+    const fr = new THREE.Mesh(new THREE.BoxGeometry(w + .1, hh + .1, .07), new THREE.MeshStandardMaterial({ color: 0x15161a, roughness: .5 })); fr.position.z = -.005;
+    const sc = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), new THREE.MeshBasicMaterial({ map: h.tex, toneMapped: false })); sc.position.z = .034;
+    grp.add(sc); if (frame) grp.add(fr); grp.position.set(x, y, z); grp.rotation.y = ry; grp.userData.tv = c; parent.add(grp); return grp; }
+  /* スマホなどで 1まいの絵として使う (番組 pi の 今の場面) */
+  let shotCv = null; function shot(pi, T0 = now()){ if (!shotCv){ shotCv = document.createElement('canvas'); shotCv.width = CW; shotCv.height = CH; } draw(shotCv.getContext('2d'), pi, T0); return shotCv; }
+  return { PROG, LEN, CW, CH, add, draw, shot, tick, progAt, now, get err(){ return TVSHOW_ERR; }, set off(v){ off = v; }, get off(){ return off; }, get count(){ return chans.reduce((a, h) => a + (h ? h.n : 0), 0); } };
+})();
+window.TVSHOW = TVSHOW;
+
 // ===================== スーパー =====================
 // 店: x -35〜35 (70m)、z -25〜25 (50m)。棚は z 6 より北。レジは 南 (z 20〜21)。入口は 南東 (x 30〜34)。裏の出入口は 北西 (x -30)
 const W = 35, D = 25, H = 5.5;
@@ -222,6 +361,7 @@ const DOORS = [], CORDS = [], WATER = [], PUDDLES = [], loose = [], zaps = [], s
   { const posts = []; for (let k = 0; k < 4; k++){ const x = 22 + k * 2.4; drawBox(x - .5, 0, 20.3, x + .5, 1.1, 21.1, counterM); walls.push({ x0: x - .5, x1: x + .5, z0: 20.3, z1: 21.1, y0: 0, y1: 1.1, reg: true }); drawBox(x - .06, .01, 21.0, x + .06, .03, 24.6, std({ color: 0x111 })); CORDS.push([x, 21.3], [x, 22.5], [x, 24.0]); drawBox(x - .3, 1.1, 20.5, x + .3, 1.6, 20.6, scrM); } posts.push([23.2, 22.4, Math.PI], [27.8, 22.4, Math.PI], [25.5, 18.0, 0]); REG.push({ x: 25.5, kind: 'self', posts, pay: [25.5, 19.2, 0], line: [[25.5, 17.4], [25.5, 15.8], [25.5, 14.2]] }); sign([['セルフレジ', 54, '#fff']], 3, .7, 25.5, 3.2, 20.6, Math.PI, '#2a7a3a'); }
   solid(-W, 0, 21.2, 29, 0, 21.2, null);
   sign([['スーパー', 110, '#c0392b']], 8, 2, 0, 4.4, -D + .06, 0, 'rgba(0,0,0,0)');
+  TVSHOW.add(scene, -W + .05, 3.5, 13, Math.PI / 2, 4.4, 0);   /* tank_v36: スーパーのテレビ。西のかべ (レジの列の横) */
 }
 
 // ===================== 外の町 (tank_v21) =====================
@@ -249,6 +389,7 @@ function trackBuild(h, fn){ const c0 = scene.children.length, w0 = walls.length;
     const L = new THREE.PointLight(0xffe8c0, 10, 14, 1.6); L.position.set(x, 3.8, (z0 + z1) / 2); scene.add(L);
     solid(x - 4.5, 0, z0 + 5.5, x + 4.5, 1.0, z0 + 6.5, std({ color: 0x6a4a2a })); drawBox(x - 4.6, 1.0, z0 + 5.4, x + 4.6, 1.08, z0 + 6.6, std({ color: 0xd8c0a0 })); // カウンター
     for (let i = -3; i <= 3; i += 1.5){ const st = new THREE.Mesh(new THREE.CylinderGeometry(.22, .22, .5, 10), std({ color: 0xa02020 })); st.position.set(x + i, .25, z0 + 4.4); scene.add(st); } // いす
+    TVSHOW.add(scene, x1 - .05, 2.9, z0 + 3.3, -Math.PI / 2, 2.2, SHOPS.length);   /* tank_v36: テレビ。東の横のかべの 客席がわ (カウンターの手前) */
     solid(x - 5.5, 0, z0 + 8, x + 5.5, 2.0, z0 + 9.5, std({ color: 0x777 })); drawBox(x - 5.5, 2.0, z0 + 8, x + 5.5, 2.2, z0 + 9.5, std({ color: 0xaaa, metalness: .6 })); // 台所
     // ドア (開く)。DOORS に入れると 近づいたら開く
     const dm = std({ color: 0x5a3a20, roughness: .7 }); const leaves = []; for (const sd of [-1, 1]){ const hinge = new THREE.Group(); hinge.position.set(x + sd * 1.1, 0, z0 + .15); const leaf = new THREE.Mesh(new THREE.BoxGeometry(1.08, 2.4, .08), dm); leaf.position.set(-sd * .54, 1.2, 0); hinge.add(leaf); const win = new THREE.Mesh(new THREE.PlaneGeometry(.5, .8), std({ color: 0xcfe0ee, transparent: true, opacity: .5 })); win.position.set(-sd * .54, 1.5, .045); hinge.add(win); scene.add(hinge); leaves.push({ hinge, sd }); }
