@@ -877,12 +877,17 @@ const FIG = (() => {
     if (type === 'rifle'){ /* アサルトライフル: 曲がった弾倉・かたに当てる台・上の ねらい */ bx(.04, .17, .06, 0, -.84, .115, mg, .3); bx(.045, .2, .07, 0, -.44, .03); bx(.025, .12, .025, 0, -.78, -.01); bx(.02, .05, .03, 0, -1.26, .0); }
     else bx(.04, .13, .05, 0, -.6 - .16 * L, .1); }
 
+  /* ゴーグル (2026-11-27 弟君「ゴーグルなのに ほぼ眼鏡の見た目」): 顔の絵ではなく 立体。目の前に出っぱる黒いわく・色つきレンズ 2まい・頭を一周するバンド */
+  const GGC = {}, gsec = (r, h, a0, a1) => GGC[[r, h, a0, a1]] || (GGC[[r, h, a0, a1]] = new THREE.CylinderGeometry(r, r, h, 18, 1, false, a0 * PI / 180, (a1 - a0) * PI / 180));
+  function gogOn(m, col, wide){   /* wide = レンズが 1まいの 大きなゴーグル (17番・20番) */ const g = m.group, fr = std({ color: 0x1c1e22, roughness: .6 }), ln = std({ color: col, roughness: .12, metalness: .15, emissive: col, emissiveIntensity: .18 }), put = (geo, mt) => { const q = new THREE.Mesh(geo, mt); q.position.set(0, 1.752, 0); q.castShadow = true; g.add(q); return q; };
+    if (wide){ put(gsec(.157, .104, -62, 62), fr); put(gsec(.1615, .07, -52, 52), ln); } else { put(gsec(.156, .09, -60, 60), fr); put(gsec(.1605, .058, -50, -5), ln); put(gsec(.1605, .058, 5, 50), ln); } put(GGC.st || (GGC.st = new THREE.TorusGeometry(.139, .013, 6, 28)), fr).rotation.x = PI / 2; m.mats.push(fr, ln); }
   function make(sp){ const sk = sp.sk ?? 0xf2cdb0, S = U(sk), m = makePerson({ skin: sk, pants: sp.pants, hair: sp.hair ?? 0x1a1210, shirt: sp.shirt, look: sp.look || { plain: true }, scale: sp.scale }), g = m.group, mSkin = m.mats[0];
     if (sp.print) each(g, GEO.torso, o => { o.geometry = torsoGeo(); o.material = printMat(sp.print, sp.shirt, S, sp.bare); m.mats.push(o.material); });
     if (sp.bare || sp.arm !== undefined){ const ma = sp.bare ? mSkin : std({ color: sp.arm, roughness: .85 }); for (const l of [m.armL, m.armR]) each(l, GEO.arm, o => { o.material = ma; }); if (sp.bare) each(g, GEO.collarNeck, o => { o.material = mSkin; }); }
     if (sp.hand !== undefined){ const mh = std({ color: sp.hand, roughness: .85 }); for (const l of [m.armL, m.armR]) each(l, GEO.hand, o => { o.material = mh; }); }
     if (sp.face) faceOn(m, sp.face, S, sp.cover); if (sp.noEyes) m.eyes.forEach(e => { e.visible = false; });
     if (sp.gun) gunOn(sp.gunR ? m.armR : m.armL, sp.gun);
+    if (sp.gog !== undefined) gogOn(m, sp.gog, sp.gogWide); if (sp.noPom && m.hat) m.hat.traverse(o => { if (o.geometry === GEO.pom) o.visible = false; });
     if (m.hat && sp.look && sp.look.hat === 'helmet') m.hat.position.y += .04;   /* いつものヘルメットは 目にかかるので、少しだけ上げて 顔 (めがね・マスク) が見えるようにする */
     return m; }
 
@@ -938,7 +943,7 @@ const FIG = (() => {
   const BR = 0x6e4222, BK = 0x18161a, BL = 0xf0cc50, DK = '#18120e', BRc = '#5a3418';
   const CIV = [
     { n: 'グレーのユニフォーム', sv: 14, ord: 8, fate: 'おそわれた車に乗っていた', shirt: 0x9a9ea3, pants: 0x70757b, hair: BK, look: { hair: 'slick' }, print: T.stack, arm: 0x1c2a4a },
-    { n: '白いかみ・赤い上着', sv: 19, ord: 6, fate: '車に乗りおくれる', shirt: 0xc8202a, pants: 0xc8202a, hair: 0xdcdcda, look: { hair: 'bob', glasses: true }, print: T.granny, arm: 0x1a1a1c },
+    { n: '白いぼうし・赤い上着', sv: 19, ord: 6, fate: '車に乗りおくれる', shirt: 0xc8202a, pants: 0xc8202a, hair: 0xb4b4b2, look: { hair: 'short', hat: 'cap', hatColor: 0xf4f4f2, glasses: true },   /* 白いのは かみ ではなく ぼうし。ニット帽でもなく ふつうの白いぼうし = いつもの cap (2026-11-27 弟君の指摘 2回) */ print: T.granny, arm: 0x1a1a1c },
     { n: 'ペンギンのマーク', sv: 13, ord: 13, fate: '車から落ちる（3人のうち3番目）', shirt: 0x27509e, pants: 0x1b2c55, hair: BK, look: { hair: 'short', hat: 'helmet', hatColor: 0x16181c }, print: T.penguin, arm: 0xf4f4f4, face: P => { F.stubble(P); F.brow(P); } },
     { n: '赤いバスケの服', sv: 22, ord: 3, fate: 'ついて行ってやられる', sk: 0x8a4a2a, shirt: 0xc3222c, pants: 0xc3222c, hair: 0x18120e, look: { hair: 'buzz', shorts: true }, print: T.ball, bare: 1, face: P => F.goatee(P, DK) },
     { n: '緑のギザギザ', sv: 9, ord: 14, fate: '基地で かくれ感染者におそわれる', shirt: 0x1f8a3c, pants: 0xf4f4f2, hair: 0x7a4424, look: { hair: 'bob' }, print: T.zigzag },
@@ -968,24 +973,24 @@ const FIG = (() => {
   const SWAT = [
     sw({ n: 'ぼうし・茶色のはだ・サングラス', ord: 6, fate: 'バラバラに分かれて戦って やられる', sk: 0x8a4a2a, look: CAP, print: T.sw2, face: P => { F.lens(P, '#0c0c0e'); F.goatee(P, DK); } }),
     sw({ n: 'サングラス・ひげ', ord: 17, fate: 'ほかの15人がやられたあと、もう一度集まって戦う', face: P => { F.full(P, '#8a5a2e'); F.lens(P, '#0c0c0e'); } }),
-    sw({ n: '黄色いめがね・あつい よろい', ord: 15, fate: 'バラバラに分かれて戦って やられる', print: T.heavy, face: P => F.lens(P, '#f2d21a') }),
-    sw({ n: 'グレーのめがね・SWAT', ord: 18, fate: 'ほかの15人がやられたあと、もう一度集まって戦う', print: T.sw1, gun: 'rifle',   /* 銃 = アサルトライフル (弟君の指定) */ face: P => F.lens(P, '#9aa4ae') }),
-    sw({ n: 'おこった顔・SWAT・ピストル', ord: 20, fate: 'もう一度集まって戦う。最後の1人になって、毒ガスをふん射する', print: T.sw1, gun: 'pistol', hand: undefined, face: P => F.brow(P) }),
+    sw({ n: '黄色いゴーグル・あつい よろい', ord: 15, fate: 'バラバラに分かれて戦って やられる', print: T.heavy, gog: 0xf2d21a }),
+    sw({ n: 'グレーのゴーグル・SWAT', ord: 18, fate: 'ほかの15人がやられたあと、もう一度集まって戦う', print: T.sw1, gun: 'rifle',   /* 銃 = アサルトライフル (弟君の指定) */ gog: 0x9aa4ae }),
+    sw({ n: 'おこった顔・SWAT・ピストル', ord: 20, fate: '最後の1人になって、毒ガスをふん射する', print: T.sw1, gun: 'pistol', hand: undefined, face: P => F.brow(P) }),
     sw({ n: '緑のレンズのマスク', ord: 9, fate: 'バラバラに分かれて戦って やられる', gun: 'smg', face: P => F.nvg(P), cover: 1, noEyes: 1 }),
     sw({ n: 'ぼうし・こわい顔', ord: 5, fate: 'バラバラに分かれて戦って やられる', look: CAP, print: T.sw2, face: P => F.brow(P) }),
-    sw({ n: '青グレーのゴーグル・あつい よろい', ord: 19, fate: 'ほかの15人がやられたあと、もう一度集まって戦う', print: T.heavy, face: P => F.lens(P, '#7a94b8') }),
+    sw({ n: '青グレーのゴーグル・あつい よろい', ord: 19, fate: 'ほかの15人がやられたあと、もう一度集まって戦う', print: T.heavy, gog: 0x7a94b8 }),
     sw({ n: 'ネクタイと星のバッジ', ord: 4, fate: 'バラバラに分かれて戦って やられる', look: CAP, print: T.officer, gun: null, hand: undefined, face: P => F.stubble(P) }),
     sw({ n: 'おこった顔・ひげ', ord: 12, fate: 'バラバラに分かれて戦って やられる', face: P => { F.stubble(P); F.brow(P); } }),
     sw({ n: '目だけ出るマスク', ord: 8, fate: 'バラバラに分かれて戦って やられる', gun: 'smg', face: (P, S) => { F.bala(P, S); F.brow(P); }, cover: 1 }),
-    sw({ n: 'グレーのゴーグル・ひげ', ord: 14, fate: 'バラバラに分かれて戦って やられる', gun: 'shotgun',   /* 銃 = ショットガン (弟君の指定) */ face: P => { F.stubble(P); F.lens(P, '#8a9098'); } }),
+    sw({ n: 'グレーのゴーグル・ひげ', ord: 14, fate: 'バラバラに分かれて戦って やられる', gun: 'shotgun',   /* 銃 = ショットガン (弟君の指定) */ face: P => F.stubble(P), gog: 0x8a9098 }),
     sw({ n: 'ぼうし・ガイコツのマスク', ord: 10, fate: 'バラバラに分かれて戦って やられる', look: CAP, gun: 'long', face: P => F.skull(P), cover: 1 }),
-    sw({ n: '緑のゴーグル・歯のマスク', ord: 11, fate: 'バラバラに分かれて戦って やられる', face: P => { F.bandana(P); F.lens(P, '#2fd060'); } }),
+    sw({ n: '緑のゴーグル・歯のマスク', ord: 11, fate: 'バラバラに分かれて戦って やられる', face: P => F.bandana(P), gog: 0x2fd060 }),
     sw({ n: 'ぼうし・丸いサングラス', ord: 3, fate: '特殊感染者が入って来て すぐ やられる', look: CAP, gun: 'rifle',   /* 銃 = アサルトライフル (弟君の指定) */ hand: undefined, face: P => F.lens(P, '#0c0c0e', 7.4) }),
     sw({ n: 'ぼうし・緑のガイコツ', ord: 7, fate: 'バラバラに分かれて戦って やられる', look: CAP, print: T.sw2, face: P => F.skull(P, '#3fe070'), cover: 1 }),
-    sw({ n: '大きなゴーグル・SWAT', ord: 13, fate: 'バラバラに分かれて戦って やられる', print: T.sw1, face: P => F.visor(P, '#aab2ba') }),
+    sw({ n: '大きなゴーグル・SWAT', ord: 13, fate: 'バラバラに分かれて戦って やられる', print: T.sw1, gog: 0xaab2ba, gogWide: 1 }),
     sw({ n: 'ガスマスク', ord: 16, fate: 'ほかの15人がやられたあと、もう一度集まって戦う', face: P => F.gas(P), cover: 1, noEyes: 1 }),
     sw({ n: 'サングラス・ガイコツの口', ord: 2, fate: '特殊感染者が入って来て すぐ やられる', print: T.sw2, face: P => { F.bandana(P); F.lens(P, '#0c0c0e'); } }),
-    sw({ n: '青いバイザー', ord: 1, fate: 'スワットで最初にやられる', gunR: 1, face: P => F.visor(P, '#3aa0f0') }) ];
+    sw({ n: '青いバイザー', ord: 1, fate: 'スワットで最初にやられる', gunR: 1, gog: 0x3aa0f0, gogWide: 1 }) ];
   return { make, CIV, SWAT, T, F };
 })();
 window.FIG = FIG;
@@ -1096,13 +1101,19 @@ window.FIG = FIG;
         run(a7, u, 0, .38, -17, .4, -4.4, 0); if (u > .38){ pose(a7, -4.4 + sg(u, .4, .5) * .5, 0, 0, H, { armL: -2.6, armR: -2.6 }); if (u > .46) down(a7, sg(u, .46, .58), 1); } bite(-3.6, 1.5, 0, .44);
         for (let i = 0; i < 7; i++){ const z0 = CZ[i < 2 ? 0 : i < 4 ? 1 : 2] + ((i % 2) - .5) * 1.2, t1 = .62 + i * .015; if (u < t1) path(s.sv[i], sg(u, .02 + i * .01, t1), [[-17 - (i % 3), z0], [-8, z0], [-5.2, 3.2 + ((i % 2) - .5)], [-4.3, 3.2]]); else ride(s.sv[i], cC, i); }
         s.inf.slice(0, 4).forEach((a, i) => { const c = i < 2 ? cB : cA, t0 = i < 2 ? .38 : .5, cz = c.g.position.z + (i % 2 ? .5 : -.5), cx = -1 - (i % 2) * 1.2; a.m.group.visible = u > t0; if (u < .72) pose(a, cx, .95, cz, i < 2 ? -H : 0, Z); else run(a, u, .72, 1.3, cx - 3, cz, cx + 8, 3.2 + (i - 1.5) * .6, Z); }); }
-      else if (k === 10){ /* 11. くずれていく橋を渡る。車から 2人が落ちる (7 → 5)。cinema_v10: 道路ではなく 橋。車の後ろから 橋げたが落ちていき、追って来た感染者も 落ちた人も いっしょに落ちる */ env('bridge'); on(s.sv.slice(0, 7), s.inf.slice(0, 6));
+      else if (k === 10){ /* 11. くずれていく橋を渡る。車から 2人が落ちる (7 → 5)。cinema_v10: 道路ではなく 橋。車の後ろから 橋げたが落ちていき、追って来た感染者も 落ちた人も いっしょに落ちる */ env('bridge'); on(s.sv.slice(0, 7), s.inf.slice(0, 9));
         const d = u * D * 15, edge = LP(-22, -5, sg(u, .03, .4)) + Math.sin(u * 46) * .25, drop = x => { const q = Math.max(0, edge - x) * .5; return q * q; };
         for (const q of s.bv){ const x = (((q.userData.x0 - d) % 120) + 120) % 120 - 60, f = Math.max(0, edge - x); q.position.set(x, -f * f * .2, 0); q.rotation.set(Math.min(.9, f * .08) * q.userData.sd, 0, -Math.min(1.3, f * .14)); }
         const cc = car(2, 2, Math.abs(Math.sin(u * 40)) * .1 + Math.sin(sg(u, .28, .36) * PI) * .3 + Math.sin(sg(u, .56, .64) * PI) * .3, 0, 0, Math.sin(u * 9) * .05);
         for (let i = 0; i < 7; i++){ if (i === 6) off(s.sv[6], cc, 7, .32, -.6); else if (i === 5) off(s.sv[5], cc, 6, .6, .9); else ride(s.sv[i], cc, i); }
         for (const a of [s.sv[6], s.sv[5]]){ const q = a.m.group, dy = drop(q.position.x); if (dy > 0){ q.position.y -= dy; q.rotation.z = Math.min(1.2, dy * .25); } }
-        for (let i = 0; i < 6; i++){ const x = -6.2 - i * 1.5 - sg(u, .25, 1) * 2, dy = drop(x); pose(s.inf[i], x, -dy, (i % 3 - 1) * 1.3, H, { ...Z, ph: u * 60 + i, amp: .8, rx: .16 + Math.min(1.3, dy * .35), armL: dy > .2 ? -2.8 : -1.4, armR: dy > .2 ? -2.8 : -1.4 }); }
+        /* 感染者は **9体**。**前の3体だけは 落ちない** (橋のはしより前を 車のすぐ後ろで走り続ける)。後ろの6体は 足元の橋が落ちた時 (tc) から 本当に落ちていく
+           (2026-11-27 弟君「落ちたはずの感染者が 普通に走ってるので直して (3体だけ橋から落ちない)」。1回目は「6体とも落とす」、2回目は「6体のうち3体が落ちない」と読みまちがえた。正しくは「6体を 9体にして、そのうち 3体が落ちない」。前は 橋のはしからの きょりだけで 高さを決めていたので、車と同じ速さで走る前の3体が 少し下がった高さのまま 走り続けていた) */
+        { const KX = [-2.9, -3.7, -4.5], ix = (i, t) => i < 3 ? KX[i] - 1.4 * (1 - ez(sg(t, .04, .27))) : -6.2 - (i - 3) * 1.5 - sg(t, .25, 1) * 2, eg = t => LP(-22, -5, sg(t, .03, .4));
+          for (let i = 0; i < 9; i++){ let tc = 9; if (i >= 3) for (let t = 0; t <= 1.001; t += .005) if (eg(t) >= ix(i, t) - .5){ tc = t; break; } const a = s.inf[i], z = (i % 3 - 1) * 1.3;
+            /* 落ちない3体のうち いちばん後ろの1体 (i 2) は、くずれる橋のはしで ギリギリ耐える (2026-11-27 弟君「3体中1体 崩れる橋から ギリ耐えてるぐらいに」→ 聞いて「はしでよろける」): 2回、はしまで下がって 足元がしずみ、前のめりで手をばたつかせて、また追いつく */
+            const bp = i === 2 ? Math.max(Math.sin(sg(u, .42, .58) * PI), Math.sin(sg(u, .79, .98) * PI)) : 0;
+            if (u < tc) pose(a, ix(i, u) - 1.15 * bp, -.55 * bp * bp, z, H, { ph: u * (60 + 40 * bp) + i, amp: .8 + .35 * bp, rx: .16 + .8 * bp, rz: Math.sin(u * 75) * .28 * bp, armL: LP(-1.4, -2.7 + Math.sin(u * 95) * .45, bp), armR: LP(-1.4, -2.7 - Math.sin(u * 95) * .45, bp) }); else { const tt = (u - tc) * D, y = -4.9 * tt * tt; a.m.group.visible = y > -45; pose(a, ix(i, tc) - tt * 6.5, y, z + (i % 2 ? .25 : -.25) * tt, H, { ph: u * 90 + i, amp: .5, rx: .16 + Math.min(2.6, tt * 2.4), rz: (i % 2 ? .5 : -.5) * Math.min(1, tt), armL: -2.8, armR: -2.8 }); } } }
         if (u > .27 && u < .5) follow(s.sv[6], 2.4, 1.7, 5.6); else if (u > .56 && u < .78) follow(s.sv[5], 2.4, 1.7, 5.8); }
       else if (k === 11){ /* 12. となり町へ。感染者は入れない。1人が群れにのまれる (5 → 4) */ env('border'); on(s.sv.slice(0, 5), s.inf.slice(0, 14)); const cxp = LP(-26, 26, sg(u, 0, .8)), cc = car(2, cxp, Math.abs(Math.sin(u * 50)) * .05, 0), tg = .4;
         for (let i = 0; i < 5; i++){ if (i !== 4) ride(s.sv[i], cc, i); else if (u < tg) ride(s.sv[4], cc, 7, { armL: -1, armR: -1 }); else { const p = sg(u, tg, tg + .08); pose(s.sv[4], LP(-3.5, -4.2, p), LP(1.57, .13, p), LP(.55, 2, p), H, { armL: -2.8, armR: -2.8, rx: -1.5 * p }); } } bite(-4.2, .6, 2, tg + .1);
